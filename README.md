@@ -6,6 +6,7 @@
 
 - 用户注册/登录/密码重置
 - Markdown 文章发布与预览
+- AI 一键生成文章摘要（基于 DeepSeek）
 - 文章点赞与评论（无需登录也可点赞）
 - 首页站点统计（访问量 + 点赞数，IP 去重 + 频率限制）
 - 作者列表页（莫兰迪色系用户标识 + 活跃状态）
@@ -36,6 +37,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 NEXT_PUBLIC_SITE_TITLE=你的网站标题
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://api.openai.com
 ```
 
 > Supabase 密钥在项目 Dashboard → **Settings → API** 页面获取。
@@ -79,6 +82,9 @@ cat > .env.local << 'EOF'
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 NEXT_PUBLIC_SITE_TITLE=你的网站标题
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://api.openai.com
 EOF
 ```
 
@@ -129,9 +135,7 @@ server {
 
 ### Step 6: 启用 HTTPS（可选）
 
-```bash
-sudo certbot --nginx -d yourdomain.com
-```
+详细参考1panel自动申请SSL证书方法
 
 ### Step 7: 进程守护（PM2）
 
@@ -178,6 +182,8 @@ module.exports = {
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'your_publishable_key',
       NEXT_PUBLIC_SITE_TITLE: '你的网站标题',
       SUPABASE_SERVICE_ROLE_KEY: 'your_service_role_key',
+      OPENAI_API_KEY: 'sk-xxxxxxxxxxxxxxxxxxxxxxxx',
+      OPENAI_BASE_URL: 'https://api.openai.com',
     }
   }]
 }
@@ -218,7 +224,7 @@ module.exports = {
 
 | 配置项 | 说明 |
 |--------|------|
-| `.env.local` | 在服务器手动创建，填入 Supabase 连接信息 |
+| `.env.local` | 在服务器手动创建，填入 Supabase + DeepSeek 连接信息 |
 | 监听端口 | `package.json` 中 `start` 脚本加 `-p 端口号`，或 `PORT=8083 npm start` |
 | Supabase Site URL | 从 `http://localhost:3000` 改为生产域名 |
 | Supabase Redirect URLs | 添加 `https://yourdomain.com/auth/callback` |
