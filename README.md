@@ -142,10 +142,13 @@ pm2 startup
 常用命令：
 
 ```bash
-pm2 status            # 查看进程状态
+pm2 status            # 查看所有进程状态
 pm2 logs vibe-blog    # 查看日志
 pm2 restart vibe-blog # 重启
 pm2 stop vibe-blog    # 停止
+pm2 delete vibe-blog  # 删除进程守护（从列表中移除）
+pm2 startup           # 设置开机自启（按提示执行返回的命令）
+pm2 unstartup         # 关闭开机自启
 ```
 
 也可以通过 `ecosystem.config.js` 管理环境变量：
