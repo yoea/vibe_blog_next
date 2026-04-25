@@ -67,8 +67,6 @@ cat > .env.local << 'EOF'
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 NEXT_PUBLIC_SITE_TITLE=你的网站标题
-HOSTNAME=0.0.0.0
-PORT=3000
 EOF
 ```
 
@@ -125,11 +123,29 @@ sudo certbot --nginx -d yourdomain.com
 
 ### Step 7: 进程守护（PM2）
 
+默认 `npm start` 需要终端保持运行。使用 PM2 可以让它在后台常驻、崩溃自动重启、开机自启：
+
 ```bash
+# 安装 PM2
 npm install -g pm2
-pm2 start npm --name "vibe-blog" -- start
+
+# 启动（假设端口为 8083）
+PORT=8083 pm2 start npm --name "vibe-blog" -- start -- -p 8083
+
+# 保存当前进程列表，重启后恢复
 pm2 save
+
+# 设置开机自启
 pm2 startup
+```
+
+常用命令：
+
+```bash
+pm2 status            # 查看进程状态
+pm2 logs vibe-blog    # 查看日志
+pm2 restart vibe-blog # 重启
+pm2 stop vibe-blog    # 停止
 ```
 
 也可以通过 `ecosystem.config.js` 管理环境变量：
@@ -139,9 +155,10 @@ module.exports = {
   apps: [{
     name: 'vibe-blog',
     script: 'npm',
-    args: 'start -- -p 3000',
+    args: 'start -- -p 8083',
     env: {
       NODE_ENV: 'production',
+      PORT: '8083',
       NEXT_PUBLIC_SUPABASE_URL: 'https://your-project.supabase.co',
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'your_publishable_key',
       NEXT_PUBLIC_SITE_TITLE: '你的网站标题',
