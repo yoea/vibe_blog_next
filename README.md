@@ -174,6 +174,23 @@ module.exports = {
 
 ---
 
+## 缓存策略
+
+为缓解 Supabase Free Tier 的冷启动延迟，项目已配置 ISR（增量静态再生成）缓存：
+
+| 页面 | 缓存时间 | 说明 |
+|------|----------|------|
+| 首页 `/` | 5 分钟 | `revalidate = 300` |
+| 文章详情页 `/posts/[slug]` | 5 分钟 | `revalidate = 300` |
+| 其他页面 | 无缓存 | 需要实时数据（管理页、编辑器、设置页等） |
+
+- 缓存期内刷新页面直接返回缓存的 HTML，**不查询 Supabase**
+- 发布/编辑/删除文章后，`revalidatePath` 会自动清除相关缓存
+- 点赞/评论等交互通过 Server Actions + 乐观 UI 处理，不受服务端缓存影响
+- 如需调整缓存时间，修改对应页面文件中的 `revalidate` 值即可
+
+---
+
 ## Supabase 生产环境配置
 
 部署到生产域名后，需要在 Supabase Dashboard 中更新回调地址：
