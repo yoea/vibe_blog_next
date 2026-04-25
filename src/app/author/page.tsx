@@ -46,9 +46,10 @@ export default async function AuthorListPage() {
                   >
                     {user.displayName}
                   </span>
-                  <span className="text-xs text-muted-foreground">{user.id.slice(0, 6)}</span>
+                  <span className="text-xs text-muted-foreground">{user.id.slice(0, 8)}</span>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span>{user.postCount} 篇文章</span>
                   <span>注册 {days}</span>
                   <span
                     className={`inline-flex items-center gap-1 ${user.isActive ? 'text-green-600' : 'text-muted-foreground'}`}

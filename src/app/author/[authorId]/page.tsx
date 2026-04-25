@@ -28,7 +28,6 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const supabase = await createClient()
 
-  // Fetch author display name
   const { data: authorSettings } = await supabase
     .from('user_settings')
     .select('display_name')
@@ -37,20 +36,26 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select(`
+      *,
+      like_count:post_likes(count),
+      comment_count:post_comments(count)
+    `)
     .eq('author_id', authorId)
     .eq('published', true)
     .order('created_at', { ascending: false })
 
-  if (error) return notFound()
+  if (error || !posts) {
+    return notFound()
+  }
 
   const authorName = authorSettings?.display_name ?? null
 
-  const postsWithAuthor = posts.map((p) => ({
+  const postsWithAuthor = posts.map((p: any) => ({
     ...p,
     author: { email: null, name: authorName },
-    like_count: 0,
-    comment_count: 0,
+    like_count: p.like_count?.[0]?.count ?? 0,
+    comment_count: p.comment_count?.[0]?.count ?? 0,
     is_liked_by_current_user: false,
   })) as PostWithAuthor[]
 

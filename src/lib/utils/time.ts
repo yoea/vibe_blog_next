@@ -24,6 +24,9 @@ export function formatDaysAgo(date: string | Date): string {
   const days = Math.floor(diffMs / 86400000)
   if (days < 0) return '今天'
   if (days === 0) return '今天'
-  if (days === 1) return '1天前'
-  return `${days}天前`
+  if (days === 1) return '昨天'
+  if (days < 30) return `${days}天前`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months}个月前`
+  return `${Math.floor(months / 12)}年前`
 }

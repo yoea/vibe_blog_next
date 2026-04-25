@@ -199,6 +199,7 @@ export async function getAllUsers() {
   // Fetch display names from user_settings
   const userIds = users.map((u) => u.id)
   const settingsMap = new Map<string, string>()
+  const postCountMap = new Map<string, number>()
   if (userIds.length > 0) {
     const db = await createClient()
     const { data: settings } = await db
@@ -208,6 +209,17 @@ export async function getAllUsers() {
     if (settings) {
       for (const s of settings) {
         settingsMap.set(s.user_id, s.display_name ?? '')
+      }
+    }
+
+    const { data: posts } = await db
+      .from('posts')
+      .select('author_id')
+      .eq('published', true)
+      .in('author_id', userIds)
+    if (posts) {
+      for (const p of posts) {
+        postCountMap.set(p.author_id, (postCountMap.get(p.author_id) ?? 0) + 1)
       }
     }
   }
@@ -222,6 +234,7 @@ export async function getAllUsers() {
       createdAt: u.created_at,
       lastSignIn: u.last_sign_in_at ?? null,
       isActive: u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() > oneMonthAgo : false,
+      postCount: postCountMap.get(u.id) ?? 0,
     })),
     error: null,
   }
