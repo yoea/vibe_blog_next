@@ -53,6 +53,20 @@ create table if not exists site_config (
   updated_at timestamptz default now()
 );
 
+-- Site views table
+create table if not exists site_views (
+  id uuid default gen_random_uuid() primary key,
+  ip varchar(45),
+  accessed_at timestamptz default now()
+);
+
+-- Site likes table
+create table if not exists site_likes (
+  id uuid default gen_random_uuid() primary key,
+  ip varchar(45),
+  liked_at timestamptz default now()
+);
+
 -- Insert default site title if not exists
 insert into site_config (key, value)
 values ('site_title', 'Blog')
@@ -64,6 +78,10 @@ create index idx_posts_published on posts(published);
 create index idx_posts_slug on posts(slug);
 create index idx_post_likes_post_id on post_likes(post_id);
 create index idx_post_comments_post_id on post_comments(post_id);
+create index idx_site_views_ip on site_views(ip);
+create index idx_site_views_accessed on site_views(accessed_at);
+create index idx_site_likes_ip on site_likes(ip);
+create index idx_site_likes_liked on site_likes(liked_at);
 
 -- ============================================
 -- Row Level Security (RLS) Policies
@@ -139,6 +157,24 @@ create policy "admin_site_config_update"
   on site_config for update using (auth.uid() IN (
     select author_id from posts where author_id = auth.uid()
   ));
+
+-- Site Views RLS
+alter table site_views enable row level security;
+
+create policy "site_views_insert"
+  on site_views for insert with check (true);
+
+create policy "site_views_select"
+  on site_views for select using (true);
+
+-- Site Likes RLS
+alter table site_likes enable row level security;
+
+create policy "site_likes_insert"
+  on site_likes for insert with check (true);
+
+create policy "site_likes_select"
+  on site_likes for select using (true);
 
 -- ============================================
 -- Auto-update updated_at trigger

@@ -37,8 +37,9 @@ export function Header({ siteTitle }: { siteTitle: string }) {
   return (
     <header className="border-b bg-white">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg hover:text-primary transition-colors">
-          {siteTitle}
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo.svg" alt="" className="h-6 w-6" />
+          <span className="font-bold text-lg">{siteTitle}</span>
         </Link>
         <nav className="flex items-center gap-2">
           <Link href="/" className="px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors cursor-pointer">

@@ -153,3 +153,19 @@ export async function getUserSettings() {
   if (error) return { data: null, error: error.message }
   return { data: { ...data, email: user.email, created_at: user.created_at }, error: null }
 }
+
+export async function getSiteViewsCount() {
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from('site_views')
+    .select('*', { count: 'exact', head: true })
+  return { count: count ?? 0, error: error?.message ?? null }
+}
+
+export async function getSiteLikesCount() {
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from('site_likes')
+    .select('*', { count: 'exact', head: true })
+  return { count: count ?? 0, error: error?.message ?? null }
+}
