@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { ArrowLeft, Edit2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 
+export const revalidate = 300;
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
