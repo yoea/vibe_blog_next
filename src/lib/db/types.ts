@@ -11,7 +11,7 @@ export interface Post {
 }
 
 export interface PostWithAuthor extends Post {
-  author: { email: string | null }
+  author: { email: string | null; name: string | null }
   like_count: number
   comment_count: number
   is_liked_by_current_user: boolean

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Edit2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { formatTimeAgo } from '@/lib/utils/time'
 
 export const revalidate = 300;
 
@@ -38,12 +39,14 @@ export default async function PostPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold leading-tight">{post.title}</h1>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
-              {post.updated_at !== post.created_at && (
-                <span>修改于 {new Date(post.updated_at).toLocaleDateString('zh-CN')}</span>
+              {post.author?.name && (
+                <Link href={`/author/${post.author_id}`} className="font-medium hover:text-foreground transition-colors">
+                  {post.author.name}
+                </Link>
               )}
-              {post.author?.email && (
-                <span>作者: {post.author.email.split('@')[0]}</span>
+              <span className="text-[9px]">{formatTimeAgo(post.created_at)}</span>
+              {post.updated_at !== post.created_at && (
+                <span className="text-[9px]">最后修改：{formatTimeAgo(post.updated_at)}</span>
               )}
             </div>
             {!post.published && (

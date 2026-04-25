@@ -50,6 +50,13 @@ export async function getPostBySlug(slug: string) {
     return { data: null, error: '文章不存在' }
   }
 
+  // Fetch author display name
+  const { data: authorSettings } = await supabase
+    .from('user_settings')
+    .select('display_name')
+    .eq('user_id', post.author_id)
+    .maybeSingle()
+
   const { count: likeCount } = await supabase
     .from('post_likes')
     .select('*', { count: 'exact', head: true })
@@ -71,7 +78,10 @@ export async function getPostBySlug(slug: string) {
 
   const result = {
     ...post,
-    author: { email: null },
+    author: {
+      email: null,
+      name: authorSettings?.display_name ?? null,
+    },
     like_count: likeCount ?? 0,
     comment_count: commentCount ?? 0,
     is_liked_by_current_user: !!userLike,
