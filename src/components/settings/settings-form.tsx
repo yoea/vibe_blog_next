@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { updateUserSettings } from '@/lib/actions/settings-actions'
+import { resetPasswordForEmail } from '@/lib/actions/auth-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 
 interface Props {
   user: User
@@ -33,6 +35,15 @@ export function SettingsForm({ user, displayName }: Props) {
     }
   }
 
+  const handleResetPassword = async () => {
+    const res = await resetPasswordForEmail()
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      toast.success('密码重置邮件已发送，请检查邮箱')
+    }
+  }
+
   const formatDate = (val: string | undefined) =>
     val ? new Date(val).toLocaleString('zh-CN') : '-'
 
@@ -53,6 +64,14 @@ export function SettingsForm({ user, displayName }: Props) {
             />
             <p className="text-xs text-muted-foreground">
               留空则默认使用邮箱前缀
+            </p>
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <Label>密码</Label>
+            <Button variant="outline" onClick={handleResetPassword}>重置密码</Button>
+            <p className="text-xs text-muted-foreground">
+              点击后将发送一封密码重置邮件到你的注册邮箱，请在邮件中完成新密码的设置
             </p>
           </div>
           <Separator />

@@ -4,12 +4,13 @@ import { useFormStatus } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function RegisterForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -49,8 +50,14 @@ export function RegisterForm() {
         </div>
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm font-medium">密码</label>
-          <input id="password" name="password" type="password" required minLength={6}
-            className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+          <div className="relative">
+            <input id="password" name="password" type={showPassword ? 'text' : 'password'} required minLength={8}
+              className="w-full px-3 pr-10 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <SubmitButton />
@@ -75,10 +82,6 @@ export function RegisterForm() {
             <span>密码长度至少 6 个字符</span>
           </li>
         </ul>
-        <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 rounded-md p-2.5 border border-amber-200">
-          <AlertCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-          <span>如果未收到验证邮件，请检查垃圾邮件文件夹，或在 Supabase 控制台关闭邮箱验证</span>
-        </div>
       </div>
     </div>
   )
