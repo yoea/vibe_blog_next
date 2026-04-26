@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { LogIn, FileText, Settings, Users, Menu, X, Sun, Moon, Monitor, Home, User } from 'lucide-react'
+import { LogIn, FileText, Settings, Users, Menu, X, Sun, Moon, SunMoon, Home, User } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 
 export function Header({ siteTitle }: { siteTitle: string }) {
@@ -17,7 +17,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
     setMode(order[(idx + 1) % order.length])
   }
 
-  const ThemeIcon = mode === 'system' ? Monitor : mode === 'dark' ? Moon : Sun
+  const ThemeIcon = mode === 'system' ? SunMoon : mode === 'dark' ? Moon : Sun
   const themeLabel = mode === 'system' ? '跟随系统' : mode === 'dark' ? '深色模式' : '浅色模式'
 
   useEffect(() => {

@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Sun, Moon, Monitor, Heart } from 'lucide-react'
+import { Sun, Moon, SunMoon, Heart } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
 import { AvatarUploader } from './avatar-uploader'
@@ -172,7 +172,7 @@ export function SettingsForm({ user, displayName, avatarUrl }: Props) {
         <CardContent>
           <div className="flex flex-wrap gap-3">
             {(['light', 'dark', 'system'] as ThemeMode[]).map((value) => {
-              const Icon = value === 'system' ? Monitor : value === 'dark' ? Moon : Sun
+              const Icon = value === 'system' ? SunMoon : value === 'dark' ? Moon : Sun
               const label = value === 'system' ? '跟随系统' : value === 'dark' ? '深色' : '浅色'
               return (
                 <button
