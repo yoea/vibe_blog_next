@@ -112,7 +112,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 回复
               </button>
             )}
-            {(canDelete ?? currentUserId === item.author_id) && (
+            {(canDelete ?? (currentUserId && currentUserId === item.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
