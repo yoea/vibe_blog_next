@@ -26,9 +26,13 @@ export function CommentForm({
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [isMac, setIsMac] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setIsMac(navigator.platform.includes('Mac'))
+    const saved = localStorage.getItem('guest_name')
+    if (saved) setGuestName(saved)
+    setMounted(true)
   }, [])
 
   const handleSubmit = async (e?: { preventDefault?: () => void }) => {
@@ -38,10 +42,11 @@ export function CommentForm({
 
     setSubmitting(true)
     setError('')
-    const result = await onSubmit(comment.trim(), replyTo?.id, !currentUserId ? (guestName.trim() || '匿名游客') : undefined)
+    const name = !currentUserId ? (guestName.trim() || '匿名游客') : undefined
+    const result = await onSubmit(comment.trim(), replyTo?.id, name)
     if (result.success) {
       setComment('')
-      setGuestName('')
+      if (name) localStorage.setItem('guest_name', name)
       onCancelReply?.()
     } else {
       setError(result.error || '操作失败，请重试')
@@ -58,14 +63,22 @@ export function CommentForm({
         </div>
       )}
       {!currentUserId && !replyTo && (
-        <input
-          type="text"
-          value={guestName}
-          onChange={(e) => setGuestName(e.target.value)}
-          placeholder="输入昵称（可选）"
-          maxLength={50}
-          className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        <div className="space-y-1">
+          {mounted && (
+            <label className="text-[11px] text-muted-foreground">
+              昵称（设置后将自动保存）
+            </label>
+          )}
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            onBlur={() => { if (guestName.trim()) localStorage.setItem('guest_name', guestName.trim()) }}
+            placeholder="输入昵称（可选）"
+            maxLength={50}
+            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
       )}
       <Textarea
         ref={inputRef}
