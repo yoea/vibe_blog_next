@@ -106,6 +106,7 @@ create table if not exists guestbook_messages (
   to_author_id uuid references auth.users(id) on delete cascade not null,
   author_id uuid references auth.users(id) on delete cascade not null,
   author_email varchar(255),
+  parent_id uuid references guestbook_messages(id) on delete cascade,
   content text not null,
   created_at timestamptz default now()
 );

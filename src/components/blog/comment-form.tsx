@@ -75,7 +75,7 @@ export function CommentForm({
             {comment.length}/{MAX_COMMENT_LENGTH}
           </p>
           <Button type="submit" disabled={submitting || !comment.trim() || comment.trim().length > MAX_COMMENT_LENGTH} size="sm">
-            {submitting ? '提交中...' : replyTo ? '回复' : '发表评论'}
+            {submitting ? '提交中...' : replyTo ? '回复' : '发表'}
           </Button>
         </div>
       </div>

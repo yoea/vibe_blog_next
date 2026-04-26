@@ -40,10 +40,21 @@ export interface AuthUser {
   email: string | null
 }
 
+export interface ThreadedItemBase {
+  id: string
+  author_id: string
+  parent_id: string | null
+  content: string
+  created_at: string
+  author_email: string | null
+  author: { display_name: string | null }
+}
+
 export interface GuestbookMessage {
   id: string
   to_author_id: string
   author_id: string
+  parent_id: string | null
   content: string
   created_at: string
 }
@@ -51,4 +62,5 @@ export interface GuestbookMessage {
 export interface GuestbookMessageWithAuthor extends GuestbookMessage {
   author_email: string | null
   author: { display_name: string | null }
+  replies?: GuestbookMessageWithAuthor[]
 }

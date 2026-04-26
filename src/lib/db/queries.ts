@@ -241,23 +241,61 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
   const supabase = await createClient()
   const { page = 1, pageSize = 10 } = options ?? {}
 
-  const { count: total } = await supabase
+  // Count all messages (for stats display)
+  const { count: fullTotal } = await supabase
     .from('guestbook_messages')
     .select('*', { count: 'exact', head: true })
     .eq('to_author_id', toAuthorId)
 
+  // Count top-level messages (for pagination)
+  const { count: total } = await supabase
+    .from('guestbook_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('to_author_id', toAuthorId)
+    .is('parent_id', null)
+
+  // Fetch top-level messages for this page
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
-  const { data: messages, error } = await supabase
+  const { data: topLevel, error } = await supabase
     .from('guestbook_messages')
     .select('*')
     .eq('to_author_id', toAuthorId)
+    .is('parent_id', null)
     .order('created_at', { ascending: false })
     .range(from, to)
 
-  if (error) return { data: [], total: 0, error: error.message }
+  if (error) return { data: [], total: 0, fullTotal: 0, error: error.message }
+  if (!topLevel?.length) return { data: [], total: total ?? 0, error: null }
 
-  const authorIds = [...new Set(messages.map((m) => m.author_id))]
+  // Fetch all replies for these top-level messages
+  const topLevelIds = topLevel.map((m) => m.id)
+  const allMessages = [...topLevel]
+  const replyIds: string[] = []
+
+  const { data: replies1 } = await supabase
+    .from('guestbook_messages')
+    .select('*')
+    .in('parent_id', topLevelIds)
+    .order('created_at', { ascending: true })
+  if (replies1?.length) {
+    allMessages.push(...replies1)
+    replyIds.push(...replies1.map((m) => m.id))
+  }
+
+  if (replyIds.length > 0) {
+    const { data: replies2 } = await supabase
+      .from('guestbook_messages')
+      .select('*')
+      .in('parent_id', replyIds)
+      .order('created_at', { ascending: true })
+    if (replies2?.length) {
+      allMessages.push(...replies2)
+    }
+  }
+
+  // Fetch author display names
+  const authorIds = [...new Set(allMessages.map((m) => m.author_id))]
   const settingsMap = new Map<string, string>()
   if (authorIds.length > 0) {
     const { data: settings } = await supabase
@@ -271,13 +309,41 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
     }
   }
 
-  const result: GuestbookMessageWithAuthor[] = (messages ?? []).map((m) => ({
+  const enrich = (m: any): GuestbookMessageWithAuthor => ({
     ...m,
+    parent_id: m.parent_id ?? null,
     author_email: m.author_email ?? null,
     author: { display_name: settingsMap.get(m.author_id) ?? null },
-  }))
+    replies: [],
+  })
 
-  return { data: result, total: total ?? 0, error: null }
+  // Build tree
+  const result: GuestbookMessageWithAuthor[] = []
+  const repliesMap = new Map<string, GuestbookMessageWithAuthor[]>()
+
+  for (const item of allMessages) {
+    const enriched = enrich(item)
+    if (item.parent_id) {
+      let topParentId = item.parent_id
+      const visited = new Set<string>()
+      while (topParentId && !visited.has(topParentId)) {
+        visited.add(topParentId)
+        const parent = allMessages.find((m) => m.id === topParentId)
+        if (!parent || !parent.parent_id) break
+        topParentId = parent.parent_id
+      }
+      if (!repliesMap.has(topParentId)) repliesMap.set(topParentId, [])
+      repliesMap.get(topParentId)!.push(enriched)
+    } else {
+      result.push(enriched)
+    }
+  }
+
+  for (const parent of result) {
+    parent.replies = repliesMap.get(parent.id) ?? []
+  }
+
+  return { data: result, total: total ?? 0, fullTotal: fullTotal ?? 0, error: null }
 }
 
 export async function getPostsByAuthor(authorId: string) {

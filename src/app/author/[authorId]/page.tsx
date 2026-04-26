@@ -5,7 +5,7 @@ import { GuestbookSection } from '@/components/blog/guestbook-section'
 import { getGuestbookMessages } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, FileText } from 'lucide-react'
+import { ArrowLeft, Calendar, FileText, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getUserColor } from '@/lib/utils/colors'
@@ -78,7 +78,7 @@ export default async function AuthorPage({ params }: PageProps) {
   })) as PostWithAuthor[]
 
   // Fetch guestbook messages
-  const { data: guestbookMessages, total: guestbookTotal } = await getGuestbookMessages(authorId, { page: 1, pageSize: 10 })
+  const { data: guestbookMessages, total: guestbookTopLevel, fullTotal: guestbookTotal } = await getGuestbookMessages(authorId, { page: 1, pageSize: 10 })
   const { data: { user: currentUser } } = await supabase.auth.getUser()
 
   return (
@@ -108,6 +108,10 @@ export default async function AuthorPage({ params }: PageProps) {
               <FileText className="h-3 w-3" />
               {postsWithAuthor.length} 篇文章
             </span>
+            <a href="#guestbook" className="flex items-center gap-1 hover:text-foreground transition-colors">
+              <MessageCircle className="h-3 w-3" />
+              {guestbookTotal ?? 0} 条留言
+            </a>
           </div>
         </div>
       </div>
@@ -130,7 +134,7 @@ export default async function AuthorPage({ params }: PageProps) {
         toAuthorId={authorId}
         currentUserId={currentUser?.id ?? null}
         initialMessages={guestbookMessages ?? []}
-        initialTotal={guestbookTotal ?? 0}
+        initialTotal={guestbookTopLevel ?? 0}
       />
     </div>
   )

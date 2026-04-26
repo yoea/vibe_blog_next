@@ -4,20 +4,23 @@ import { createClient } from '@/lib/supabase/server'
 import { getGuestbookMessages } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
 
-export async function createGuestbookMessage(toAuthorId: string, content: string): Promise<{ error?: string; data?: any }> {
+export async function createGuestbookMessage(toAuthorId: string, content: string, parentId?: string): Promise<{ error?: string; data?: any }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
   if (!content.trim()) return { error: '内容不能为空' }
 
+  const insertData: any = {
+    to_author_id: toAuthorId,
+    author_id: user.id,
+    author_email: user.email,
+    content: content.trim(),
+  }
+  if (parentId) insertData.parent_id = parentId
+
   const { data: message, error } = await supabase
     .from('guestbook_messages')
-    .insert({
-      to_author_id: toAuthorId,
-      author_id: user.id,
-      author_email: user.email,
-      content: content.trim(),
-    })
+    .insert(insertData)
     .select('*')
     .single()
 
@@ -34,8 +37,10 @@ export async function createGuestbookMessage(toAuthorId: string, content: string
   return {
     data: {
       ...message,
+      parent_id: message.parent_id ?? null,
       author_email: user.email,
       author: { display_name: settings?.display_name ?? null },
+      replies: [],
     },
   }
 }

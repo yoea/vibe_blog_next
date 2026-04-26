@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { createComment, getMoreComments } from '@/lib/actions/comment-actions'
-import { CommentItem } from './comment-item'
+import { deleteComment, toggleCommentLike } from '@/lib/actions/comment-actions'
+import { useThreadedList } from './use-threaded-list'
+import { ThreadedItemRenderer } from './threaded-item'
 import { CommentForm } from './comment-form'
 import { Button } from '@/components/ui/button'
+import { Heart } from 'lucide-react'
 import type { CommentWithAuthor } from '@/lib/db/types'
-
-const PAGE_SIZE = 10
 
 export function CommentSection({
   postId,
@@ -26,72 +27,34 @@ export function CommentSection({
   onCountChange?: (count: number) => void
   focusSignal?: number
 }) {
-  const [comments, setComments] = useState<CommentWithAuthor[]>(initialComments)
-  const [total, setTotal] = useState(initialTotal)
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [replyTarget, setReplyTarget] = useState<CommentWithAuthor | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const hasMore = comments.length < total
-
-  async function handleNewComment(content: string, parentId?: string) {
-    const result = await createComment(postId, content, parentId)
-    if (!result.error && result.data) {
-      setReplyTarget(null)
-      let newTotal = 0
-      if (parentId) {
-        setComments((prev) => {
-          const isTopLevel = prev.some((c) => c.id === parentId)
-          const next = isTopLevel
-            ? prev.map((c) =>
-                c.id === parentId ? { ...c, replies: [...(c.replies ?? []), result.data] } : c
-              )
-            : prev.map((c) =>
-                c.replies?.some((r) => r.id === parentId)
-                  ? { ...c, replies: [...(c.replies ?? []), result.data] }
-                  : c
-              )
-          newTotal = next.reduce((sum, c) => sum + 1 + (c.replies?.length ?? 0), 0)
-          return next
-        })
-      } else {
-        setComments((prev) => {
-          const next = [result.data, ...prev]
-          newTotal = next.reduce((sum, c) => sum + 1 + (c.replies?.length ?? 0), 0)
-          return next
-        })
-        setTotal((c) => c + 1)
-      }
-      onCountChange?.(newTotal)
-      return { success: true }
-    }
-    return { success: false, error: result.error }
-  }
-
-  function handleDeleteComment(commentId: string) {
-    let newTotal = 0
-    setComments((prev) => {
-      const exists = prev.some((c) => c.id === commentId)
-      const next = exists
-        ? prev.filter((c) => c.id !== commentId)
-        : prev.map((c) => ({ ...c, replies: c.replies?.filter((r) => r.id !== commentId) }))
-      newTotal = next.reduce((sum, c) => sum + 1 + (c.replies?.length ?? 0), 0)
-      return next
-    })
-    onCountChange?.(newTotal)
-  }
-
-  async function handleLoadMore() {
-    setLoading(true)
-    const nextPage = page + 1
-    const result = await getMoreComments(postId, nextPage)
-    if (result.data) {
-      setComments((prev) => [...prev, ...result.data!])
-      setPage(nextPage)
-    }
-    setLoading(false)
-  }
+  const {
+    items: comments,
+    hasMore,
+    replyTarget,
+    setReplyTarget,
+    handleSubmit,
+    handleDelete,
+    handleLoadMore,
+    loading,
+  } = useThreadedList<CommentWithAuthor>({
+    initialItems: initialComments,
+    initialTotal,
+    onSubmit: async (content, parentId) => {
+      const result = await createComment(postId, content, parentId)
+      if (result.error) return { success: false, error: result.error }
+      return { success: true, data: result.data }
+    },
+    onDeleteItem: async (id) => {
+      return await deleteComment(id, postId)
+    },
+    onLoadMore: async (page) => {
+      return await getMoreComments(postId, page)
+    },
+    onCountChange,
+    loadedAllText: '已加载全部评论',
+  })
 
   useEffect(() => {
     if (focusSignal && inputRef.current) {
@@ -103,7 +66,7 @@ export function CommentSection({
     <div className="space-y-4">
       <CommentForm
         postId={postId}
-        onSubmit={handleNewComment}
+        onSubmit={handleSubmit}
         replyTo={null}
         inputRef={inputRef}
       />
@@ -112,17 +75,21 @@ export function CommentSection({
         <div className="space-y-3">
           {comments.map((comment) => (
             <div key={comment.id} className="border-b border-gray-100 last:border-0">
-              <CommentItem
-                comment={comment}
-                canDelete={currentUserId === comment.author_id || currentUserId === postAuthorId}
+              <ThreadedItemRenderer
+                item={comment}
                 currentUserId={currentUserId}
-                onDelete={handleDeleteComment}
-                onReply={(c) => setReplyTarget(c)}
+                identifier={postId}
                 replyTarget={replyTarget}
+                onReply={setReplyTarget}
                 onCancelReply={() => setReplyTarget(null)}
-                onSubmitReply={handleNewComment}
-                postId={postId}
-              />
+                onSubmitReply={handleSubmit}
+                onDelete={handleDelete}
+                deleteTitle="删除评论"
+                deleteDescription="确定删除这条评论？此操作不可撤销。"
+                canDelete={currentUserId === comment.author_id || currentUserId === postAuthorId}
+              >
+                <LikeButton comment={comment} currentUserId={currentUserId} />
+              </ThreadedItemRenderer>
             </div>
           ))}
         </div>
@@ -136,5 +103,36 @@ export function CommentSection({
         </div>
       )}
     </div>
+  )
+}
+
+function LikeButton({ comment, currentUserId }: { comment: CommentWithAuthor; currentUserId: string | null }) {
+  const [liked, setLiked] = useState(comment.is_liked)
+  const [likeCount, setLikeCount] = useState(comment.like_count)
+  const [likeLoading, setLikeLoading] = useState(false)
+
+  async function handleLike(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!currentUserId) return
+    setLikeLoading(true)
+    const result = await toggleCommentLike(comment.id)
+    if (!result.error) {
+      setLiked(result.liked ?? false)
+      setLikeCount((c) => (result.liked ? c + 1 : c - 1))
+    }
+    setLikeLoading(false)
+  }
+
+  return (
+    <button
+      onClick={handleLike}
+      disabled={!currentUserId || likeLoading}
+      className={`flex items-center gap-1 text-xs transition-colors ${
+        liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-400'
+      }`}
+    >
+      <Heart className={`h-3.5 w-3.5 ${liked ? 'fill-current' : ''}`} />
+      点赞 {likeCount > 0 && likeCount}
+    </button>
   )
 }
