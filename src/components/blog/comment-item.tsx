@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { deleteComment } from '@/lib/actions/comment-actions'
 import type { CommentWithAuthor } from '@/lib/db/types'
+import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
 import { getUserColor } from '@/lib/utils/colors'
 import { formatTimeAgo } from '@/lib/utils/time'
@@ -48,9 +49,9 @@ export function CommentItem({
       <div className="flex gap-3 border-b border-gray-100 pb-3 last:border-0">
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-medium" style={{ color: getUserColor(comment.author_id) }}>
+            <Link href={`/author/${comment.author_id}`} className="font-medium hover:underline" style={{ color: getUserColor(comment.author_id) }}>
               {comment.author?.display_name ?? comment.author_email?.split('@')[0] ?? '匿名用户'}
-            </span>
+            </Link>
             <span>{formatTimeAgo(comment.created_at)}</span>
           </div>
           <p className="text-sm whitespace-pre-wrap break-all">{comment.content}</p>

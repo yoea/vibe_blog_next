@@ -227,15 +227,25 @@ export async function getAllUsers() {
   const oneMonthAgo = Date.now() - 30 * 86400000
 
   return {
-    data: users.map((u) => ({
-      id: u.id,
-      email: u.email ?? '',
-      displayName: settingsMap.get(u.id) || u.email?.split('@')[0] || '',
-      createdAt: u.created_at,
-      lastSignIn: u.last_sign_in_at ?? null,
-      isActive: u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() > oneMonthAgo : false,
-      postCount: postCountMap.get(u.id) ?? 0,
-    })),
+    data: users.map((u) => {
+      const displayName = settingsMap.get(u.id) || u.email?.split('@')[0] || ''
+      const isDeleted = displayName === '已注销用户'
+      return {
+        id: u.id,
+        email: u.email ?? '',
+        displayName,
+        createdAt: u.created_at,
+        lastSignIn: u.last_sign_in_at ?? null,
+        isActive: !isDeleted && u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() > oneMonthAgo : false,
+        isDeleted,
+        postCount: postCountMap.get(u.id) ?? 0,
+      }
+    }).sort((a, b) => {
+      // Deleted users at the bottom
+      if (a.isDeleted !== b.isDeleted) return a.isDeleted ? 1 : -1
+      // Then sort by post count desc
+      return b.postCount - a.postCount
+    }),
     error: null,
   }
 }

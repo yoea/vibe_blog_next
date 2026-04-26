@@ -40,22 +40,26 @@ export default async function AuthorListPage() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span
-                    className="font-semibold text-base"
-                    style={{ color: getUserColor(user.id) }}
-                  >
-                    {user.displayName}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{user.id.slice(0, 8)}</span>
+                  <div>
+                    <span
+                      className="font-semibold text-base"
+                      style={{ color: getUserColor(user.id) }}
+                    >
+                      {user.displayName}
+                    </span>
+                    <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{user.postCount} 篇文章</span>
+                  <span>文章{user.postCount}篇</span>
                   <span>注册 {days}</span>
                   <span
-                    className={`inline-flex items-center gap-1 ${user.isActive ? 'text-green-600' : 'text-muted-foreground'}`}
+                    className={`inline-flex items-center gap-1 ${
+                      user.isDeleted ? 'text-gray-400' : user.isActive ? 'text-green-600' : 'text-muted-foreground'
+                    }`}
                   >
-                    <span className={`inline-block h-2 w-2 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    {user.isActive ? '活跃' : '不活跃'}
+                    <span className={`inline-block h-2 w-2 rounded-full ${user.isDeleted ? 'bg-gray-300' : user.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    {user.isDeleted ? '注销' : user.isActive ? '活跃' : '不活跃'}
                   </span>
                 </div>
               </div>

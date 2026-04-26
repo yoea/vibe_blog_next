@@ -1,9 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PostCard } from '@/components/blog/post-card'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Calendar, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getUserColor } from '@/lib/utils/colors'
+import { formatDaysAgo } from '@/lib/utils/time'
 import type { Metadata } from 'next'
 import type { PostWithAuthor } from '@/lib/db/types'
 
@@ -33,6 +36,18 @@ export default async function AuthorPage({ params }: PageProps) {
     .select('display_name')
     .eq('user_id', authorId)
     .maybeSingle()
+
+  // Fetch auth user for registration time
+  let createdAt: string | null = null
+  try {
+    const admin = createAdminClient()
+    const { data: authUser } = await admin.auth.admin.getUserById(authorId)
+    if (authUser?.user?.created_at) {
+      createdAt = authUser.user.created_at
+    }
+  } catch {
+    // Admin client may not have service role key
+  }
 
   const { data: posts, error } = await supabase
     .from('posts')
@@ -68,12 +83,26 @@ export default async function AuthorPage({ params }: PageProps) {
         </Link>
       </Button>
 
-      <div>
-        <h1 className="text-3xl font-bold">
-          <span className="font-bold text-primary">{authorName ?? '作者'}</span>
-          <span className="font-normal text-muted-foreground"> 的文章</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">{postsWithAuthor.length} 篇</p>
+      <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
+        <div
+          className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white shrink-0"
+          style={{ backgroundColor: getUserColor(authorId) }}
+        >
+          {(authorName ?? '?')[0]}
+        </div>
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold">{authorName ?? '作者'}</h1>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              注册 {createdAt ? formatDaysAgo(createdAt) : '-'}
+            </span>
+            <span className="flex items-center gap-1">
+              <FileText className="h-3 w-3" />
+              {postsWithAuthor.length} 篇文章
+            </span>
+          </div>
+        </div>
       </div>
 
       {postsWithAuthor.length > 0 ? (

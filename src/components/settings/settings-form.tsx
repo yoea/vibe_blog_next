@@ -83,15 +83,16 @@ export function SettingsForm({ user, displayName }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="displayName">显示用户名</Label>
+            <Label htmlFor="displayName">昵称</Label>
             <Input
               id="displayName"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="邮箱前缀"
+              maxLength={8}
             />
             <p className="text-xs text-muted-foreground">
-              留空则默认使用邮箱前缀
+              留空则默认使用邮箱前缀，最多 8 个字符
             </p>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button onClick={handleSave} className="mt-2">保存设置</Button>
