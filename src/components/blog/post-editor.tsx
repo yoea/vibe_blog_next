@@ -37,7 +37,12 @@ export function PostEditor({ initialData }: Props) {
 
   const draftKey = isEditing && initialData ? `post_draft_${initialData.id}` : null
   const { hasNewerDraft, timeAgo, save, clear, restore, discard } = useLocalDraft(draftKey, initialData)
-  const [showRecovery, setShowRecovery] = useState(hasNewerDraft)
+  const [showRecovery, setShowRecovery] = useState(false)
+
+  // hydration 后检测本地草稿，避免服务端/客户端 HTML 不匹配
+  useEffect(() => {
+    if (hasNewerDraft) setShowRecovery(true)
+  }, [hasNewerDraft])
 
   // 新建文章：静默恢复本地草稿
   useEffect(() => {
