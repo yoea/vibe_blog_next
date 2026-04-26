@@ -53,87 +53,9 @@ npm run dev
 
 ---
 
-## 生产环境部署（Node.js 服务器）
+## 生产环境部署
 
-### 前置要求
-
-- Node.js >= 20.x（推荐 LTS）
-- Nginx（反向代理 + HTTPS）
-- PM2（进程守护，可选）
-
-### Step 1: 拉取代码并安装依赖
-
-```bash
-git clone git@git.ewing.top:yoea/vibe_blog_demo.git /path/to/app
-cd /path/to/app
-npm install
-```
-
-### Step 2: 创建环境变量文件
-复制 `.env.local.example` 为 `.env.local` 并填入你的 Supabase 配置
-
-```bash
-> `.env.local` 已在 `.gitignore` 中忽略，**不要提交到仓库**。
-
-### Step 3: 构建生产版本
-
-```bash
-npm run build
-```
-
-### Step 4: 启动服务
-
-```bash
-npm start
-```
-
-默认监听 `http://0.0.0.0:3000`。如需修改端口：
-
-```bash
-# 方式一：命令行参数（推荐）
-PORT=8083 npm start
-
-# 方式二：修改 package.json 中 start 脚本，添加 -p 参数
-"start": "next start -H 0.0.0.0 -p 8083"
-```
-
-### Step 5: 配置 Nginx 反向代理
-
-### Step 6: 启用 HTTPS
-
-### Step 7: 进程守护（PM2）
-
-默认 `npm start` 需要终端保持运行。使用 PM2 可以让它在后台常驻、崩溃自动重启、开机自启：
-
-```bash
-# 安装 PM2
-npm install -g pm2
-
-# 启动（假设端口为 8083）
-PORT=8083 pm2 start npm --name "vibe-blog" -- start -- -p 8083
-
-# 保存当前进程列表，重启后恢复
-pm2 save
-
-# 设置开机自启
-pm2 startup
-```
-
-常用命令：
-
-```bash
-pm2 status            # 查看所有进程状态
-pm2 logs vibe-blog    # 查看日志
-pm2 restart vibe-blog # 重启
-pm2 stop vibe-blog    # 停止
-pm2 delete vibe-blog  # 删除进程守护（从列表中移除）
-pm2 startup           # 设置开机自启（按提示执行返回的命令）
-pm2 unstartup         # 关闭开机自启
-```
-
-然后启动：`pm2 start ecosystem.config.js`
-
----
+参见 [DEPLOY.md](./DEPLOY.md)。
 
 ## 缓存策略
 
@@ -161,13 +83,3 @@ pm2 unstartup         # 关闭开机自启
 3. 在 **Redirect URLs** 中添加：`https://yourdomain.com/api/auth/callback`
 
 这样邮箱验证、密码重置等功能才能正常工作。
-
-todo:
-修复：
-1、设置页重复获取用户 — 页面调一次 getUser()，getUserSettings() 内部又调一次
-2、不存在与 user_settings 自动创建 — 注册后无 trigger 自动创建行 
-3、导航图标缺 aria-label — 移动端菜单和主题切换按钮
-4、logo 缺 alt 文本
-5、hydration 警告 — navigator.platform 服务端/客户端不一致
-6、proxy.ts 非标准命名 — Next.js 惯例是 middleware.ts 
-7、未使用的 shadcn 组件 — avatar, badge, skeleton, dropdown-menu │ src/components/ui/   
