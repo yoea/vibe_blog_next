@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { deleteComment, toggleCommentLike } from '@/lib/actions/comment-actions'
+import { CommentForm } from './comment-form'
 import type { CommentWithAuthor } from '@/lib/db/types'
 import Link from 'next/link'
 import { Trash2, Heart, MessageCircle } from 'lucide-react'
@@ -23,12 +24,20 @@ export function CommentItem({
   currentUserId,
   onDelete,
   onReply,
+  replyTarget,
+  onCancelReply,
+  onSubmitReply,
+  postId,
 }: {
   comment: CommentWithAuthor
   canDelete: boolean
   currentUserId: string | null
   onDelete: (commentId: string) => void
   onReply: (comment: CommentWithAuthor) => void
+  replyTarget?: CommentWithAuthor | null
+  onCancelReply?: () => void
+  onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
+  postId?: string
 }) {
   const [deleting, setDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -38,6 +47,8 @@ export function CommentItem({
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
+
+  const isReplyActive = replyTarget?.id === comment.id
 
   async function handleDelete() {
     setDeleting(true)
@@ -102,6 +113,19 @@ export function CommentItem({
               </button>
             )}
           </div>
+
+          {/* 回复输入框内联显示 */}
+          {isReplyActive && onSubmitReply && (
+            <div className="mt-3 pl-4 border-l-2 border-muted">
+              <CommentForm
+                key={comment.id}
+                postId={postId ?? comment.post_id}
+                onSubmit={onSubmitReply}
+                replyTo={{ id: comment.id, name: displayName }}
+                onCancelReply={onCancelReply}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -116,6 +140,10 @@ export function CommentItem({
               currentUserId={currentUserId}
               onDelete={onDelete}
               onReply={onReply}
+              replyTarget={replyTarget}
+              onCancelReply={onCancelReply}
+              onSubmitReply={onSubmitReply}
+              postId={postId}
             />
           ))}
         </div>

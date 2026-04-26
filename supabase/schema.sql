@@ -98,6 +98,17 @@ create index idx_site_views_ip on site_views(ip);
 create index idx_site_views_accessed on site_views(accessed_at);
 create index idx_site_likes_ip on site_likes(ip);
 create index idx_site_likes_liked on site_likes(liked_at);
+create index if not exists idx_guestbook_to_author on guestbook_messages(to_author_id, created_at desc);
+
+-- Guestbook messages table
+create table if not exists guestbook_messages (
+  id uuid default gen_random_uuid() primary key,
+  to_author_id uuid references auth.users(id) on delete cascade not null,
+  author_id uuid references auth.users(id) on delete cascade not null,
+  author_email varchar(255),
+  content text not null,
+  created_at timestamptz default now()
+);
 
 -- ============================================
 -- Row Level Security (RLS) Policies
@@ -217,6 +228,24 @@ create policy "site_likes_insert"
 
 create policy "site_likes_select"
   on site_likes for select using (true);
+
+-- Guestbook RLS
+alter table guestbook_messages enable row level security;
+
+do $$ begin
+  create policy "guestbook_select" on guestbook_messages for select using (true);
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "guestbook_insert" on guestbook_messages for insert with check (auth.uid() = author_id);
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "guestbook_delete" on guestbook_messages for delete using (auth.uid() = author_id);
+exception when duplicate_object then null;
+end $$;
 
 -- ============================================
 -- Auto-update updated_at trigger

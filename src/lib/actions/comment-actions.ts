@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getCommentsForPost } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
 
 async function getPostSlug(supabase: any, postId: string): Promise<string | null> {
@@ -114,4 +115,10 @@ export async function toggleCommentLike(commentId: string): Promise<{ liked?: bo
     if (error) return { error: error.message }
     return { liked: true }
   }
+}
+
+export async function getMoreComments(postId: string, page: number): Promise<{ data?: any[]; total?: number; error?: string }> {
+  const result = await getCommentsForPost(postId, { page, pageSize: 10 })
+  if (result.error) return { error: result.error }
+  return { data: result.data, total: result.total }
 }

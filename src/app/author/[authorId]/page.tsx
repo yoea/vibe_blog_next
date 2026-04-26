@@ -1,10 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PostCard } from '@/components/blog/post-card'
+import { GuestbookSection } from '@/components/blog/guestbook-section'
+import { getGuestbookMessages } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { getUserColor } from '@/lib/utils/colors'
 import { formatDaysAgo } from '@/lib/utils/time'
 import type { Metadata } from 'next'
@@ -74,6 +77,10 @@ export default async function AuthorPage({ params }: PageProps) {
     is_liked_by_current_user: false,
   })) as PostWithAuthor[]
 
+  // Fetch guestbook messages
+  const { data: guestbookMessages, total: guestbookTotal } = await getGuestbookMessages(authorId, { page: 1, pageSize: 10 })
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+
   return (
     <div className="space-y-6">
       <Button variant="ghost" size="sm">
@@ -116,6 +123,15 @@ export default async function AuthorPage({ params }: PageProps) {
           <p>该用户还没有发布文章</p>
         </div>
       )}
+
+      <Separator />
+
+      <GuestbookSection
+        toAuthorId={authorId}
+        currentUserId={currentUser?.id ?? null}
+        initialMessages={guestbookMessages ?? []}
+        initialTotal={guestbookTotal ?? 0}
+      />
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { getPostBySlug, getCommentsForPost } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
 import { MarkdownPreview } from '@/components/shared/markdown-preview'
-import { LikeButton } from '@/components/blog/like-button'
-import { CommentSection } from '@/components/blog/comment-section'
+import { PostInteraction } from '@/components/blog/post-interaction'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Edit2, User } from 'lucide-react'
@@ -32,7 +31,7 @@ export default async function PostPage({ params }: PageProps) {
     notFound()
   }
 
-  const { data: comments } = await getCommentsForPost(post.id)
+  const { data: comments, total: totalComments } = await getCommentsForPost(post.id, { page: 1, pageSize: 10 })
 
   const supabase = await createClient()
   const { data: { user: currentUser } } = await supabase.auth.getUser()
@@ -77,26 +76,25 @@ export default async function PostPage({ params }: PageProps) {
 
         <Separator />
 
-        <div className="flex items-center gap-3 pt-2">
-          <LikeButton
-            postId={post.id}
-            initialCount={post.like_count}
-            isLiked={post.is_liked_by_current_user}
-          />
-          <div className="ml-auto">
+        <PostInteraction
+          postId={post.id}
+          postAuthorId={post.author_id}
+          currentUserId={currentUserId}
+          initialLikeCount={post.like_count}
+          isLiked={post.is_liked_by_current_user}
+          initialCommentCount={post.comment_count}
+          initialComments={comments ?? []}
+          initialTotal={totalComments ?? 0}
+          editButton={currentUserId === post.author_id ? (
             <Button variant="outline" size="sm">
               <Link href={`/posts-edit/${post.slug}`} className="flex items-center gap-1">
                 <Edit2 className="h-4 w-4" />
                 编辑
               </Link>
             </Button>
-          </div>
-        </div>
+          ) : undefined}
+        />
       </article>
-
-      <Separator />
-
-      <CommentSection postId={post.id} postAuthorId={post.author_id} currentUserId={currentUserId} initialComments={comments ?? []} />
     </div>
   )
 }

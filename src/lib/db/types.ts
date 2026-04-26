@@ -39,3 +39,16 @@ export interface AuthUser {
   id: string
   email: string | null
 }
+
+export interface GuestbookMessage {
+  id: string
+  to_author_id: string
+  author_id: string
+  content: string
+  created_at: string
+}
+
+export interface GuestbookMessageWithAuthor extends GuestbookMessage {
+  author_email: string | null
+  author: { display_name: string | null }
+}

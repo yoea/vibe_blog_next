@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { PostWithAuthor, CommentWithAuthor } from '@/lib/db/types'
+import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor } from '@/lib/db/types'
 import { headers } from 'next/headers'
 
 export async function getPublishedPosts(page = 1, limit = 10) {
@@ -109,27 +109,70 @@ export async function getPostBySlug(slug: string) {
   return { data: result, error: null }
 }
 
-export async function getCommentsForPost(postId: string) {
+export async function getCommentsForPost(postId: string, options?: { page?: number; pageSize?: number }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const { page = 1, pageSize = 10 } = options ?? {}
 
-  const { data: comments, error } = await supabase
+  // Get total count of top-level comments
+  const { count: total } = await supabase
+    .from('post_comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('post_id', postId)
+    .is('parent_id', null)
+
+  // Fetch top-level comments for this page
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data: topLevelComments, error } = await supabase
     .from('post_comments')
     .select('*')
     .eq('post_id', postId)
+    .is('parent_id', null)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) return { data: [], total: 0, error: error.message }
+  if (!topLevelComments?.length) return { data: [], total: total ?? 0, error: null }
+
+  // Fetch all replies for these top-level comments (2 levels deep)
+  const topLevelIds = topLevelComments.map((c) => c.id)
+  const allComments = [...topLevelComments]
+  const replyIds: string[] = []
+
+  const { data: replies1 } = await supabase
+    .from('post_comments')
+    .select('*')
+    .in('parent_id', topLevelIds)
     .order('created_at', { ascending: true })
+  if (replies1?.length) {
+    allComments.push(...replies1)
+    replyIds.push(...replies1.map((c) => c.id))
+  }
 
-  if (error) return { data: [], error: error.message }
+  if (replyIds.length > 0) {
+    const { data: replies2 } = await supabase
+      .from('post_comments')
+      .select('*')
+      .in('parent_id', replyIds)
+      .order('created_at', { ascending: true })
+    if (replies2?.length) {
+      allComments.push(...replies2)
+    }
+  }
 
-  // Fetch display names for all comment authors
-  const authorIds = [...new Set(comments.map((c) => c.author_id))]
-  let settingsMap = new Map<string, string>()
+  // Enrich all fetched comments
+  const commentIds = allComments.map((c) => c.id)
+  const authorIds = [...new Set(allComments.map((c) => c.author_id))]
+  const settingsMap = new Map<string, string>()
+  const likeCountMap = new Map<string, number>()
+  const userLikedMap = new Map<string, boolean>()
+
   if (authorIds.length > 0) {
     const { data: settings } = await supabase
       .from('user_settings')
       .select('user_id, display_name')
       .in('user_id', authorIds)
-
     if (settings) {
       for (const s of settings) {
         if (s.display_name) settingsMap.set(s.user_id, s.display_name)
@@ -137,17 +180,11 @@ export async function getCommentsForPost(postId: string) {
     }
   }
 
-  // Fetch like counts for all comments
-  const commentIds = comments.map((c) => c.id)
-  const likeCountMap = new Map<string, number>()
-  const userLikedMap = new Map<string, boolean>()
-
   if (commentIds.length > 0) {
     const { data: likes } = await supabase
       .from('comment_likes')
       .select('comment_id, user_id')
       .in('comment_id', commentIds)
-
     if (likes) {
       for (const l of likes) {
         likeCountMap.set(l.comment_id, (likeCountMap.get(l.comment_id) ?? 0) + 1)
@@ -158,7 +195,6 @@ export async function getCommentsForPost(postId: string) {
     }
   }
 
-  // Map to enriched comments
   const enrich = (item: any): CommentWithAuthor => ({
     ...item,
     parent_id: item.parent_id ?? null,
@@ -172,19 +208,18 @@ export async function getCommentsForPost(postId: string) {
     replies: [],
   })
 
-  // Separate top-level and replies
+  // Build tree
   const topLevel: CommentWithAuthor[] = []
   const repliesMap = new Map<string, CommentWithAuthor[]>()
 
-  for (const item of comments) {
+  for (const item of allComments) {
     const enriched = enrich(item)
     if (item.parent_id) {
-      // Walk up to find the top-level parent
       let topParentId = item.parent_id
       const visited = new Set<string>()
       while (topParentId && !visited.has(topParentId)) {
         visited.add(topParentId)
-        const parent = comments.find((c) => c.id === topParentId)
+        const parent = allComments.find((c) => c.id === topParentId)
         if (!parent || !parent.parent_id) break
         topParentId = parent.parent_id
       }
@@ -195,12 +230,54 @@ export async function getCommentsForPost(postId: string) {
     }
   }
 
-  // Attach replies to parents
   for (const parent of topLevel) {
     parent.replies = repliesMap.get(parent.id) ?? []
   }
 
-  return { data: topLevel, error: null }
+  return { data: topLevel, total: total ?? 0, error: null }
+}
+
+export async function getGuestbookMessages(toAuthorId: string, options?: { page?: number; pageSize?: number }) {
+  const supabase = await createClient()
+  const { page = 1, pageSize = 10 } = options ?? {}
+
+  const { count: total } = await supabase
+    .from('guestbook_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('to_author_id', toAuthorId)
+
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data: messages, error } = await supabase
+    .from('guestbook_messages')
+    .select('*')
+    .eq('to_author_id', toAuthorId)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) return { data: [], total: 0, error: error.message }
+
+  const authorIds = [...new Set(messages.map((m) => m.author_id))]
+  const settingsMap = new Map<string, string>()
+  if (authorIds.length > 0) {
+    const { data: settings } = await supabase
+      .from('user_settings')
+      .select('user_id, display_name')
+      .in('user_id', authorIds)
+    if (settings) {
+      for (const s of settings) {
+        if (s.display_name) settingsMap.set(s.user_id, s.display_name)
+      }
+    }
+  }
+
+  const result: GuestbookMessageWithAuthor[] = (messages ?? []).map((m) => ({
+    ...m,
+    author_email: m.author_email ?? null,
+    author: { display_name: settingsMap.get(m.author_id) ?? null },
+  }))
+
+  return { data: result, total: total ?? 0, error: null }
 }
 
 export async function getPostsByAuthor(authorId: string) {
