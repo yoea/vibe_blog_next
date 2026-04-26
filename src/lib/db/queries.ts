@@ -23,9 +23,16 @@ export async function getPublishedPosts(page = 1, limit = 10) {
 
   if (error) return { data: [], count: 0, error: error.message }
 
+  const authorIds = [...new Set(data.map((item: any) => item.author_id))]
+  const { data: userSettings } = await supabase
+    .from('user_settings')
+    .select('user_id, display_name')
+    .in('user_id', authorIds)
+  const nameMap = new Map((userSettings ?? []).map((s) => [s.user_id, s.display_name]))
+
   const result = data.map((item: any) => ({
     ...item,
-    author: { email: null },
+    author: { name: nameMap.get(item.author_id) ?? item.author_id?.slice(0, 8) },
     like_count: item.like_count?.[0]?.count ?? 0,
     comment_count: item.comment_count?.[0]?.count ?? 0,
   })) as unknown as PostWithAuthor[]

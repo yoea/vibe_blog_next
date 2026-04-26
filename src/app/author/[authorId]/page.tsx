@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .select('display_name')
     .eq('user_id', authorId)
     .maybeSingle()
-  const name = data?.display_name ?? '作者'
+  const name = data?.display_name ?? authorId.slice(0, 8)
   return { title: `${name}的文章` }
 }
 
@@ -67,7 +67,7 @@ export default async function AuthorPage({ params }: PageProps) {
     return notFound()
   }
 
-  const authorName = authorSettings?.display_name ?? null
+  const authorName = authorSettings?.display_name ?? authorId.slice(0, 8)
 
   const postsWithAuthor = posts.map((p: any) => ({
     ...p,
@@ -84,15 +84,17 @@ export default async function AuthorPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Button variant="ghost" size="sm">
-        <Link href="/" className="flex items-center gap-1 pl-0">
+        <Link href="/author" className="flex items-center gap-1 pl-0">
           <ArrowLeft className="h-4 w-4" />
-          返回文章列表
+          返回作者列表
         </Link>
       </Button>
 
+      <h1 className="text-2xl font-bold">作者详情</h1>
+
       <AuthorCard
         userId={authorId}
-        displayName={authorName ?? '作者'}
+        displayName={authorName}
         stats={[
           { icon: <Calendar className="h-3 w-3" />, label: `注册 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
           { icon: <FileText className="h-3 w-3" />, label: `${postsWithAuthor.length} 篇文章` },

@@ -28,7 +28,10 @@ export function AuthorCard({
       </div>
       <div className="space-y-1 flex-1">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">{displayName}</h1>
+          <div>
+            <h1 className="text-xl font-bold">{displayName}</h1>
+            <p className="text-xs text-muted-foreground">ID: {userId.slice(0, 8)}</p>
+          </div>
           {actions}
         </div>
         {stats.length > 0 && (

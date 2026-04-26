@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { PostCard } from './post-card'
 import { Button } from '@/components/ui/button'
 
 interface PostData {
   id: string
+  author_id: string
   title: string
   slug: string
   published: boolean
@@ -14,6 +15,7 @@ interface PostData {
   excerpt?: string | null
   like_count?: number
   comment_count?: number
+  author?: { email?: string | null; name?: string | null } | null
 }
 
 export function PostListClient({
@@ -30,9 +32,16 @@ export function PostListClient({
   loadedAllText?: string
 }) {
   const [posts, setPosts] = useState(initialPosts)
-  const [total] = useState(initialTotal)
+  const [total, setTotal] = useState(initialTotal)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
+
+  // Sync with server props after refresh (e.g., post deletion)
+  useEffect(() => {
+    setPosts(initialPosts)
+    setTotal(initialTotal)
+    setPage(1)
+  }, [initialPosts, initialTotal])
 
   const hasMore = posts.length < total
 

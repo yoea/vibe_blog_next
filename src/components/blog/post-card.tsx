@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock } from 'lucide-react'
+import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
@@ -15,9 +15,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { deletePost } from '@/lib/actions/post-actions'
+import { toast } from 'sonner'
 
 interface PostCardData {
   id: string
+  author_id: string
   title: string
   slug: string
   published: boolean
@@ -37,7 +39,11 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
     startTransition(async () => {
       const result = await deletePost(post.id)
       if (!result.error) {
+        setShowConfirm(false)
+        toast.success('文章已删除')
         router.refresh()
+      } else {
+        toast.error('删除失败，请重试')
       }
     })
   }
@@ -60,8 +66,11 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
         <MessageSquare className="h-3 w-3" />
         {post.comment_count ?? 0}
       </span>
-      {post.author?.name && (
-        <span>{post.author.name}</span>
+      {post.author?.name && post.author_id && (
+        <Link href={`/author/${post.author_id}`} className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
+          <User className="h-3 w-3" />
+          {post.author.name}
+        </Link>
       )}
     </div>
   )
