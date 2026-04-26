@@ -101,14 +101,6 @@ export function SettingsForm({ user, displayName }: Props) {
             <Button onClick={handleSave} className="mt-2">保存设置</Button>
           </div>
           <Separator />
-          <div className="space-y-2">
-            <Label>密码</Label>
-            <Button variant="outline" onClick={handleResetPassword}>重置密码</Button>
-            <p className="text-xs text-muted-foreground">
-              点击后将发送一封密码重置邮件到你的注册邮箱，请在邮件中完成新密码的设置
-            </p>
-          </div>
-          <Separator />
           <div className="space-y-2 text-sm">
             <InfoRow label="用户 ID" value={user.id} />
             <InfoRow label="邮箱" value={user.email ?? '-'} verified={!!user.email_confirmed_at} />
@@ -153,10 +145,15 @@ export function SettingsForm({ user, displayName }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
             <div>
+            <Button variant="outline" onClick={handleResetPassword} className="w-full sm:w-auto">重置密码</Button>
+            <p className="text-xs text-muted-foreground mt-1">发送密码重置邮件到你的注册邮箱，请在邮件中完成新密码的设置</p>
+            </div>
+
+            <div>
             <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">退出登录</Button>
             <p className="text-xs text-muted-foreground mt-1">退出登录后，你将返回主页</p>
             </div>
-            
+
             <div>
             <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto">注销账号</Button>
             <p className="text-xs text-muted-foreground mt-1">注销后你的文章和评论将被保留，仅用户信息匿名化</p>

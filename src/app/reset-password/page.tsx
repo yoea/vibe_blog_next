@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Eye, EyeOff, Mail } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Eye, EyeOff, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function ResetPasswordPage() {
@@ -17,11 +20,6 @@ export default function ResetPasswordPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog'
-    document.title = `重置密码 - ${siteTitle}`
-  }, [])
-
-  useEffect(() => {
     const checkSession = async () => {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
@@ -30,18 +28,27 @@ export default function ResetPasswordPage() {
     checkSession()
   }, [])
 
+  // 密码强度检查
+  const strengthChecks = [
+    { label: '至少 8 个字符', pass: password.length >= 8 },
+    { label: '包含大写字母', pass: /[A-Z]/.test(password) },
+    { label: '包含小写字母', pass: /[a-z]/.test(password) },
+    { label: '包含数字', pass: /\d/.test(password) },
+  ]
+  const strength = strengthChecks.filter((c) => c.pass).length
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validLink) {
       toast.error('无效的密码重置链接，请重新申请')
       return
     }
-    if (password !== confirmPassword) {
-      toast.error('两次输入的密码不一致')
-      return
-    }
     if (password.length < 8) {
       toast.error('密码长度至少 8 个字符')
+      return
+    }
+    if (password !== confirmPassword) {
+      toast.error('两次输入的密码不一致')
       return
     }
 
@@ -53,67 +60,110 @@ export default function ResetPasswordPage() {
     if (error) {
       toast.error(error.message)
     } else {
-      toast.success('密码已重置')
-      router.push('/')
+      toast.success('密码已重置，请重新登录')
+      router.push('/login')
     }
   }
 
+  // 验证中
   if (validLink === null) {
-    return null
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
+  // 链接无效
   if (!validLink) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">重置密码</h1>
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2 max-w-sm">
           <p className="font-semibold flex items-center gap-1.5">
-            <Mail className="h-4 w-4 text-amber-500" />
-            链接无效
+            <AlertCircle className="h-4 w-4 text-amber-500" />
+            链接无效或已过期
           </p>
           <p className="text-sm text-amber-800">
-            该密码重置链接已过期或无效。请在设置页面重新申请重置密码。
+            该密码重置链接已失效。请重新申请重置密码，或直接登录账号。
           </p>
-          <Button variant="outline" onClick={() => router.push('/')} className="mt-2">返回首页</Button>
+          <div className="flex gap-2 mt-3">
+            <Button variant="outline" onClick={() => router.push('/login')}>去登录</Button>
+            <Button variant="outline" onClick={() => router.push('/settings')}>重新申请</Button>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">重置密码</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
+    <div className="space-y-6 max-w-sm">
+      <div>
+        <h1 className="text-3xl font-bold">重置密码</h1>
+        <p className="text-muted-foreground mt-1">请输入你的新密码</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium">新密码</label>
+          <Label htmlFor="password">新密码</Label>
           <div className="relative">
-            <input id="password" type={showPassword ? 'text' : 'password'}
+            <Input id="password" type={showPassword ? 'text' : 'password'}
               value={password} onChange={(e) => setPassword(e.target.value)}
-              required minLength={8} autoComplete="new-password"
-              className="w-full px-3 pr-10 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              required minLength={8} autoComplete="new-password" />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {/* 密码强度指示器 */}
+          {password.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
+                    i <= strength ? (
+                      strength <= 1 ? 'bg-red-400' : strength <= 2 ? 'bg-yellow-400' : strength <= 3 ? 'bg-blue-400' : 'bg-green-500'
+                    ) : 'bg-muted'
+                  }`} />
+                ))}
+              </div>
+              <ul className="space-y-0.5">
+                {strengthChecks.map((check) => (
+                  <li key={check.label} className={`text-xs flex items-center gap-1 ${check.pass ? 'text-green-600' : 'text-muted-foreground'}`}>
+                    <ShieldCheck className={`h-3 w-3 ${check.pass ? 'text-green-500' : 'opacity-30'}`} />
+                    {check.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
+
         <div className="space-y-2">
-          <label htmlFor="confirm" className="block text-sm font-medium">确认密码</label>
+          <Label htmlFor="confirm">确认密码</Label>
           <div className="relative">
-            <input id="confirm" type={showConfirm ? 'text' : 'password'}
+            <Input id="confirm" type={showConfirm ? 'text' : 'password'}
               value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-              required minLength={8} autoComplete="new-password"
-              className="w-full px-3 pr-10 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              required minLength={8} autoComplete="new-password" />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {confirmPassword.length > 0 && password !== confirmPassword && (
+            <p className="text-xs text-destructive">两次输入的密码不一致</p>
+          )}
         </div>
-        <Button type="submit" disabled={loading}>
+
+        <Button type="submit" disabled={loading || password.length < 8 || password !== confirmPassword}>
+          {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {loading ? '保存中...' : '保存新密码'}
         </Button>
       </form>
+
+      <p className="text-sm text-muted-foreground">
+        想起来了？<Link href="/login" className="text-primary hover:underline">去登录</Link>
+      </p>
     </div>
   )
 }

@@ -68,7 +68,7 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   // Keep posts and comments - mark user as deleted instead of removing
   await admin.from('user_settings').upsert({
     user_id: user.id,
-    display_name: '已注销用户',
+    display_name: `用户${user.id.slice(0, 4)}已注销`,
   })
   await admin.from('post_comments').update({ author_email: null }).eq('author_id', user.id)
 
