@@ -63,7 +63,7 @@ export default async function PostPage({ params }: PageProps) {
               )}
             </div>
             {!post.published && (
-              <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded text-xs">草稿</span>
+              <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded text-xs">私密</span>
             )}
           </div>
         </header>

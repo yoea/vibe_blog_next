@@ -225,7 +225,7 @@ export function PostEditor({ initialData }: Props) {
 
         <div className="flex items-center gap-3">
           <SubmitButton isEditing={isEditing} />
-          <span className="text-sm text-muted-foreground">发布状态</span>
+          <span className="text-sm text-muted-foreground">公开状态</span>
           <label className="inline-flex items-center cursor-pointer gap-2">
             <input
               type="checkbox"
@@ -238,10 +238,16 @@ export function PostEditor({ initialData }: Props) {
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-background rounded-full transition-transform ${published ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <span className="text-xs text-muted-foreground">
-              {published ? '已发布' : '草稿'}
+              {published ? '公开发布' : '私密'}
             </span>
           </label>
         </div>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          {published
+            ? '公开发布后，所有人都能查看和评论这篇文章'
+            : '私密文章仅你自己可见，其他人无法访问'
+          }
+        </p>
       </form>
 
       {fullscreen && (

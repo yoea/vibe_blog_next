@@ -48,7 +48,7 @@ export function PostCard({ post }: { post: Post }) {
               {post.title}
             </Link>
             <Badge variant={post.published ? 'secondary' : 'outline'} className="shrink-0">
-              {post.published ? '已发布' : '草稿'}
+              {post.published ? '公开发布' : '私密'}
             </Badge>
           </div>
           {post.excerpt && (
