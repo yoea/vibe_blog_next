@@ -83,3 +83,15 @@ npm run dev
 3. 在 **Redirect URLs** 中添加：`https://yourdomain.com/api/auth/callback`
 
 这样邮箱验证、密码重置等功能才能正常工作。
+
+
+
+# TODO
+- [ ] 文章搜索功能
+- [ ] 文章访问统计（独立表 + RLS）
+- [ ] 文章置顶功能
+- [ ] 文章封面图上传功能
+- [ ] 文章内容 AI 翻译
+- [ ] 文章标签、分类功能
+- [ ] 文章内容 AI 标签推荐（兼容 OpenAI API）
+- [ ] 文章内容 AI 分类推荐（兼容 OpenAI API）
