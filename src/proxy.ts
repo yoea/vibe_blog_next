@@ -2,6 +2,16 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function proxy(request: NextRequest) {
+  // Handle Supabase PKCE redirect (e.g., password reset)
+  // If the URL has a ?code= parameter, forward to the callback route
+  // so the session is properly set before the page renders.
+  if (request.nextUrl.searchParams.has('code') && !request.nextUrl.pathname.startsWith('/api/auth/callback')) {
+    const callbackUrl = new URL('/api/auth/callback', request.url)
+    callbackUrl.searchParams.set('code', request.nextUrl.searchParams.get('code')!)
+    callbackUrl.searchParams.set('redirect_to', '/reset-password')
+    return NextResponse.redirect(callbackUrl)
+  }
+
   const { response, user } = await updateSession(request)
 
   // Protected routes require authentication

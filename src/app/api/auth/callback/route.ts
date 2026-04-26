@@ -28,8 +28,14 @@ export async function GET(request: NextRequest) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
+  // When forwarded from the proxy (code detected without callback path),
+  // use the explicit redirect_to parameter instead of guessing the type.
+  const explicitRedirect = searchParams.get('redirect_to')
+
   let redirectTo: string
-  if (type === 'recovery') {
+  if (explicitRedirect) {
+    redirectTo = `${siteUrl}${explicitRedirect.startsWith('/') ? explicitRedirect : `/${explicitRedirect}`}`
+  } else if (type === 'recovery') {
     redirectTo = `${siteUrl}/reset-password`
   } else {
     const next = searchParams.get('next')
