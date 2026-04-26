@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { getPublishedPosts } from '@/lib/db/queries'
+import { SiteHero } from '@/components/blog/site-hero'
 
 export const metadata = {
   title: '网站地图',
@@ -23,7 +24,7 @@ export default async function SitemapPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">网站地图</h1>
+      <SiteHero />
 
       <div className="space-y-6">
         <section>

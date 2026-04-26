@@ -402,6 +402,14 @@ export async function getSiteLikesCount() {
   return { count: count ?? 0, error: error?.message ?? null }
 }
 
+export async function getTotalPostsCount() {
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+  return { count: count ?? 0, error: error?.message ?? null }
+}
+
 export async function getAllUsers() {
   const { createAdminClient } = await import('@/lib/supabase/admin')
   const supabase = createAdminClient()
