@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { getUserColor } from '@/lib/utils/colors'
+import { Avatar } from '@/components/ui/avatar'
 
 interface AuthorData {
   id: string
   email: string
   displayName: string
+  avatarUrl: string | null
   createdAt: string
   lastSignIn: string | null
   isActive: boolean
@@ -77,6 +79,12 @@ export function AuthorListClient({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  <Avatar
+                    avatarUrl={user.avatarUrl}
+                    displayName={user.displayName}
+                    userId={user.id}
+                    size="sm"
+                  />
                   <div>
                     <span
                       className="font-semibold text-base"

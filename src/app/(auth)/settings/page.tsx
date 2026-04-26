@@ -14,6 +14,7 @@ export default async function SettingsPage() {
 
   const { data: settings } = await getUserSettings(user.id)
   const displayName = settings?.display_name ?? user.email?.split('@')[0] ?? ''
+  const avatarUrl = settings?.avatar_url ?? null
 
   return (
     <div className="space-y-6">
@@ -21,6 +22,7 @@ export default async function SettingsPage() {
       <SettingsForm
         user={user}
         displayName={displayName}
+        avatarUrl={avatarUrl}
       />
     </div>
   )

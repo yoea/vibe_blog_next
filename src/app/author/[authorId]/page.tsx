@@ -36,7 +36,7 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const { data: authorSettings } = await supabase
     .from('user_settings')
-    .select('display_name')
+    .select('display_name, avatar_url')
     .eq('user_id', authorId)
     .maybeSingle()
 
@@ -53,6 +53,7 @@ export default async function AuthorPage({ params }: PageProps) {
   }
 
   const authorName = authorSettings?.display_name ?? authorId.slice(0, 8)
+  const authorAvatarUrl = authorSettings?.avatar_url ?? null
 
   // Fetch current user and posts in parallel
   const [{ data: { user: currentUser } }, { data: posts, error }] = await Promise.all([
@@ -89,7 +90,7 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const postsWithAuthor = posts.map((p: any) => ({
     ...p,
-    author: { email: null, name: authorName },
+    author: { email: null, name: authorName, avatar_url: authorAvatarUrl },
     like_count: p.like_count?.[0]?.count ?? 0,
     comment_count: p.comment_count?.[0]?.count ?? 0,
     is_liked_by_current_user: likedPostIds.has(p.id),
@@ -112,6 +113,7 @@ export default async function AuthorPage({ params }: PageProps) {
       <AuthorCard
         userId={authorId}
         displayName={authorName}
+        avatarUrl={authorAvatarUrl}
         stats={[
           { icon: <Calendar className="h-3 w-3" />, label: `注册 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
           { icon: <FileText className="h-3 w-3" />, label: `${postsWithAuthor.length} 篇文章` },

@@ -3,10 +3,7 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(npx tsc *)",
-      "Bash(npm ls *)",
-      "Bash(git add *)"
+      "Bash(git log:*)"
     ],
     "deny": [
       "Bash(rm -rf *)",

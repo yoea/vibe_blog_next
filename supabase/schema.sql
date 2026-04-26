@@ -52,6 +52,7 @@ create table if not exists user_settings (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade unique not null,
   display_name varchar(100),
+  avatar_url text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -269,3 +270,36 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ============================================
+-- Avatar Storage Bucket & RLS
+-- ============================================
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 20971520, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+create policy "avatars_public_read"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+create policy "avatars_owner_insert"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'avatars'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "avatars_owner_update"
+  on storage.objects for update
+  using (
+    bucket_id = 'avatars'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "avatars_owner_delete"
+  on storage.objects for delete
+  using (
+    bucket_id = 'avatars'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );

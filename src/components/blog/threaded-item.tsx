@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { MessageCircle, Trash2 } from 'lucide-react'
 import { getUserColor } from '@/lib/utils/colors'
 import { formatTimeAgo } from '@/lib/utils/time'
+import { Avatar } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -54,10 +55,18 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
 
   const isReplyActive = replyTarget === item.id
   const displayName = item.author?.display_name ?? item.author_email?.split('@')[0] ?? '匿名用户'
+  const avatarUrl = (item.author as any)?.avatar_url ?? null
 
   return (
     <>
       <div className="flex gap-3 pb-3">
+        <Avatar
+          avatarUrl={avatarUrl}
+          displayName={displayName}
+          userId={item.author_id}
+          size="xs"
+          className="mt-0.5"
+        />
         <div className="flex-1 space-y-1 min-w-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <Link

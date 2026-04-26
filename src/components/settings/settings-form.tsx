@@ -23,13 +23,15 @@ import { toast } from 'sonner'
 import { Sun, Moon, Monitor, Heart } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
+import { AvatarUploader } from './avatar-uploader'
 
 interface Props {
   user: User
   displayName: string
+  avatarUrl: string | null
 }
 
-export function SettingsForm({ user, displayName }: Props) {
+export function SettingsForm({ user, displayName, avatarUrl }: Props) {
   const [name, setName] = useState(displayName)
   const [error, setError] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -93,6 +95,12 @@ export function SettingsForm({ user, displayName }: Props) {
           <CardTitle>个人信息</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <AvatarUploader
+            userId={user.id}
+            displayName={displayName}
+            currentAvatarUrl={avatarUrl}
+          />
+          <Separator />
           <div className="space-y-2 text-sm">
             <InfoRow label="用户 ID" value={user.id} />
             <InfoRow label="邮箱" value={user.email ?? '-'} verified={!!user.email_confirmed_at} />
@@ -108,24 +116,52 @@ export function SettingsForm({ user, displayName }: Props) {
               onChange={(e) => setName(e.target.value)}
               placeholder="邮箱前缀"
               maxLength={8}
+              className="w-full sm:max-w-60"
             />
             <p className="text-xs text-muted-foreground">
               留空则默认使用邮箱前缀，最多 8 个字符
             </p>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button onClick={handleSave} className="mt-2">保存设置</Button>
-          </div>
-            <Separator />
-          <div>
-            <DonateButton>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Heart className="h-4 w-4 mr-1.5 text-red-500" />
-                给网站作者充电
-              </Button>
-            </DonateButton>
-            <p className="text-xs text-muted-foreground mt-1">如果这个网站对你有帮助，可以请作者喝杯咖啡</p>
+            <Button onClick={handleSave} className="mt-2">保存昵称</Button>
           </div>
 
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>账户操作</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div>
+            <Button variant="outline" onClick={() => setShowResetConfirm(true)} className="w-full sm:w-auto">重置密码</Button>
+            <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱，按指示重置密码。</p>
+            </div>
+
+            <div>
+            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto">注销账号</Button>
+            <p className="text-xs text-muted-foreground mt-1">注销后你的文章和评论将被保留，仅用户信息匿名化</p>
+            </div>
+              <Separator />
+            <div>
+            <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">退出登录</Button>
+            <p className="text-xs text-muted-foreground mt-1">退出登录后，你将返回主页</p>
+            </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>支持</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DonateButton>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Heart className="h-4 w-4 mr-1.5 text-red-500" />
+              给网站作者充电
+            </Button>
+          </DonateButton>
+          <p className="text-xs text-muted-foreground mt-2">如果这个网站对你有帮助，可以请作者喝杯咖啡</p>
         </CardContent>
       </Card>
 
@@ -154,28 +190,6 @@ export function SettingsForm({ user, displayName }: Props) {
               )
             })}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>账户操作</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div>
-            <Button variant="outline" onClick={() => setShowResetConfirm(true)} className="w-full sm:w-auto">重置密码</Button>
-            <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱，按指示重置密码。</p>
-            </div>
-
-            <div>
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto">注销账号</Button>
-            <p className="text-xs text-muted-foreground mt-1">注销后你的文章和评论将被保留，仅用户信息匿名化</p>
-            </div>
-              <Separator />
-            <div>
-            <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">退出登录</Button>
-            <p className="text-xs text-muted-foreground mt-1">退出登录后，你将返回主页</p>
-            </div>
         </CardContent>
       </Card>
 

@@ -26,13 +26,16 @@ export async function getPublishedPosts(page = 1, limit = 10) {
   const authorIds = [...new Set(data.map((item: any) => item.author_id))]
   const { data: userSettings } = await supabase
     .from('user_settings')
-    .select('user_id, display_name')
+    .select('user_id, display_name, avatar_url')
     .in('user_id', authorIds)
-  const nameMap = new Map((userSettings ?? []).map((s) => [s.user_id, s.display_name]))
+  const authorMap = new Map((userSettings ?? []).map((s) => [s.user_id, { name: s.display_name, avatar_url: s.avatar_url ?? null }]))
 
   const result = data.map((item: any) => ({
     ...item,
-    author: { name: nameMap.get(item.author_id) ?? item.author_id?.slice(0, 8) },
+    author: {
+      name: authorMap.get(item.author_id)?.name ?? item.author_id?.slice(0, 8),
+      avatar_url: authorMap.get(item.author_id)?.avatar_url ?? null,
+    },
     like_count: item.like_count?.[0]?.count ?? 0,
     comment_count: item.comment_count?.[0]?.count ?? 0,
   })) as unknown as PostWithAuthor[]
@@ -59,7 +62,7 @@ export async function getPostBySlug(slug: string) {
 
   // Fetch author settings, like count, comment count, and user/IP like check in parallel
   const [authorSettingsResult, { count: likeCount }, commentCountResult, userLikeResult] = await Promise.all([
-    supabase.from('user_settings').select('display_name').eq('user_id', post.author_id).maybeSingle(),
+    supabase.from('user_settings').select('display_name, avatar_url').eq('user_id', post.author_id).maybeSingle(),
     supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id),
     supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id),
     // For authenticated users, check their like
@@ -93,6 +96,7 @@ export async function getPostBySlug(slug: string) {
     author: {
       email: null,
       name: authorSettingsResult.data?.display_name ?? null,
+      avatar_url: authorSettingsResult.data?.avatar_url ?? null,
     },
     like_count: likeCount ?? 0,
     comment_count: commentCount,
@@ -159,7 +163,7 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
   // Fetch author display names and comment likes in parallel
   const commentIds = allComments.map((c) => c.id)
   const authorIds = [...new Set(allComments.map((c) => c.author_id))]
-  const settingsMap = new Map<string, string>()
+  const settingsMap = new Map<string, { display_name: string | null; avatar_url: string | null }>()
   const likeCountMap = new Map<string, number>()
   const userLikedMap = new Map<string, boolean>()
 
@@ -168,11 +172,11 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
       if (authorIds.length === 0) return
       const { data: settings } = await supabase
         .from('user_settings')
-        .select('user_id, display_name')
+        .select('user_id, display_name, avatar_url')
         .in('user_id', authorIds)
       if (settings) {
         for (const s of settings) {
-          if (s.display_name) settingsMap.set(s.user_id, s.display_name)
+          settingsMap.set(s.user_id, { display_name: s.display_name ?? null, avatar_url: s.avatar_url ?? null })
         }
       }
     })(),
@@ -199,7 +203,8 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
     author_email: item.author_email ?? null,
     author: {
       email: null,
-      display_name: settingsMap.get(item.author_id) ?? null,
+      display_name: settingsMap.get(item.author_id)?.display_name ?? null,
+      avatar_url: settingsMap.get(item.author_id)?.avatar_url ?? null,
     },
     like_count: likeCountMap.get(item.id) ?? 0,
     is_liked: userLikedMap.has(item.id),
@@ -294,15 +299,15 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
 
   // Fetch author display names
   const authorIds = [...new Set(allMessages.map((m) => m.author_id))]
-  const settingsMap = new Map<string, string>()
+  const settingsMap = new Map<string, { display_name: string | null; avatar_url: string | null }>()
   if (authorIds.length > 0) {
     const { data: settings } = await supabase
       .from('user_settings')
-      .select('user_id, display_name')
+      .select('user_id, display_name, avatar_url')
       .in('user_id', authorIds)
     if (settings) {
       for (const s of settings) {
-        if (s.display_name) settingsMap.set(s.user_id, s.display_name)
+        settingsMap.set(s.user_id, { display_name: s.display_name ?? null, avatar_url: s.avatar_url ?? null })
       }
     }
   }
@@ -311,7 +316,10 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
     ...m,
     parent_id: m.parent_id ?? null,
     author_email: m.author_email ?? null,
-    author: { display_name: settingsMap.get(m.author_id) ?? null },
+    author: {
+      display_name: settingsMap.get(m.author_id)?.display_name ?? null,
+      avatar_url: settingsMap.get(m.author_id)?.avatar_url ?? null,
+    },
     replies: [],
   })
 
@@ -420,17 +428,17 @@ export async function getAllUsers(page = 1, limit = 20) {
 
   // Fetch display names from user_settings
   const userIds = users.map((u) => u.id)
-  const settingsMap = new Map<string, string>()
+  const settingsMap = new Map<string, { display_name: string; avatar_url: string | null }>()
   const postCountMap = new Map<string, number>()
   if (userIds.length > 0) {
     const db = await createClient()
     const { data: settings } = await db
       .from('user_settings')
-      .select('user_id, display_name, updated_at')
+      .select('user_id, display_name, avatar_url, updated_at')
       .in('user_id', userIds)
     if (settings) {
       for (const s of settings) {
-        settingsMap.set(s.user_id, s.display_name ?? '')
+        settingsMap.set(s.user_id, { display_name: s.display_name ?? '', avatar_url: s.avatar_url ?? null })
       }
     }
 
@@ -450,12 +458,15 @@ export async function getAllUsers(page = 1, limit = 20) {
 
   return {
     data: users.map((u) => {
-      const displayName = settingsMap.get(u.id) || u.email?.split('@')[0] || ''
+      const s = settingsMap.get(u.id)
+      const displayName = s?.display_name || u.email?.split('@')[0] || ''
+      const avatarUrl = s?.avatar_url ?? null
       const isDeleted = displayName === '已注销用户'
       return {
         id: u.id,
         email: u.email ?? '',
         displayName,
+        avatarUrl,
         createdAt: u.created_at,
         lastSignIn: u.last_sign_in_at ?? null,
         isActive: !isDeleted && u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() > oneMonthAgo : false,

@@ -36,7 +36,7 @@ export async function createComment(postId: string, content: string, parentId?: 
 
   const { data: settings } = await supabase
     .from('user_settings')
-    .select('display_name')
+    .select('display_name, avatar_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -45,7 +45,7 @@ export async function createComment(postId: string, content: string, parentId?: 
       ...comment,
       parent_id: comment.parent_id ?? null,
       author_email: user.email,
-      author: { email: user.email, display_name: settings?.display_name ?? null },
+      author: { email: user.email, display_name: settings?.display_name ?? null, avatar_url: settings?.avatar_url ?? null },
       like_count: 0,
       is_liked: false,
       replies: [],

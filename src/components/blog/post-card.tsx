@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock, User } from 'lucide-react'
+import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
@@ -17,6 +17,8 @@ import {
 import { deletePost } from '@/lib/actions/post-actions'
 import { toast } from 'sonner'
 
+import { Avatar } from '@/components/ui/avatar'
+
 interface PostCardData {
   id: string
   author_id: string
@@ -27,7 +29,7 @@ interface PostCardData {
   excerpt?: string | null
   like_count?: number
   comment_count?: number
-  author?: { email?: string | null; name?: string | null } | null
+  author?: { email?: string | null; name?: string | null; avatar_url?: string | null } | null
 }
 
 export function PostCard({ post, showActions }: { post: PostCardData; showActions?: boolean }) {
@@ -67,8 +69,13 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
         {post.comment_count ?? 0}
       </span>
       {post.author?.name && post.author_id && (
-        <Link href={`/author/${post.author_id}`} className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
-          <User className="h-3 w-3" />
+        <Link href={`/author/${post.author_id}`} className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
+          <Avatar
+            avatarUrl={(post.author as any).avatar_url ?? null}
+            displayName={post.author.name}
+            userId={post.author_id}
+            size="xs"
+          />
           {post.author.name}
         </Link>
       )}

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { getUserColor } from '@/lib/utils/colors'
+import { Avatar } from '@/components/ui/avatar'
 
 interface StatItem {
   icon: ReactNode
@@ -10,22 +10,24 @@ interface StatItem {
 export function AuthorCard({
   userId,
   displayName,
+  avatarUrl,
   stats = [],
   actions,
 }: {
   userId: string
   displayName: string
+  avatarUrl?: string | null
   stats?: StatItem[]
   actions?: ReactNode
 }) {
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
-      <div
-        className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white shrink-0"
-        style={{ backgroundColor: getUserColor(userId) }}
-      >
-        {displayName?.charAt(0) ?? '?'}
-      </div>
+      <Avatar
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        userId={userId}
+        size="lg"
+      />
       <div className="space-y-1 flex-1">
         <div className="flex items-center justify-between">
           <div>

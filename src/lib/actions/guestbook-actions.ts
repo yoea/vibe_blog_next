@@ -30,7 +30,7 @@ export async function createGuestbookMessage(toAuthorId: string, content: string
 
   const { data: settings } = await supabase
     .from('user_settings')
-    .select('display_name')
+    .select('display_name, avatar_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -41,7 +41,7 @@ export async function createGuestbookMessage(toAuthorId: string, content: string
       ...message,
       parent_id: message.parent_id ?? null,
       author_email: user.email,
-      author: { display_name: settings?.display_name ?? null },
+      author: { display_name: settings?.display_name ?? null, avatar_url: settings?.avatar_url ?? null },
       replies: [],
     },
   }

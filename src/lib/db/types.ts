@@ -11,7 +11,7 @@ export interface Post {
 }
 
 export interface PostWithAuthor extends Post {
-  author: { email: string | null; name: string | null }
+  author: { email: string | null; name: string | null; avatar_url: string | null }
   like_count: number
   comment_count: number
   is_liked_by_current_user: boolean
@@ -29,7 +29,7 @@ export interface Comment {
 
 export interface CommentWithAuthor extends Comment {
   author_email: string | null
-  author: { email: string | null; display_name: string | null }
+  author: { email: string | null; display_name: string | null; avatar_url: string | null }
   replies?: CommentWithAuthor[]
   like_count: number
   is_liked: boolean
@@ -47,7 +47,7 @@ export interface ThreadedItemBase {
   content: string
   created_at: string
   author_email: string | null
-  author: { display_name: string | null }
+  author: { display_name: string | null; avatar_url: string | null }
 }
 
 export interface GuestbookMessage {
@@ -61,7 +61,7 @@ export interface GuestbookMessage {
 
 export interface GuestbookMessageWithAuthor extends GuestbookMessage {
   author_email: string | null
-  author: { display_name: string | null }
+  author: { display_name: string | null; avatar_url: string | null }
   replies?: GuestbookMessageWithAuthor[]
 }
 

@@ -2,9 +2,10 @@ import { getPostBySlug, getCommentsForPost } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
 import { MarkdownPreview } from '@/components/shared/markdown-preview'
 import { PostInteraction } from '@/components/blog/post-interaction'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ArrowLeft, Edit2, User } from 'lucide-react'
+import { ArrowLeft, Edit2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { formatTimeAgo } from '@/lib/utils/time'
 import { createClient } from '@/lib/supabase/server'
@@ -52,9 +53,14 @@ export default async function PostPage({ params }: PageProps) {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               {post.author && (
-                <Link href={`/author/${post.author_id}`} className="flex items-center gap-1 font-medium hover:text-foreground transition-colors">
-                  <User className="h-3.5 w-3.5" />
-                  {post.author.name ?? post.author.email?.split('@')[0] ?? '作者'}
+                <Link href={`/author/${post.author_id}`} className="flex items-center gap-1.5 font-medium hover:text-foreground transition-colors">
+                  <Avatar
+                    avatarUrl={post.author.avatar_url ?? null}
+                    displayName={post.author.name ?? post.author.email?.split('@')[0] ?? '作者'}
+                    userId={post.author_id}
+                    size="xs"
+                  />
+                  <span>{post.author.name ?? post.author.email?.split('@')[0] ?? '作者'}</span>
                 </Link>
               )}
               <span className="text-[9px]">{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
