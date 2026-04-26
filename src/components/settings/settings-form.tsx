@@ -20,17 +20,15 @@ interface Props {
 export function SettingsForm({ user, displayName }: Props) {
   const [name, setName] = useState(displayName)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const router = useRouter()
 
   const handleSave = async () => {
     setError('')
-    setSuccess('')
     const res = await updateUserSettings(name)
     if (res.error) {
       setError(res.error)
     } else {
-      setSuccess('保存成功')
+      toast.success('保存成功')
       router.refresh()
     }
   }
@@ -65,6 +63,8 @@ export function SettingsForm({ user, displayName }: Props) {
             <p className="text-xs text-muted-foreground">
               留空则默认使用邮箱前缀
             </p>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button onClick={handleSave} className="mt-2">保存设置</Button>
           </div>
           <Separator />
           <div className="space-y-2">
@@ -77,35 +77,29 @@ export function SettingsForm({ user, displayName }: Props) {
           <Separator />
           <div className="space-y-2 text-sm">
             <InfoRow label="用户 ID" value={user.id} />
-            <InfoRow label="邮箱" value={user.email ?? '-'} />
-            <InfoRow label="邮箱已验证" value={user.email_confirmed_at ? '是' : '否'} />
-            <InfoRow label="手机号" value={user.phone ?? '未绑定'} />
-            <InfoRow label="手机已验证" value={user.phone_confirmed_at ? '是' : '否'} />
+            <InfoRow label="邮箱" value={user.email ?? '-'} verified={!!user.email_confirmed_at} />
+            <InfoRow label="手机号" value={user.phone || '未设置'} verified={!!user.phone_confirmed_at} />
             <InfoRow label="最后登录" value={formatDate(user.last_sign_in_at)} />
             <InfoRow label="注册时间" value={formatDate(user.created_at)} />
-            <InfoRow label="角色" value={user.role ?? 'authenticated'} />
-            <InfoRow label="邮箱提供商" value={user.app_metadata?.provider ?? '-'} />
-            <InfoRow
-              label="提供商"
-              value={user.app_metadata?.providers?.join(', ') ?? '-'}
-            />
           </div>
         </CardContent>
       </Card>
-
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      {success && <p className="text-sm text-green-600">{success}</p>}
-
-      <Button onClick={handleSave}>保存设置</Button>
     </div>
   )
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, verified }: { label: string; value: string; verified?: boolean }) {
   return (
-    <div className="flex justify-between items-center py-1">
+    <div className="py-1">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-xs max-w-[50%] sm:max-w-[60%] break-all text-right">{value}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-xs break-all">{value}</span>
+        {verified !== undefined && (
+          verified
+            ? <span className="inline-flex items-center gap-0.5 text-xs text-green-600 shrink-0"><span className="text-green-500"> ✓</span>已验证</span>
+            : <span className="inline-flex items-center gap-0.5 text-xs text-orange-500 shrink-0"><span> ⚠</span>未验证</span>
+        )}
+      </div>
     </div>
   )
 }
