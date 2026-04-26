@@ -1,6 +1,7 @@
 import { getPostsByAuthor } from '@/lib/db/queries'
 import { createClient } from '@/lib/supabase/server'
-import { PostCard } from '@/components/blog/post-card'
+import { PostListClient } from '@/components/blog/post-list-client'
+import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import Link from 'next/link'
 
 export default async function MyPostsPage() {
@@ -9,11 +10,7 @@ export default async function MyPostsPage() {
 
   if (!user) return null
 
-  const { data: posts, error } = await getPostsByAuthor(user.id)
-
-  if (error) {
-    return <p className="text-destructive">加载失败: {error}</p>
-  }
+  const { data: posts, count, error } = await getPostsByAuthor(user.id, 1, 10)
 
   return (
     <div className="space-y-6">
@@ -24,17 +21,16 @@ export default async function MyPostsPage() {
         </Link>
       </div>
 
-      {!posts.length ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <p className="text-lg mb-2">还没有文章</p>
-          <p className="text-sm">点击右上角按钮开始写作</p>
-        </div>
+      {error ? (
+        <p className="text-destructive">加载失败: {error}</p>
       ) : (
-        <div className="grid gap-4">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} showActions />
-          ))}
-        </div>
+        <PostListClient
+          initialPosts={posts ?? []}
+          initialTotal={count ?? 0}
+          showActions
+          onLoadMore={loadMoreMyPosts}
+          loadedAllText="已加载全部文章"
+        />
       )}
     </div>
   )

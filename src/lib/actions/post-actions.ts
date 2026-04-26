@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getPublishedPosts, getPostsByAuthor } from '@/lib/db/queries'
 
 interface Result {
   error?: string
@@ -61,4 +62,16 @@ export async function deletePost(postId: string): Promise<Result> {
   revalidatePath('/')
   revalidatePath('/my-posts')
   return {}
+}
+
+export async function loadMorePublishedPosts(page: number) {
+  return await getPublishedPosts(page, 10)
+}
+
+export async function loadMoreMyPosts(page: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { data: [], count: 0, error: '未登录' }
+
+  return await getPostsByAuthor(user.id, page, 10)
 }

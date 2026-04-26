@@ -346,25 +346,29 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
   return { data: result, total: total ?? 0, fullTotal: fullTotal ?? 0, error: null }
 }
 
-export async function getPostsByAuthor(authorId: string) {
+export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, error, count } = await supabase
     .from('posts')
     .select(`
       *,
       like_count:post_likes(count),
       comment_count:post_comments(count)
-    `)
+    `, { count: 'exact' })
     .eq('author_id', authorId)
     .order('created_at', { ascending: false })
+    .range(from, to)
 
-  if (error) return { data: [], error: error.message }
+  if (error) return { data: [], count: 0, error: error.message }
   const mapped = (data ?? []).map((p: any) => ({
     ...p,
     like_count: p.like_count?.[0]?.count ?? 0,
     comment_count: p.comment_count?.[0]?.count ?? 0,
   }))
-  return { data: mapped, error: null }
+  return { data: mapped, count, error: null }
 }
 
 export async function getUserSettings() {
