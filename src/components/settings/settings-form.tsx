@@ -32,7 +32,9 @@ export function SettingsForm({ user, displayName }: Props) {
   const [name, setName] = useState(displayName)
   const [error, setError] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [resettingPassword, setResettingPassword] = useState(false)
   const { mode, setMode } = useTheme()
   const router = useRouter()
 
@@ -67,7 +69,9 @@ export function SettingsForm({ user, displayName }: Props) {
   }
 
   const handleResetPassword = async () => {
+    setResettingPassword(true)
     const res = await resetPasswordForEmail()
+    setResettingPassword(false)
     if (res.error) {
       toast.error(res.error)
     } else {
@@ -145,7 +149,7 @@ export function SettingsForm({ user, displayName }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
             <div>
-            <Button variant="outline" onClick={handleResetPassword} className="w-full sm:w-auto">重置密码</Button>
+            <Button variant="outline" onClick={() => setShowResetConfirm(true)} className="w-full sm:w-auto">重置密码</Button>
             <p className="text-xs text-muted-foreground mt-1">发送密码重置邮件到你的注册邮箱，请在邮件中完成新密码的设置</p>
             </div>
 
@@ -173,6 +177,33 @@ export function SettingsForm({ user, displayName }: Props) {
             <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={deletingAccount}>取消</Button>
             <Button variant="destructive" onClick={handleDeleteAccount} disabled={deletingAccount}>
               {deletingAccount ? '注销中...' : '确认注销'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>重置密码</DialogTitle>
+            <DialogDescription>
+              将向以下账户发送密码重置邮件，确认继续？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2 text-sm">
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-muted-foreground">昵称</span>
+              <span className="font-medium">{displayName || user.email?.split('@')[0] || '-'}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-muted-foreground">邮箱</span>
+              <span className="font-mono text-xs">{user.email ?? '-'}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetConfirm(false)} disabled={resettingPassword}>取消</Button>
+            <Button onClick={handleResetPassword} disabled={resettingPassword}>
+              {resettingPassword ? '发送中...' : '确认发送'}
             </Button>
           </DialogFooter>
         </DialogContent>
