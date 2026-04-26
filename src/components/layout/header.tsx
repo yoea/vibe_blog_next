@@ -68,24 +68,24 @@ export function Header({ siteTitle }: { siteTitle: string }) {
     <header className="border-b bg-background relative">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src="/logo.svg" alt="" className="h-6 w-6" />
+          <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
           <span className="font-bold text-lg">{siteTitle}</span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-2">
           {navLinks}
-          <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel}>
+          <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel} aria-label={themeLabel}>
             <ThemeIcon className="h-4 w-4" />
           </button>
         </nav>
 
         {/* Mobile buttons */}
         <div className="flex items-center gap-1 sm:hidden">
-          <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel}>
+          <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel} aria-label={themeLabel}>
             <ThemeIcon className="h-4 w-4" />
           </button>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label={menuOpen ? '关闭菜单' : '打开菜单'}>
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>

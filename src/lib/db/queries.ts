@@ -369,19 +369,19 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
   return { data: mapped, count, error: null }
 }
 
-export async function getUserSettings() {
+export async function getUserSettings(userId?: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { data: null, error: '未登录' }
+  const uid = userId ?? (await supabase.auth.getUser()).data.user?.id
+  if (!uid) return { data: null, error: '未登录' }
 
   const { data, error } = await supabase
     .from('user_settings')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .maybeSingle()
 
   if (error) return { data: null, error: error.message }
-  return { data: { ...data, email: user.email, created_at: user.created_at }, error: null }
+  return { data, error: null }
 }
 
 export async function getSiteViewsCount() {

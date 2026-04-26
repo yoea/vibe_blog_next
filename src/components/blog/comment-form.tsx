@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -22,6 +22,11 @@ export function CommentForm({
   const [comment, setComment] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [isMac, setIsMac] = useState(false)
+
+  useEffect(() => {
+    setIsMac(navigator.platform.includes('Mac'))
+  }, [])
 
   const handleSubmit = async (e?: { preventDefault?: () => void }) => {
     e?.preventDefault?.()
@@ -67,7 +72,7 @@ export function CommentForm({
           <p className="text-sm text-destructive">{error}</p>
         ) : (
           <p className="text-xs text-muted-foreground">
-            键入评论后按 {typeof window !== 'undefined' && navigator.platform.includes('Mac') ? 'Cmd' : 'Ctrl'}+Enter 发送
+            键入评论后按 {isMac ? 'Cmd' : 'Ctrl'}+Enter 发送
           </p>
         )}
         <div className="flex items-center gap-2">

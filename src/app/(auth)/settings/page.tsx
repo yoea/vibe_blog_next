@@ -12,7 +12,7 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?redirect=/settings')
 
-  const { data: settings } = await getUserSettings()
+  const { data: settings } = await getUserSettings(user.id)
   const displayName = settings?.display_name ?? user.email?.split('@')[0] ?? ''
 
   return (

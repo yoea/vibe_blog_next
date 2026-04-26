@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Handle Supabase PKCE redirect (e.g., password reset)
   // If the URL has a ?code= parameter, forward to the callback route
   // so the session is properly set before the page renders.

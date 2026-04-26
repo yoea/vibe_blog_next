@@ -252,3 +252,20 @@ create trigger update_comments_updated_at
 create trigger update_user_settings_updated_at
   before update on user_settings for each row
   execute function update_updated_at_column();
+
+-- ============================================
+-- Auto-create user_settings on registration
+-- ============================================
+
+create function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.user_settings (user_id, display_name)
+  values (new.id, split_part(new.email, '@', 1));
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
