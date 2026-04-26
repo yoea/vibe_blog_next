@@ -1,11 +1,11 @@
 import { getPostsByAuthor } from '@/lib/db/queries'
 import { createClient } from '@/lib/supabase/server'
+import { AuthorCard } from '@/components/blog/author-card'
 import { PostListClient } from '@/components/blog/post-list-client'
 import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import Link from 'next/link'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { ArrowLeft, Calendar, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getUserColor } from '@/lib/utils/colors'
 import { formatDaysAgo } from '@/lib/utils/time'
 
 export default async function MyPostsPage() {
@@ -35,34 +35,19 @@ export default async function MyPostsPage() {
         </Link>
       </Button>
 
-      <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
-        <div
-          className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white shrink-0"
-          style={{ backgroundColor: getUserColor(user.id) }}
-        >
-          {authorName[0]}
-        </div>
-        <div className="space-y-1 flex-1">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">{authorName}</h1>
-            <Link href="/posts/new">
-              <Button size="sm">写新文章</Button>
-            </Link>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            {createdAt && (
-              <span className="flex items-center gap-1">
-                <FileText className="h-3 w-3" />
-                加入 {formatDaysAgo(createdAt)}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <FileText className="h-3 w-3" />
-              {count ?? 0} 篇文章
-            </span>
-          </div>
-        </div>
-      </div>
+      <AuthorCard
+        userId={user.id}
+        displayName={authorName}
+        stats={[
+          { icon: <Calendar className="h-3 w-3" />, label: `加入 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
+          { icon: <FileText className="h-3 w-3" />, label: `${count ?? 0} 篇文章` },
+        ]}
+        actions={
+          <Link href="/posts/new">
+            <Button size="sm">写新文章</Button>
+          </Link>
+        }
+      />
 
       {error ? (
         <p className="text-destructive">加载失败: {error}</p>

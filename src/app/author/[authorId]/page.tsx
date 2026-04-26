@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PostCard } from '@/components/blog/post-card'
+import { AuthorCard } from '@/components/blog/author-card'
 import { GuestbookSection } from '@/components/blog/guestbook-section'
 import { getGuestbookMessages } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
@@ -8,7 +9,6 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, FileText, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { getUserColor } from '@/lib/utils/colors'
 import { formatDaysAgo } from '@/lib/utils/time'
 import type { Metadata } from 'next'
 import type { PostWithAuthor } from '@/lib/db/types'
@@ -90,31 +90,15 @@ export default async function AuthorPage({ params }: PageProps) {
         </Link>
       </Button>
 
-      <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
-        <div
-          className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white shrink-0"
-          style={{ backgroundColor: getUserColor(authorId) }}
-        >
-          {(authorName ?? '?')[0]}
-        </div>
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold">{authorName ?? '作者'}</h1>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              注册 {createdAt ? formatDaysAgo(createdAt) : '-'}
-            </span>
-            <span className="flex items-center gap-1">
-              <FileText className="h-3 w-3" />
-              {postsWithAuthor.length} 篇文章
-            </span>
-            <a href="#guestbook" className="flex items-center gap-1 hover:text-foreground transition-colors">
-              <MessageCircle className="h-3 w-3" />
-              {guestbookTotal ?? 0} 条留言
-            </a>
-          </div>
-        </div>
-      </div>
+      <AuthorCard
+        userId={authorId}
+        displayName={authorName ?? '作者'}
+        stats={[
+          { icon: <Calendar className="h-3 w-3" />, label: `注册 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
+          { icon: <FileText className="h-3 w-3" />, label: `${postsWithAuthor.length} 篇文章` },
+          { icon: <MessageCircle className="h-3 w-3" />, label: `${guestbookTotal ?? 0} 条留言`, href: '#guestbook' },
+        ]}
+      />
 
       {postsWithAuthor.length > 0 ? (
         <div className="grid gap-4">
