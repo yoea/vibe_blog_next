@@ -55,16 +55,6 @@ create table if not exists user_settings (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
-
--- Site config table
-create table if not exists site_config (
-  id uuid default gen_random_uuid() primary key,
-  key varchar(100) unique not null,
-  value text not null,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
 -- Site views table
 create table if not exists site_views (
   id uuid default gen_random_uuid() primary key,
@@ -79,14 +69,9 @@ create table if not exists site_likes (
   liked_at timestamptz default now()
 );
 
--- Insert default site title if not exists
-insert into site_config (key, value)
-values ('site_title', 'Blog')
-on conflict (key) do nothing;
-
 -- Indexes
 create index idx_posts_author_id on posts(author_id);
-create index idx_posts_published on posts(published);
+create index idx_posts_published_created on posts(published, created_at desc);
 create index idx_posts_slug on posts(slug);
 create index idx_post_likes_post_id on post_likes(post_id);
 create index idx_post_likes_ip on post_likes(ip);
@@ -208,17 +193,6 @@ create policy "own_settings_insert"
 create policy "own_settings_update"
   on user_settings for update using (auth.uid() = user_id);
 
--- Site Config RLS
-alter table site_config enable row level security;
-
-create policy "site_config_select"
-  on site_config for select using (true);
-
-create policy "admin_site_config_update"
-  on site_config for update using (auth.uid() IN (
-    select author_id from posts where author_id = auth.uid()
-  ));
-
 -- Site Views RLS
 alter table site_views enable row level security;
 
@@ -277,8 +251,4 @@ create trigger update_comments_updated_at
 
 create trigger update_user_settings_updated_at
   before update on user_settings for each row
-  execute function update_updated_at_column();
-
-create trigger update_site_config_updated_at
-  before update on site_config for each row
   execute function update_updated_at_column();

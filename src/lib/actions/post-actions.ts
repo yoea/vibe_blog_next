@@ -2,13 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getPublishedPosts, getPostsByAuthor } from '@/lib/db/queries'
+import { getPublishedPosts, getPostsByAuthor, getAllUsers } from '@/lib/db/queries'
+import type { ActionResult } from '@/lib/db/types'
 
-interface Result {
-  error?: string
-}
-
-export async function savePost(formData: FormData): Promise<Result> {
+export async function savePost(formData: FormData): Promise<ActionResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
@@ -48,7 +45,7 @@ export async function savePost(formData: FormData): Promise<Result> {
   }
 }
 
-export async function deletePost(postId: string): Promise<Result> {
+export async function deletePost(postId: string): Promise<ActionResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
@@ -74,4 +71,8 @@ export async function loadMoreMyPosts(page: number) {
   if (!user) return { data: [], count: 0, error: '未登录' }
 
   return await getPostsByAuthor(user.id, page, 10)
+}
+
+export async function loadMoreAuthors(page: number) {
+  return await getAllUsers(page, 20)
 }

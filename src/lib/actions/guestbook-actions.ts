@@ -3,8 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { getGuestbookMessages } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
+import type { ActionResult } from '@/lib/db/types'
 
-export async function createGuestbookMessage(toAuthorId: string, content: string, parentId?: string): Promise<{ error?: string; data?: any }> {
+export async function createGuestbookMessage(toAuthorId: string, content: string, parentId?: string): Promise<ActionResult & { data?: any }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
@@ -46,7 +47,7 @@ export async function createGuestbookMessage(toAuthorId: string, content: string
   }
 }
 
-export async function deleteGuestbookMessage(messageId: string, toAuthorId: string): Promise<{ error?: string }> {
+export async function deleteGuestbookMessage(messageId: string, toAuthorId: string): Promise<ActionResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
@@ -70,7 +71,7 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
   return {}
 }
 
-export async function getMoreGuestbookMessages(toAuthorId: string, page: number): Promise<{ data?: any[]; total?: number; error?: string }> {
+export async function getMoreGuestbookMessages(toAuthorId: string, page: number): Promise<ActionResult & { data?: any[]; total?: number }> {
   const result = await getGuestbookMessages(toAuthorId, { page, pageSize: 10 })
   if (result.error) return { error: result.error }
   return { data: result.data, total: result.total }

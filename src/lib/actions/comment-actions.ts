@@ -3,13 +3,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCommentsForPost } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
+import type { ActionResult } from '@/lib/db/types'
 
 async function getPostSlug(supabase: any, postId: string): Promise<string | null> {
   const { data } = await supabase.from('posts').select('slug').eq('id', postId).single()
   return data?.slug ?? null
 }
 
-export async function createComment(postId: string, content: string, parentId?: string): Promise<{ error?: string; data?: any }> {
+export async function createComment(postId: string, content: string, parentId?: string): Promise<ActionResult & { data?: any }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
@@ -52,7 +53,7 @@ export async function createComment(postId: string, content: string, parentId?: 
   }
 }
 
-export async function deleteComment(commentId: string, postId: string): Promise<{ error?: string }> {
+export async function deleteComment(commentId: string, postId: string): Promise<ActionResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
@@ -89,7 +90,7 @@ export async function deleteComment(commentId: string, postId: string): Promise<
   return {}
 }
 
-export async function toggleCommentLike(commentId: string): Promise<{ liked?: boolean; error?: string }> {
+export async function toggleCommentLike(commentId: string): Promise<ActionResult & { liked?: boolean }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
@@ -118,7 +119,7 @@ export async function toggleCommentLike(commentId: string): Promise<{ liked?: bo
   }
 }
 
-export async function getMoreComments(postId: string, page: number): Promise<{ data?: any[]; total?: number; error?: string }> {
+export async function getMoreComments(postId: string, page: number): Promise<ActionResult & { data?: any[]; total?: number }> {
   const result = await getCommentsForPost(postId, { page, pageSize: 10 })
   if (result.error) return { error: result.error }
   return { data: result.data, total: result.total }

@@ -408,12 +408,15 @@ export async function getTotalPostsCount() {
   return { count: count ?? 0, error: error?.message ?? null }
 }
 
-export async function getAllUsers() {
+export async function getAllUsers(page = 1, limit = 20) {
   const { createAdminClient } = await import('@/lib/supabase/admin')
   const supabase = createAdminClient()
 
-  const { data: { users }, error } = await supabase.auth.admin.listUsers()
-  if (error) return { data: [], error: error.message }
+  const { data: { users }, error } = await supabase.auth.admin.listUsers({ page, perPage: limit })
+  if (error) return { data: [], count: 0, error: error.message }
+
+  // Estimate total count for pagination
+  const hasMore = users.length >= limit
 
   // Fetch display names from user_settings
   const userIds = users.map((u) => u.id)
@@ -465,6 +468,8 @@ export async function getAllUsers() {
       // Then sort by post count desc
       return b.postCount - a.postCount
     }),
+    count: users.length,
+    hasMore,
     error: null,
   }
 }

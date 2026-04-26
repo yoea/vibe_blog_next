@@ -64,3 +64,6 @@ export interface GuestbookMessageWithAuthor extends GuestbookMessage {
   author: { display_name: string | null }
   replies?: GuestbookMessageWithAuthor[]
 }
+
+/** Base result type for server actions — { error?: string } on failure, {} on success */
+export type ActionResult = { error?: string }

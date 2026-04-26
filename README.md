@@ -161,3 +161,13 @@ pm2 unstartup         # 关闭开机自启
 3. 在 **Redirect URLs** 中添加：`https://yourdomain.com/api/auth/callback`
 
 这样邮箱验证、密码重置等功能才能正常工作。
+
+todo:
+修复：
+1、设置页重复获取用户 — 页面调一次 getUser()，getUserSettings() 内部又调一次
+2、不存在与 user_settings 自动创建 — 注册后无 trigger 自动创建行 
+3、导航图标缺 aria-label — 移动端菜单和主题切换按钮
+4、logo 缺 alt 文本
+5、hydration 警告 — navigator.platform 服务端/客户端不一致
+6、proxy.ts 非标准命名 — Next.js 惯例是 middleware.ts 
+7、未使用的 shadcn 组件 — avatar, badge, skeleton, dropdown-menu │ src/components/ui/   

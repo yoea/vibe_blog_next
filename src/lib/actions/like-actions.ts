@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import type { ActionResult } from '@/lib/db/types'
 
 function getClientIp(): string {
   return (async () => {
@@ -13,7 +14,7 @@ function getClientIp(): string {
   })() as unknown as string
 }
 
-export async function toggleLike(postId: string, clientIp?: string): Promise<{ error?: string; likes?: number; isLiked?: boolean }> {
+export async function toggleLike(postId: string, clientIp?: string): Promise<ActionResult & { likes?: number; isLiked?: boolean }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

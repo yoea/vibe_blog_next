@@ -24,7 +24,7 @@ export function AuthorCard({
         className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold text-white shrink-0"
         style={{ backgroundColor: getUserColor(userId) }}
       >
-        {displayName[0]}
+        {displayName?.charAt(0) ?? '?'}
       </div>
       <div className="space-y-1 flex-1">
         <div className="flex items-center justify-between">

@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { ActionResult } from '@/lib/db/types'
 
-export async function updateUserSettings(displayName: string): Promise<{ error?: string }> {
+export async function updateUserSettings(displayName: string): Promise<ActionResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
