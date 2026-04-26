@@ -162,7 +162,7 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
 
   // Fetch author display names and comment likes in parallel
   const commentIds = allComments.map((c) => c.id)
-  const authorIds = [...new Set(allComments.map((c) => c.author_id))]
+  const authorIds = [...new Set(allComments.map((c) => c.author_id).filter(Boolean))]
   const settingsMap = new Map<string, { display_name: string | null; avatar_url: string | null }>()
   const likeCountMap = new Map<string, number>()
   const userLikedMap = new Map<string, boolean>()
@@ -201,11 +201,17 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
     ...item,
     parent_id: item.parent_id ?? null,
     author_email: item.author_email ?? null,
-    author: {
-      email: null,
-      display_name: settingsMap.get(item.author_id)?.display_name ?? null,
-      avatar_url: settingsMap.get(item.author_id)?.avatar_url ?? null,
-    },
+    author: item.author_id
+      ? {
+          email: null,
+          display_name: settingsMap.get(item.author_id)?.display_name ?? null,
+          avatar_url: settingsMap.get(item.author_id)?.avatar_url ?? null,
+        }
+      : {
+          email: null,
+          display_name: item.guest_name ?? '匿名游客',
+          avatar_url: null,
+        },
     like_count: likeCountMap.get(item.id) ?? 0,
     is_liked: userLikedMap.has(item.id),
     replies: [],
@@ -298,7 +304,7 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
   }
 
   // Fetch author display names
-  const authorIds = [...new Set(allMessages.map((m) => m.author_id))]
+  const authorIds = [...new Set(allMessages.map((m) => m.author_id).filter(Boolean))]
   const settingsMap = new Map<string, { display_name: string | null; avatar_url: string | null }>()
   if (authorIds.length > 0) {
     const { data: settings } = await supabase
@@ -316,10 +322,15 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
     ...m,
     parent_id: m.parent_id ?? null,
     author_email: m.author_email ?? null,
-    author: {
-      display_name: settingsMap.get(m.author_id)?.display_name ?? null,
-      avatar_url: settingsMap.get(m.author_id)?.avatar_url ?? null,
-    },
+    author: m.author_id
+      ? {
+          display_name: settingsMap.get(m.author_id)?.display_name ?? null,
+          avatar_url: settingsMap.get(m.author_id)?.avatar_url ?? null,
+        }
+      : {
+          display_name: m.guest_name ?? '匿名游客',
+          avatar_url: null,
+        },
     replies: [],
   })
 

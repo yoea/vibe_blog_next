@@ -68,6 +68,7 @@ export function GuestbookSection({
         postId={toAuthorId}
         onSubmit={handleSubmit}
         inputRef={inputRef}
+        currentUserId={currentUserId}
       />
 
       {messages.length > 0 && (

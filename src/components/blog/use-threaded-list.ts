@@ -11,7 +11,7 @@ interface ThreadedItem extends ThreadedItemBase {
 interface UseThreadedListOptions<T extends ThreadedItem> {
   initialItems: T[]
   initialTotal: number
-  onSubmit: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string; data?: T }>
+  onSubmit: (content: string, parentId?: string, guestName?: string) => Promise<{ success: boolean; error?: string; data?: T }>
   onDeleteItem: (id: string) => Promise<{ error?: string }>
   onLoadMore: (page: number) => Promise<{ data?: T[]; error?: string }>
   onCountChange?: (count: number) => void
@@ -35,8 +35,8 @@ export function useThreadedList<T extends ThreadedItem>({
 
   const hasMore = items.length < total
 
-  async function handleSubmit(content: string, parentId?: string) {
-    const result = await onSubmit(content, parentId)
+  async function handleSubmit(content: string, parentId?: string, guestName?: string) {
+    const result = await onSubmit(content, parentId, guestName)
     if (!result.error && result.data) {
       setReplyTarget(null)
       const newItem = result.data

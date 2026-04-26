@@ -1,6 +1,6 @@
 # Blog
 
-基于 Next.js 16 + Supabase 的个人博客系统。
+用Vibe Coding一个基于 Next.js 16 + Supabase 的个人博客系统。
 
 ## 功能特性
 

@@ -69,6 +69,7 @@ export function CommentSection({
         onSubmit={handleSubmit}
         replyTo={null}
         inputRef={inputRef}
+        currentUserId={currentUserId}
       />
 
       {comments.length > 0 && (

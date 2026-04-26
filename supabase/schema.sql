@@ -30,8 +30,10 @@ create table if not exists post_likes (
 create table if not exists post_comments (
   id uuid default gen_random_uuid() primary key,
   post_id uuid references posts(id) on delete cascade not null,
-  author_id uuid references auth.users(id) on delete cascade not null,
+  author_id uuid references auth.users(id) on delete cascade,
   author_email varchar(255),
+  guest_name varchar(100),
+  ip varchar(45),
   parent_id uuid references post_comments(id) on delete cascade,
   content text not null,
   created_at timestamptz default now(),
@@ -78,6 +80,7 @@ create index idx_post_likes_post_id on post_likes(post_id);
 create index idx_post_likes_ip on post_likes(ip);
 create index idx_post_comments_post_id on post_comments(post_id);
 create index idx_post_comments_parent_id on post_comments(parent_id);
+create index idx_post_comments_ip on post_comments(ip);
 create index idx_comment_likes_comment_id on comment_likes(comment_id);
 create index idx_comment_likes_user_id on comment_likes(user_id);
 create index idx_site_views_ip on site_views(ip);
@@ -85,13 +88,16 @@ create index idx_site_views_accessed on site_views(accessed_at);
 create index idx_site_likes_ip on site_likes(ip);
 create index idx_site_likes_liked on site_likes(liked_at);
 create index if not exists idx_guestbook_to_author on guestbook_messages(to_author_id, created_at desc);
+create index if not exists idx_guestbook_ip on guestbook_messages(ip);
 
 -- Guestbook messages table
 create table if not exists guestbook_messages (
   id uuid default gen_random_uuid() primary key,
   to_author_id uuid references auth.users(id) on delete cascade not null,
-  author_id uuid references auth.users(id) on delete cascade not null,
+  author_id uuid references auth.users(id) on delete cascade,
   author_email varchar(255),
+  guest_name varchar(100),
+  ip varchar(45),
   parent_id uuid references guestbook_messages(id) on delete cascade,
   content text not null,
   created_at timestamptz default now()
@@ -152,7 +158,14 @@ create policy "comments_select"
   on post_comments for select using (true);
 
 create policy "authenticated_comment"
-  on post_comments for insert with check (auth.uid() = author_id);
+  on post_comments for insert with check (
+    auth.role() = 'authenticated' and auth.uid() = author_id
+  );
+
+create policy "guest_comment"
+  on post_comments for insert with check (
+    auth.role() = 'anon' and author_id is null and guest_name is not null
+  );
 
 create policy "own_comment_update"
   on post_comments for update using (auth.uid() = author_id);
@@ -221,7 +234,16 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create policy "guestbook_insert" on guestbook_messages for insert with check (auth.uid() = author_id);
+  create policy "guestbook_insert" on guestbook_messages for insert with check (
+    auth.role() = 'authenticated' and auth.uid() = author_id
+  );
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "guestbook_guest_insert" on guestbook_messages for insert with check (
+    auth.role() = 'anon' and author_id is null and guest_name is not null
+  );
 exception when duplicate_object then null;
 end $$;
 

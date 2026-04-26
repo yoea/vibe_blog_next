@@ -12,14 +12,17 @@ export function CommentForm({
   replyTo,
   onCancelReply,
   inputRef,
+  currentUserId,
 }: {
   postId: string
-  onSubmit: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
+  onSubmit: (content: string, parentId?: string, guestName?: string) => Promise<{ success: boolean; error?: string }>
   replyTo?: { id: string; name: string } | null
   onCancelReply?: () => void
   inputRef?: React.RefObject<HTMLTextAreaElement | null>
+  currentUserId?: string | null
 }) {
   const [comment, setComment] = useState('')
+  const [guestName, setGuestName] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [isMac, setIsMac] = useState(false)
@@ -35,12 +38,13 @@ export function CommentForm({
 
     setSubmitting(true)
     setError('')
-    const result = await onSubmit(comment.trim(), replyTo?.id)
+    const result = await onSubmit(comment.trim(), replyTo?.id, !currentUserId ? (guestName.trim() || '匿名游客') : undefined)
     if (result.success) {
       setComment('')
+      setGuestName('')
       onCancelReply?.()
     } else {
-      setError(result.error === '未登录' ? '请先登录后再评论' : '评论失败，请重试')
+      setError(result.error || '操作失败，请重试')
     }
     setSubmitting(false)
   }
@@ -52,6 +56,16 @@ export function CommentForm({
           <span>回复 <strong>{replyTo.name}</strong></span>
           <button type="button" onClick={onCancelReply} className="text-primary hover:underline">取消回复</button>
         </div>
+      )}
+      {!currentUserId && !replyTo && (
+        <input
+          type="text"
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+          placeholder="输入昵称（可选）"
+          maxLength={50}
+          className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+        />
       )}
       <Textarea
         ref={inputRef}

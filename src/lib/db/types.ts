@@ -20,7 +20,7 @@ export interface PostWithAuthor extends Post {
 export interface Comment {
   id: string
   post_id: string
-  author_id: string
+  author_id: string | null
   parent_id: string | null
   content: string
   created_at: string
@@ -42,7 +42,7 @@ export interface AuthUser {
 
 export interface ThreadedItemBase {
   id: string
-  author_id: string
+  author_id: string | null
   parent_id: string | null
   content: string
   created_at: string
@@ -53,7 +53,7 @@ export interface ThreadedItemBase {
 export interface GuestbookMessage {
   id: string
   to_author_id: string
-  author_id: string
+  author_id: string | null
   parent_id: string | null
   content: string
   created_at: string

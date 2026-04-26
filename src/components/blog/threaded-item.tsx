@@ -54,29 +54,49 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
   const [showConfirm, setShowConfirm] = useState(false)
 
   const isReplyActive = replyTarget === item.id
-  const displayName = item.author?.display_name ?? item.author_email?.split('@')[0] ?? '匿名用户'
-  const avatarUrl = (item.author as any)?.avatar_url ?? null
+  const isGuest = !item.author_id
+  const displayName = isGuest
+    ? (item.author?.display_name ?? '匿名游客')
+    : (item.author?.display_name ?? item.author_email?.split('@')[0] ?? '匿名用户')
+  const avatarUrl = !isGuest ? (item.author as any)?.avatar_url ?? null : null
 
   return (
     <>
       <div className="flex gap-3 pb-3">
-        <Avatar
-          avatarUrl={avatarUrl}
-          displayName={displayName}
-          userId={item.author_id}
-          size="xs"
-          className="mt-0.5"
-          defer
-        />
+        {!isGuest ? (
+          <Avatar
+            avatarUrl={avatarUrl}
+            displayName={displayName}
+            userId={item.author_id!}
+            size="xs"
+            className="mt-0.5"
+            defer
+          />
+        ) : (
+          <div className="size-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground mt-0.5 shrink-0">
+            {displayName[0] ?? '?'}
+          </div>
+        )}
         <div className="flex-1 space-y-1 min-w-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <Link
-              href={`/author/${item.author_id}`}
-              className="font-medium hover:underline truncate"
-              style={{ color: getUserColor(item.author_id) }}
-            >
-              {displayName}
-            </Link>
+            <div className="flex items-center gap-1.5 truncate">
+              {isGuest ? (
+                <span className="font-medium truncate" style={{ color: getUserColor('guest') }}>
+                  {displayName}
+                </span>
+              ) : (
+                <Link
+                  href={`/author/${item.author_id}`}
+                  className="font-medium hover:underline truncate"
+                  style={{ color: getUserColor(item.author_id!) }}
+                >
+                  {displayName}
+                </Link>
+              )}
+              {isGuest && (
+                <span className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">游客</span>
+              )}
+            </div>
             <span className="shrink-0 ml-2">{mounted ? formatTimeAgo(item.created_at) : ''}</span>
           </div>
           <p className="text-sm whitespace-pre-wrap break-words">{item.content}</p>
@@ -111,6 +131,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 onSubmit={onSubmitReply}
                 replyTo={{ id: item.id, name: displayName }}
                 onCancelReply={onCancelReply}
+                currentUserId={currentUserId}
               />
             </div>
           )}
