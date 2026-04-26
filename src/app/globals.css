@@ -178,17 +178,19 @@
   margin-bottom: 0.25rem;
 }
 .markdown-body code {
-  background-color: rgb(243 244 246);
+  background-color: var(--color-muted);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
   font-size: 0.875em;
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 .markdown-body pre {
+  background-color: var(--color-muted);
   padding: 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
 }
 .markdown-body pre code {
   background: none;
@@ -199,13 +201,13 @@
 }
 
 .markdown-body a {
-  color: rgb(37 99 235);
+  color: var(--color-primary);
   text-decoration: underline;
 }
 .markdown-body blockquote {
-  border-left: 3px solid rgb(209 213 219);
+  border-left: 3px solid var(--color-border);
   padding-left: 1rem;
-  color: rgb(107 114 128);
+  color: var(--color-muted-foreground);
   margin-bottom: 1rem;
 }
 .markdown-body table {
@@ -215,16 +217,16 @@
 }
 .markdown-body th,
 .markdown-body td {
-  border: 1px solid rgb(229 231 235);
+  border: 1px solid var(--color-border);
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 .markdown-body th {
-  background-color: rgb(249 250 251);
+  background-color: var(--color-muted);
   font-weight: 600;
 }
 .markdown-body hr {
-  border-top: 1px solid rgb(229 231 219);
+  border-top: 1px solid var(--color-border);
   margin: 1.5rem 0;
 }
 .markdown-body img {
