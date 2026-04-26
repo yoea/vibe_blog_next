@@ -8,19 +8,24 @@ async function getPostSlug(supabase: any, postId: string): Promise<string | null
   return data?.slug ?? null
 }
 
-export async function createComment(postId: string, content: string): Promise<{ error?: string; data?: any }> {
+export async function createComment(postId: string, content: string, parentId?: string): Promise<{ error?: string; data?: any }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
   if (!content.trim()) return { error: '评论内容不能为空' }
 
+  const insertData: any = {
+    post_id: postId,
+    author_id: user.id,
+    author_email: user.email,
+    content: content.trim(),
+  }
+  if (parentId) {
+    insertData.parent_id = parentId
+  }
+
   const { data: comment, error } = await supabase.from('post_comments')
-    .insert({
-      post_id: postId,
-      author_id: user.id,
-      author_email: user.email,
-      content: content.trim(),
-    })
+    .insert(insertData)
     .select('*')
     .single()
 
@@ -32,7 +37,17 @@ export async function createComment(postId: string, content: string): Promise<{ 
     .eq('user_id', user.id)
     .maybeSingle()
 
-  return { data: { ...comment, author_email: user.email, author: { email: user.email, display_name: settings?.display_name ?? null } } }
+  return {
+    data: {
+      ...comment,
+      parent_id: comment.parent_id ?? null,
+      author_email: user.email,
+      author: { email: user.email, display_name: settings?.display_name ?? null },
+      like_count: 0,
+      is_liked: false,
+      replies: [],
+    },
+  }
 }
 
 export async function deleteComment(commentId: string, postId: string): Promise<{ error?: string }> {
@@ -70,4 +85,33 @@ export async function deleteComment(commentId: string, postId: string): Promise<
   const slug = await getPostSlug(supabase, postId)
   if (slug) revalidatePath(`/posts/${slug}`)
   return {}
+}
+
+export async function toggleCommentLike(commentId: string): Promise<{ liked?: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '请先登录' }
+
+  // Check if already liked
+  const { data: existing } = await supabase
+    .from('comment_likes')
+    .select('id')
+    .eq('comment_id', commentId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase
+      .from('comment_likes')
+      .delete()
+      .eq('id', existing.id)
+    if (error) return { error: error.message }
+    return { liked: false }
+  } else {
+    const { error } = await supabase
+      .from('comment_likes')
+      .insert({ comment_id: commentId, user_id: user.id })
+    if (error) return { error: error.message }
+    return { liked: true }
+  }
 }

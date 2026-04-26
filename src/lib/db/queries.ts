@@ -111,6 +111,8 @@ export async function getPostBySlug(slug: string) {
 
 export async function getCommentsForPost(postId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data: comments, error } = await supabase
     .from('post_comments')
     .select('*')
@@ -135,15 +137,70 @@ export async function getCommentsForPost(postId: string) {
     }
   }
 
-  const result = comments.map((item) => ({
+  // Fetch like counts for all comments
+  const commentIds = comments.map((c) => c.id)
+  const likeCountMap = new Map<string, number>()
+  const userLikedMap = new Map<string, boolean>()
+
+  if (commentIds.length > 0) {
+    const { data: likes } = await supabase
+      .from('comment_likes')
+      .select('comment_id, user_id')
+      .in('comment_id', commentIds)
+
+    if (likes) {
+      for (const l of likes) {
+        likeCountMap.set(l.comment_id, (likeCountMap.get(l.comment_id) ?? 0) + 1)
+        if (user && l.user_id === user.id) {
+          userLikedMap.set(l.comment_id, true)
+        }
+      }
+    }
+  }
+
+  // Map to enriched comments
+  const enrich = (item: any): CommentWithAuthor => ({
     ...item,
+    parent_id: item.parent_id ?? null,
     author_email: item.author_email ?? null,
     author: {
       email: null,
       display_name: settingsMap.get(item.author_id) ?? null,
     },
-  })) as unknown as CommentWithAuthor[]
-  return { data: result, error: null }
+    like_count: likeCountMap.get(item.id) ?? 0,
+    is_liked: userLikedMap.has(item.id),
+    replies: [],
+  })
+
+  // Separate top-level and replies
+  const topLevel: CommentWithAuthor[] = []
+  const repliesMap = new Map<string, CommentWithAuthor[]>()
+
+  for (const item of comments) {
+    const enriched = enrich(item)
+    if (item.parent_id) {
+      // Walk up to find the top-level parent
+      let topParentId = item.parent_id
+      const visited = new Set<string>()
+      while (topParentId && !visited.has(topParentId)) {
+        visited.add(topParentId)
+        const parent = comments.find((c) => c.id === topParentId)
+        if (!parent || !parent.parent_id) break
+        topParentId = parent.parent_id
+      }
+      if (!repliesMap.has(topParentId)) repliesMap.set(topParentId, [])
+      repliesMap.get(topParentId)!.push(enriched)
+    } else {
+      topLevel.push(enriched)
+    }
+  }
+
+  // Attach replies to parents
+  for (const parent of topLevel) {
+    parent.replies = repliesMap.get(parent.id) ?? []
+  }
+
+  return { data: topLevel, error: null }
 }
 
 export async function getPostsByAuthor(authorId: string) {

@@ -32,9 +32,19 @@ create table if not exists post_comments (
   post_id uuid references posts(id) on delete cascade not null,
   author_id uuid references auth.users(id) on delete cascade not null,
   author_email varchar(255),
+  parent_id uuid references post_comments(id) on delete cascade,
   content text not null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
+);
+
+-- Comment likes table
+create table if not exists comment_likes (
+  id uuid default gen_random_uuid() primary key,
+  comment_id uuid references post_comments(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  created_at timestamptz default now(),
+  unique(comment_id, user_id)
 );
 
 -- User settings table
@@ -81,6 +91,9 @@ create index idx_posts_slug on posts(slug);
 create index idx_post_likes_post_id on post_likes(post_id);
 create index idx_post_likes_ip on post_likes(ip);
 create index idx_post_comments_post_id on post_comments(post_id);
+create index idx_post_comments_parent_id on post_comments(parent_id);
+create index idx_comment_likes_comment_id on comment_likes(comment_id);
+create index idx_comment_likes_user_id on comment_likes(user_id);
 create index idx_site_views_ip on site_views(ip);
 create index idx_site_views_accessed on site_views(accessed_at);
 create index idx_site_likes_ip on site_likes(ip);
@@ -148,6 +161,18 @@ create policy "own_comment_update"
 
 create policy "own_comment_delete"
   on post_comments for delete using (auth.uid() = author_id);
+
+-- Comment Likes RLS
+alter table comment_likes enable row level security;
+
+create policy "comment_likes_select"
+  on comment_likes for select using (true);
+
+create policy "comment_likes_insert"
+  on comment_likes for insert with check (auth.uid() = user_id);
+
+create policy "comment_likes_delete"
+  on comment_likes for delete using (auth.uid() = user_id);
 
 -- User Settings RLS
 alter table user_settings enable row level security;
