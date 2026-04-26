@@ -1,41 +1,70 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteHero } from '@/components/blog/site-hero'
+import { Home, Users, FileText, PenSquare, LogIn, UserPlus, Settings, Shield, Scale, Map } from 'lucide-react'
 
 export const metadata = {
   title: '网站地图',
 }
 
-export default async function SitemapPage() {
-  const pages = [
-    { href: '/', title: '首页' },
-    { href: '/login', title: '登录' },
-    { href: '/register', title: '注册' },
-    { href: '/my-posts', title: '我的文章' },
-    { href: '/posts/new', title: '新建文章' },
-    { href: '/settings', title: '用户设置' },
-    { href: '/privacy', title: '隐私政策' },
-    { href: '/legal', title: '法律信息' },
-    { href: '/sitemap', title: '网站地图' },
-    { href: '/author', title: '作者列表' },
-  ]
+const categories = [
+  {
+    title: '内容浏览',
+    items: [
+      { href: '/', title: '首页', icon: Home },
+      { href: '/author', title: '作者列表', icon: Users },
+      { href: '/sitemap', title: '网站地图', icon: Map },
+    ],
+  },
+  {
+    title: '文章管理',
+    items: [
+      { href: '/my-posts', title: '我的文章', icon: FileText },
+      { href: '/posts/new', title: '新建文章', icon: PenSquare },
+    ],
+  },
+  {
+    title: '账号',
+    items: [
+      { href: '/login', title: '登录', icon: LogIn },
+      { href: '/register', title: '注册', icon: UserPlus },
+      { href: '/settings', title: '用户设置', icon: Settings },
+    ],
+  },
+  {
+    title: '关于',
+    items: [
+      { href: '/privacy', title: '隐私政策', icon: Shield },
+      { href: '/legal', title: '法律信息', icon: Scale },
+    ],
+  },
+]
 
+export default async function SitemapPage() {
   return (
     <div className="space-y-6">
       <SiteHero />
 
-      <section>
-        <h2 className="text-lg font-semibold mb-3">页面</h2>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-          {pages.map((page) => (
-            <li key={page.href}>
-              <Link href={page.href} className="text-sm text-blue-600 hover:underline">
-                {page.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {categories.map((category) => (
+          <section key={category.title}>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">{category.title}</h2>
+            <ul className="space-y-1">
+              {category.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <li key={item.href}>
+                    <Link href={item.href} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1">
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {item.title}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }
