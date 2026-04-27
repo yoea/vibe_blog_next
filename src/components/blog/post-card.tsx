@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock, User } from 'lucide-react'
+import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock, User, Pin, PinOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { deletePost } from '@/lib/actions/post-actions'
+import { deletePost, togglePinPost } from '@/lib/actions/post-actions'
 import { toast } from 'sonner'
 
 interface PostCardData {
@@ -23,6 +23,7 @@ interface PostCardData {
   title: string
   slug: string
   published: boolean
+  is_pinned?: boolean
   created_at: string
   excerpt?: string | null
   like_count?: number
@@ -32,6 +33,8 @@ interface PostCardData {
 
 export function PostCard({ post, showActions }: { post: PostCardData; showActions?: boolean }) {
   const [showConfirm, setShowConfirm] = useState(false)
+  const [pinning, setPinning] = useState(false)
+  const [pinned, setPinned] = useState(post.is_pinned ?? false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -44,6 +47,20 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
         router.refresh()
       } else {
         toast.error('删除失败，请重试')
+      }
+    })
+  }
+
+  const handleTogglePin = () => {
+    setPinning(true)
+    startTransition(async () => {
+      const result = await togglePinPost(post.id)
+      setPinning(false)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        setPinned(result.pinned ?? !pinned)
+        toast.success(result.pinned ? '已置顶' : '已取消置顶')
       }
     })
   }
@@ -88,6 +105,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
               >
                 {post.title}
               </Link>
+              {pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-primary rotate-45" />}
               <span className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded ${
                 post.published
                   ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950'
@@ -103,6 +121,10 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
             {metaRow}
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-3">
+            <Button variant="outline" size="sm" onClick={handleTogglePin} disabled={pinning}>
+              {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline ml-1">{pinned ? '取消置顶' : '置顶'}</span>
+            </Button>
             <Link href={`/posts-edit/${post.slug}`}>
               <Button variant="outline" size="sm">
                 <Edit2 className="h-3.5 w-3.5" />

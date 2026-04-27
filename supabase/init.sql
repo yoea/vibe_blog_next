@@ -14,6 +14,7 @@ create table if not exists posts (
   content text not null,
   excerpt text,
   published boolean default false,
+  is_pinned boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

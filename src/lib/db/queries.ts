@@ -11,13 +11,14 @@ export async function getPublishedPosts(page = 1, limit = 10) {
     .from('posts')
     .select(
       `
-      id, author_id, title, slug, content, excerpt, published, created_at, updated_at,
+      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
       like_count:post_likes(count),
       comment_count:post_comments(count)
     `,
       { count: 'exact' }
     )
     .eq('published', true)
+    .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
 

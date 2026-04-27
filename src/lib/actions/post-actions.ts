@@ -73,6 +73,34 @@ export async function deletePost(postId: string): Promise<ActionResult> {
   return {}
 }
 
+export async function togglePinPost(postId: string): Promise<ActionResult & { pinned?: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '未登录' }
+
+  // 先获取当前状态
+  const { data: post } = await supabase
+    .from('posts')
+    .select('is_pinned')
+    .eq('id', postId)
+    .eq('author_id', user.id)
+    .single()
+
+  if (!post) return { error: '文章不存在' }
+
+  const newPinned = !post.is_pinned
+  const { error } = await supabase
+    .from('posts')
+    .update({ is_pinned: newPinned })
+    .eq('id', postId)
+    .eq('author_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/')
+  revalidatePath('/profile')
+  return { pinned: newPinned }
+}
+
 export async function loadMorePublishedPosts(page: number) {
   return await getPublishedPosts(page, 10)
 }
