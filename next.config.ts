@@ -17,10 +17,6 @@ const nextConfig: NextConfig = {
       dynamic: 300,
     },
   },
-  // 显式使用 webpack 而非 Turbopack (Next.js 16 默认 Turbopack 有 chunk 加载 bug)
-  webpack: (config) => {
-    return config;
-  },
 };
 
 export default nextConfig;
