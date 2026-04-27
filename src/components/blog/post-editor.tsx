@@ -133,7 +133,7 @@ export function PostEditor({ initialData }: Props) {
     if (result.error) {
       setError(result.error)
     } else {
-      router.push('/my-posts')
+      router.push('/profile')
       router.refresh()
     }
   }

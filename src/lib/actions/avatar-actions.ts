@@ -60,7 +60,7 @@ export async function uploadAvatar(formData: FormData): Promise<ActionResult & {
   if (dbError) return { error: `保存失败: ${dbError.message}` }
 
   revalidatePath('/settings')
-  revalidatePath('/my-posts')
+  revalidatePath('/profile')
 
   return { avatarUrl: publicUrl }
 }
@@ -96,7 +96,7 @@ export async function deleteAvatar(): Promise<ActionResult> {
   if (error) return { error: error.message }
 
   revalidatePath('/settings')
-  revalidatePath('/my-posts')
+  revalidatePath('/profile')
 
   return {}
 }

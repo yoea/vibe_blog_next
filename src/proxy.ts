@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request)
 
   // Protected routes require authentication
-  const protectedPaths = ['/posts/new', '/posts-edit', '/my-posts', '/settings']
+  const protectedPaths = ['/posts/new', '/posts-edit', '/profile', '/settings']
   const isProtected = protectedPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
   if (isAuthPath && user) {
-    const redirectUrl = new URL('/my-posts', request.url)
+    const redirectUrl = new URL('/profile', request.url)
     const redirectResponse = NextResponse.redirect(redirectUrl)
     // Forward cookies from updateSession response to ensure session persists
     response.cookies.getAll().forEach((cookie) => {

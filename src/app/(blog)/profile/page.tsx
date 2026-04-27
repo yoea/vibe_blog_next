@@ -27,7 +27,7 @@ export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login?redirect=/my-posts')
+  if (!user) redirect('/login?redirect=/profile')
 
   // Fetch user settings
   const { data: userSettings } = await supabase

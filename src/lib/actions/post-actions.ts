@@ -26,7 +26,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       .eq('author_id', user.id)
     if (error) return { error: error.message }
     revalidatePath('/')
-    revalidatePath('/my-posts')
+    revalidatePath('/profile')
     return {}
   } else {
     // Rate limit: 10 posts per hour per IP
@@ -52,7 +52,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     })
     if (error) return { error: error.message }
     revalidatePath('/')
-    revalidatePath('/my-posts')
+    revalidatePath('/profile')
     return {}
   }
 }
@@ -69,7 +69,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
 
   if (error) return { error: error.message }
   revalidatePath('/')
-  revalidatePath('/my-posts')
+  revalidatePath('/profile')
   return {}
 }
 

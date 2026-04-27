@@ -23,7 +23,7 @@ export function DeletePostButton({ postId }: { postId: string }) {
     startTransition(async () => {
       const result = await deletePost(postId)
       if (!result.error) {
-        router.push('/my-posts')
+        router.push('/profile')
       }
     })
   }

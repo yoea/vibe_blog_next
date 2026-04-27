@@ -16,7 +16,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       if (user && !redirectedRef.current) {
         redirectedRef.current = true
         toast.info('已登录，正在跳转')
-        window.location.href = redirectTo || '/my-posts'
+        window.location.href = redirectTo || '/profile'
       } else {
         setChecking(false)
       }

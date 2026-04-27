@@ -19,7 +19,7 @@ const categories = [
   {
     title: '文章管理',
     items: [
-      { href: '/my-posts', title: '我的文章', icon: FileText },
+      { href: '/profile', title: '个人中心', icon: FileText },
       { href: '/posts/new', title: '新建文章', icon: PenSquare },
     ],
   },

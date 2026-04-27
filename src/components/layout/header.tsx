@@ -46,7 +46,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
       </Link>
       {user ? (
         <>
-          <Link href="/my-posts" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
+          <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
             <User className="h-4 w-4" />
             <span>个人中心</span>
           </Link>
