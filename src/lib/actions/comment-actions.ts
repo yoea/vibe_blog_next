@@ -43,7 +43,7 @@ export async function createComment(
       ?? null
     if (!ip || ip === 'unknown') return { error: '无法获取 IP 地址' }
 
-    const { allowed, remaining } = await checkIpRateLimit(ip, 'post_comments', 3, 60)
+    const { allowed, remaining } = await checkIpRateLimit(ip, 'post_comments', 10, 60)
     if (!allowed) return { error: `评论过于频繁，请 ${remaining > 0 ? `${remaining} 分钟后再试` : '稍后再试'}` }
 
     insertData.guest_name = name
@@ -164,6 +164,9 @@ export async function toggleCommentLike(commentId: string, clientIp?: string): P
     ?? (await headers()).get('x-real-ip')
     ?? null
   if (!ip || ip === 'unknown') return { error: '无法获取IP' }
+
+  const { allowed } = await checkIpRateLimit(ip, 'comment_likes', 10, 60)
+  if (!allowed) return { error: '操作过于频繁，请稍后再试' }
 
   const { data: existing } = await supabase
     .from('comment_likes')

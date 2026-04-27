@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import { checkIpRateLimit } from '@/lib/utils/rate-limit'
 import type { ActionResult } from '@/lib/db/types'
 
 function getClientIp(): string {
@@ -44,6 +45,9 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
     // Unauthenticated: track by IP
     const ip = clientIp ?? await getClientIp()
     if (ip === 'unknown') return { error: '无法获取IP' }
+
+    const { allowed } = await checkIpRateLimit(ip, 'post_likes', 10, 60)
+    if (!allowed) return { error: '操作过于频繁，请稍后再试' }
 
     const { data: existing } = await supabase
       .from('post_likes')
