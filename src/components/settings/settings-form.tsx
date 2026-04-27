@@ -139,11 +139,22 @@ export function SettingsForm({ user, isAdmin }: Props) {
         </CardContent>
       </Card>
 
-      <p className="text-xs text-muted-foreground text-center">
-        {process.env.NEXT_PUBLIC_BUILD_TIME
-          ? `构建于 ${new Date(process.env.NEXT_PUBLIC_BUILD_TIME).toLocaleString('zh-CN')}`
-          : '开发模式'}
-      </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>关于</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1.5 text-sm text-muted-foreground">
+          <p>
+            {process.env.NEXT_PUBLIC_SITE_TITLE || 'Blog'}
+            {process.env.NEXT_PUBLIC_BUILD_TIME && (
+              <> — 构建于 {new Date(process.env.NEXT_PUBLIC_BUILD_TIME).toLocaleString('zh-CN')}</>
+            )}
+          </p>
+          {process.env.NEXT_PUBLIC_BUILD_COMMIT && (
+            <p className="font-mono text-xs">提交 {process.env.NEXT_PUBLIC_BUILD_COMMIT}</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>

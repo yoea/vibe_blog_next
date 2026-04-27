@@ -23,8 +23,9 @@ npm ci --no-audit --no-fund --prefer-offline
 # 3. 构建（失败直接退出）
 # =========================
 echo "构建项目..."
-# 注入构建时间（NEXT_PUBLIC_ 变量会被 Next.js 内联到客户端代码）
+# 注入构建时信息（NEXT_PUBLIC_ 变量会被 Next.js 内联到客户端代码）
 export NEXT_PUBLIC_BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+export NEXT_PUBLIC_BUILD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 # 清理旧构建缓存，防止构建产物残留问题
 rm -rf .next
 
