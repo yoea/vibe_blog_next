@@ -135,7 +135,7 @@ export function AuthorListClient({
                     <span>注册 {days}</span>
                     <span className={`inline-flex items-center gap-1 ${hasPosts ? 'text-green-600' : 'text-muted-foreground'}`}>
                       <span className={`inline-block h-2 w-2 rounded-full ${hasPosts ? 'bg-green-500' : 'bg-gray-400'}`} />
-                      {hasPosts ? '活跃' : '未发布'}
+                      {hasPosts ? '活跃' : '无文'}
                     </span>
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export function AuthorListClient({
                       <span>注册 {days}</span>
                       <span className="inline-flex items-center gap-1 text-gray-400">
                         <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
-                        已注销
+                        注销
                       </span>
                     </div>
                   </div>
