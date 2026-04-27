@@ -1,6 +1,6 @@
 const http = require('http')
 const crypto = require('crypto')
-const { exec } = require('child_process')
+const { spawn } = require('child_process')
 
 const SECRET = process.env.WEBHOOK_SECRET || ''
 const PORT = parseInt(process.env.WEBHOOK_PORT || '8084', 10)
@@ -9,29 +9,32 @@ const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
 let currentDeploy = null // 追踪当前部署进程
 
 function runDeploy() {
-  // 如果已有部署在跑，杀掉旧进程
+  // 如果已有部署在跑，杀掉整个进程组（包括所有子进程）
   if (currentDeploy) {
     console.log(`[${new Date().toISOString()}] 终止上一次部署...`)
-    currentDeploy.kill('SIGTERM')
+    try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {}
     currentDeploy = null
   }
 
-  const cmd = `cd ${DEPLOY_DIR} && git pull && bash deploy.sh`
-  const proc = exec(cmd, { timeout: 600000, maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
-    currentDeploy = null
-    if (err) {
-      if (err.killed) {
-        console.log(`[${new Date().toISOString()}] 部署被终止（新请求覆盖）`)
-      } else {
-        console.error(`[${new Date().toISOString()}] 部署失败:`, err.message)
-        if (stderr) console.error(stderr)
-      }
-      return
-    }
-    console.log(`[${new Date().toISOString()}] 部署成功`)
+  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git pull && bash deploy.sh`], {
+    detached: true,   // 创建新进程组，便于整树清理
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: 600000,
   })
+
   proc.stdout?.on('data', (d) => process.stdout.write(`[deploy] ${d}`))
   proc.stderr?.on('data', (d) => process.stderr.write(`[deploy:err] ${d}`))
+  proc.on('exit', (code, signal) => {
+    currentDeploy = null
+    if (code === 0) {
+      console.log(`[${new Date().toISOString()}] 部署成功`)
+    } else if (signal === 'SIGTERM') {
+      console.log(`[${new Date().toISOString()}] 部署被终止（新请求覆盖）`)
+    } else {
+      console.error(`[${new Date().toISOString()}] 部署失败 (exit ${code})`)
+    }
+  })
+
   currentDeploy = proc
 }
 
@@ -70,12 +73,12 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`Webhook 接收器运行在 http://0.0.0.0:${PORT}`)
 })
 
-// PM2 停止时清理部署进程
+// PM2 停止时清理部署进程组
 process.on('SIGINT', () => {
-  if (currentDeploy) currentDeploy.kill('SIGTERM')
+  if (currentDeploy) { try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {} }
   process.exit(0)
 })
 process.on('SIGTERM', () => {
-  if (currentDeploy) currentDeploy.kill('SIGTERM')
+  if (currentDeploy) { try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {} }
   process.exit(0)
 })

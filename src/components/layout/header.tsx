@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogIn, FileText, Settings, Users, Menu, X, Sun, Moon, SunMoon, Home, User } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
@@ -10,6 +11,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const { mode, resolved, setMode } = useTheme()
+  const pathname = usePathname()
 
   const cycleMode = () => {
     const order: ThemeMode[] = ['light', 'dark', 'system']
@@ -34,6 +36,8 @@ export function Header({ siteTitle }: { siteTitle: string }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const loginHref = pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname)}`
+
   const navLinks = (
     <>
       <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
@@ -56,7 +60,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
           </Link>
         </>
       ) : (
-        <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
+        <Link href={loginHref} onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
           <LogIn className="h-4 w-4" />
           <span>登录</span>
         </Link>

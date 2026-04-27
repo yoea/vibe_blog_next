@@ -19,6 +19,16 @@ export function LikeButton({
   const [liked, setLiked] = useState(isLiked)
   const [isPending, startTransition] = useTransition()
   const [ip, setIp] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
+
+  // 独立从服务端确认点赞状态，绕过客户端 Router Cache 对 isLiked prop 的缓存
+  useEffect(() => {
+    setReady(false)
+    fetch(`/api/check-like?postId=${postId}`)
+      .then((r) => r.json())
+      .then((data) => { setLiked(data.isLiked); setReady(true) })
+      .catch(() => setReady(true))
+  }, [postId])
 
   useEffect(() => {
     fetch('/api/my-ip')
@@ -48,7 +58,7 @@ export function LikeButton({
       variant="outline"
       size="sm"
       onClick={handleToggle}
-      disabled={isPending || !ip}
+      disabled={isPending || !ip || !ready}
       className={`gap-1.5 active:scale-95 transition-transform ${liked ? 'text-red-500 hover:text-red-600' : ''}`}
     >
       <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
