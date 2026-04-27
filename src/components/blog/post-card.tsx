@@ -140,8 +140,8 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <Link href={`/posts/${post.slug}`} className="block hover:text-primary transition-colors">
-          <h2 className="text-xl font-semibold leading-tight truncate min-w-0">{post.title}</h2>
+        <Link href={`/posts/${post.slug}`} className="block min-w-0 hover:text-primary transition-colors">
+          <h2 className="text-xl font-semibold leading-tight truncate">{post.title}</h2>
         </Link>
       </CardHeader>
       <CardContent className="space-y-3">
