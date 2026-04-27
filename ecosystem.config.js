@@ -3,7 +3,7 @@ module.exports = {
     name: 'vibe_blog_next',
     script: '.next/standalone/server.js',
     env: {
-      PORT: 8888,
+      PORT: 8083,
     },
   }],
 };
