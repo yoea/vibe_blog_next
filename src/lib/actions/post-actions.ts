@@ -236,7 +236,7 @@ export async function createTag(name: string): Promise<ActionResult & { tag?: Ta
 
   const { data: newTag, error } = await supabase
     .from('tags')
-    .insert({ name: trimmed, slug, created_by: user.id })
+    .insert({ name: trimmed, slug, color: randomTagColor(), created_by: user.id })
     .select()
     .single()
 
