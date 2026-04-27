@@ -181,6 +181,15 @@ do $$ begin
   end if;
 end $$;
 
+-- Add created_by column if upgrading from a previous version
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_name = 'tags' and column_name = 'created_by') then
+    alter table tags add column created_by uuid references auth.users(id) on delete set null;
+  end if;
+end $$;
+
+create index if not exists idx_tags_created_by on tags(created_by);
+
 create table if not exists post_tags (
   id uuid default gen_random_uuid() primary key,
   post_id uuid references posts(id) on delete cascade not null,
@@ -196,7 +205,12 @@ alter table tags enable row level security;
 alter table post_tags enable row level security;
 
 create policy "tags_select" on tags for select using (true);
-create policy "tags_insert" on tags for insert with check (true);
+create policy "tags_insert" on tags for insert with check (
+  auth.role() = 'authenticated' and created_by = auth.uid()
+);
+create policy "tags_delete" on tags for delete using (
+  auth.uid() = created_by
+);
 create policy "post_tags_select" on post_tags for select using (true);
 create policy "post_tags_insert" on post_tags for insert with check (
   auth.uid() = (select author_id from posts where id = post_id)

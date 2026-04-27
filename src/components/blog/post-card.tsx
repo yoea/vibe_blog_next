@@ -126,7 +126,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
                 {post.tags.map((tag) => (
                   <Link
                     key={tag.slug}
-                    href={`/tags/${tag.slug}`}
+                    href={`/tags/${encodeURIComponent(tag.slug)}`}
                     className="text-xs px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
                     style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
                   >

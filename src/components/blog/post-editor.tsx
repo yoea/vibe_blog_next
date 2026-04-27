@@ -19,9 +19,10 @@ const SUMMARY_MIN_CONTENT_LENGTH = 100
 
 interface Props {
   initialData?: PostWithAuthor
+  suggestedTags?: { name: string; slug: string; color: string | null; post_count: number }[]
 }
 
-export function PostEditor({ initialData }: Props) {
+export function PostEditor({ initialData, suggestedTags }: Props) {
   const [tab, setTab] = useState<'edit' | 'preview'>('edit')
   const [fullscreen, setFullscreen] = useState(false)
   const [fsTab, setFsTab] = useState<'edit' | 'preview'>('edit')
@@ -193,7 +194,21 @@ export function PostEditor({ initialData }: Props) {
 
         <div className="space-y-2 shrink-0">
           <label htmlFor="excerpt" className="block text-sm font-medium">摘要</label>
-          {modelName && <p className="text-xs text-muted-foreground">正文字数超100字后，可点击下方按钮由 <code className="font-mono">{modelName}</code> 总结摘要</p>}
+          {modelName && (
+            <p className="text-xs text-muted-foreground">
+              正文字数超100字后，可点击下方按钮由 <code className="font-mono">{modelName}</code> 总结摘要
+              {summaryLoading ? (
+                <span className="inline-flex items-center gap-1.5 text-xs text-blue-500 ml-2">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  生成中...
+                </span>
+              ) : excerpt ? (
+                <button type="button" onClick={handleGenerateSummary} disabled={summaryCooldown} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 ml-2 underline">
+                  重新生成摘要
+                </button>
+              ) : null}
+            </p>
+          )}
           <div className="relative">
             <button
               type="button"
@@ -227,23 +242,34 @@ export function PostEditor({ initialData }: Props) {
               {excerpt.length}/{SUMMARY_MAX_LENGTH}
             </p>
           </div>
-          <div className="flex items-center gap-2 h-5">
-            {summaryLoading ? (
-              <span className="inline-flex items-center gap-1.5 text-xs text-blue-500">
-                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                生成中...
-              </span>
-            ) : excerpt ? (
-              <button type="button" onClick={handleGenerateSummary} disabled={summaryCooldown} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
-                重新生成摘要
-              </button>
-            ) : null}
-          </div>
         </div>
 
         <div className="space-y-2 shrink-0">
           <label className="block text-sm font-medium">标签</label>
-          <p className="text-xs text-muted-foreground">按 Enter 添加标签，最多 5 个</p>
+          <p className="text-xs text-muted-foreground">
+            按 Enter 添加标签，最多 7 个
+            {suggestedTags && suggestedTags.length > 0 && (
+              <span className="ml-2">
+                常用标签：
+                {suggestedTags.filter(t => !tags.includes(t.name)).map((tag) => (
+                  <button
+                    key={tag.slug}
+                    type="button"
+                    onClick={() => {
+                      if (tags.length < 7 && !tags.includes(tag.name)) {
+                        setTags([...tags, tag.name])
+                      }
+                    }}
+                    disabled={tags.length >= 7}
+                    className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </span>
+            )}
+          </p>
           <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-md border bg-transparent min-h-[2.25rem] focus-within:ring-2 focus-within:ring-ring">
             {tags.map((tag, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground">
@@ -257,7 +283,7 @@ export function PostEditor({ initialData }: Props) {
                 </button>
               </span>
             ))}
-            {tags.length < 5 && (
+            {tags.length < 7 && (
               <input
                 type="text"
                 value={tagInput}
@@ -266,7 +292,7 @@ export function PostEditor({ initialData }: Props) {
                   if (e.key === 'Enter') {
                     e.preventDefault()
                     const val = tagInput.trim()
-                    if (val && !tags.includes(val) && tags.length < 5) {
+                    if (val && !tags.includes(val) && tags.length < 7) {
                       setTags([...tags, val.slice(0, 20)])
                     }
                     setTagInput('')

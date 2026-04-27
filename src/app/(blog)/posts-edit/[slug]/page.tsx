@@ -1,4 +1,4 @@
-import { getPostBySlug } from '@/lib/db/queries'
+import { getPostBySlug, getTopTags } from '@/lib/db/queries'
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { connection } from 'next/server'
@@ -30,6 +30,8 @@ export default async function EditPostPage({ params }: PageProps) {
     return <p className="text-destructive">无权编辑此文章</p>
   }
 
+  const suggestedTags = await getTopTags(10)
+
   return (
     <div className="space-y-6 flex flex-col flex-1 min-h-0">
       <div className="flex items-center gap-2 shrink-0">
@@ -44,7 +46,7 @@ export default async function EditPostPage({ params }: PageProps) {
         </div>
       </div>
       <h1 className="text-3xl font-bold">编辑文章</h1>
-      <PostEditor initialData={post as any} />
+      <PostEditor initialData={post as any} suggestedTags={suggestedTags} />
     </div>
   )
 }

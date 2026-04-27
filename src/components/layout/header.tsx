@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LogIn, FileText, Settings, Users, Menu, X, Sun, Moon, SunMoon, Home, User, Search } from 'lucide-react'
+import { LogIn, FileText, Settings, Menu, X, Sun, Moon, SunMoon, Home, User, Search } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 
 export function Header({ siteTitle }: { siteTitle: string }) {
@@ -43,10 +43,6 @@ export function Header({ siteTitle }: { siteTitle: string }) {
       <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
         <Home className="h-4 w-4" />
         <span>首页</span>
-      </Link>
-      <Link href="/author" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
-        <Users className="h-4 w-4" />
-        <span>作者</span>
       </Link>
       {user ? (
         <>

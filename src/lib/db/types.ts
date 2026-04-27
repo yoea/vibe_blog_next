@@ -4,6 +4,7 @@ export interface Tag {
   slug: string
   color: string
   created_at: string
+  created_by: string | null
 }
 
 export interface Post {

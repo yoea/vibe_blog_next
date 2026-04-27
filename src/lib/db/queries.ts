@@ -589,9 +589,9 @@ export async function getTagsForPost(postId: string): Promise<Tag[]> {
   return (data ?? []).map((pt: any) => pt.tags as Tag).filter(Boolean)
 }
 
-export async function getAllTags(): Promise<{ name: string; slug: string; post_count: number }[]> {
+export async function getAllTags(): Promise<{ name: string; slug: string; color: string | null; post_count: number }[]> {
   const supabase = await createClient()
-  const { data: tags } = await supabase.from('tags').select('id, name, slug').order('name', { ascending: true })
+  const { data: tags } = await supabase.from('tags').select('id, name, slug, color').order('name', { ascending: true })
   if (!tags?.length) return []
 
   const tagIds = tags.map((t) => t.id)
@@ -608,75 +608,156 @@ export async function getAllTags(): Promise<{ name: string; slug: string; post_c
   return tags.map((t) => ({
     name: t.name,
     slug: t.slug,
+    color: t.color ?? null,
     post_count: countMap.get(t.id) ?? 0,
   }))
 }
 
+export async function getTopTags(limit = 10): Promise<{ name: string; slug: string; color: string | null; post_count: number }[]> {
+  const all = await getAllTags()
+  return all.sort((a, b) => b.post_count - a.post_count).slice(0, limit)
+}
+
 export async function getPostsByTag(tagSlug: string, page = 1, limit = 10) {
+  try {
+    const supabase = await createClient()
+
+    // Find the tag
+    const { data: tag, error: tagError } = await supabase
+      .from('tags')
+      .select('id, name, color')
+      .eq('slug', tagSlug)
+      .single()
+
+    if (tagError || !tag) {
+      return { data: [], count: 0, tagName: '', tagColor: '', error: `标签查询失败: ${tagError?.message ?? '标签不存在'}` }
+    }
+
+    // Get all post IDs for this tag
+    const { data: postTags } = await supabase
+      .from('post_tags')
+      .select('post_id')
+      .eq('tag_id', tag.id)
+
+    if (!postTags?.length) return { data: [], count: 0, tagName: tag.name, tagColor: tag.color ?? null, error: null }
+
+    const postIds = postTags.map((pt) => pt.post_id)
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+
+    // Count total published posts with this tag
+    const { count: total, error: countError } = await supabase
+      .from('posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('published', true)
+      .in('id', postIds)
+
+    if (countError) return { data: [], count: 0, tagName: tag.name, tagColor: tag.color ?? null, error: `计数失败: ${countError.message}` }
+
+    // Fetch published posts with this tag, ordered and paginated
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select(`
+        id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+        like_count:post_likes(count),
+        comment_count:post_comments(count)
+      `)
+      .in('id', postIds)
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .range(from, to)
+
+    if (error) return { data: [], count: 0, tagName: tag.name, tagColor: tag.color ?? null, error: `文章查询失败: ${error.message}` }
+
+    if (!posts?.length) return { data: [], count: 0, tagName: tag.name, tagColor: tag.color ?? null, error: null }
+
+    // Map author info
+    const authorIds = [...new Set(posts.map((item: any) => item.author_id))]
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', authorIds)
+    const authorMap = new Map((userSettings ?? []).map((s: any) => [s.user_id, { name: s.display_name, avatar_url: s.avatar_url ?? null }]))
+
+    const result = posts.map((item: any) => ({
+      ...item,
+      author: {
+        name: authorMap.get(item.author_id)?.name ?? item.author_id?.slice(0, 8),
+        avatar_url: authorMap.get(item.author_id)?.avatar_url ?? null,
+      },
+      like_count: item.like_count?.[0]?.count ?? 0,
+      comment_count: item.comment_count?.[0]?.count ?? 0,
+    })) as unknown as PostWithAuthor[]
+
+    await attachTagsToPosts(result)
+
+    return { data: result, count: total ?? 0, tagName: tag.name, tagColor: tag.color ?? null, error: null }
+  } catch (e: any) {
+    return { data: [], count: 0, tagName: '', error: `异常: ${e?.message ?? e}` }
+  }
+}
+
+export interface TagWithCreator {
+  id: string
+  name: string
+  slug: string
+  color: string
+  created_at: string
+  created_by: string | null
+  author_name: string | null
+  author_email: string | null
+  post_count: number
+}
+
+export async function getAllTagsWithCounts(): Promise<TagWithCreator[]> {
   const supabase = await createClient()
-
-  // Find the tag
-  const { data: tag } = await supabase
+  const { data: tags } = await supabase
     .from('tags')
-    .select('id, name')
-    .eq('slug', tagSlug)
-    .single()
+    .select('id, name, slug, color, created_at, created_by')
+    .order('created_at', { ascending: false })
+  if (!tags?.length) return []
 
-  if (!tag) return { data: [], count: 0, tagName: '', error: '标签不存在' }
-
-  const from = (page - 1) * limit
-  const to = from + limit - 1
-
-  // Count total posts with this tag
-  const { count: total } = await supabase
-    .from('post_tags')
-    .select('*', { count: 'exact', head: true })
-    .eq('tag_id', tag.id)
-
-  // Fetch post IDs for this tag
+  const tagIds = tags.map((t) => t.id)
   const { data: postTags } = await supabase
     .from('post_tags')
-    .select('post_id')
-    .eq('tag_id', tag.id)
-    .order('created_at', { referencedTable: 'posts.created_at', ascending: false })
-    .range(from, to)
+    .select('tag_id')
+    .in('tag_id', tagIds)
 
-  if (!postTags?.length) return { data: [], count: 0, tagName: tag.name, error: null }
+  const countMap = new Map<string, number>()
+  for (const pt of postTags ?? []) {
+    countMap.set(pt.tag_id, (countMap.get(pt.tag_id) ?? 0) + 1)
+  }
 
-  const postIds = postTags.map((pt) => pt.post_id)
+  const authorIds = tags.map((t) => t.created_by).filter(Boolean) as string[]
+  const authorMap = new Map<string, { name: string | null; email: string | null }>()
+  if (authorIds.length > 0) {
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('user_id, display_name')
+      .in('user_id', authorIds)
+    for (const s of userSettings ?? []) {
+      authorMap.set(s.user_id, { name: s.display_name, email: null })
+    }
+    const { data: users } = await supabase.auth.admin.listUsers()
+    for (const u of users?.users ?? []) {
+      const existing = authorMap.get(u.id)
+      if (existing) existing.email = u.email ?? null
+      else authorMap.set(u.id, { name: null, email: u.email ?? null })
+    }
+  }
 
-  const { data: posts } = await supabase
-    .from('posts')
-    .select(`
-      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
-      like_count:post_likes(count),
-      comment_count:post_comments(count)
-    `)
-    .in('id', postIds)
-    .eq('published', true)
-    .order('created_at', { ascending: false })
-
-  if (!posts?.length) return { data: [], count: 0, tagName: tag.name, error: null }
-
-  // Map author info
-  const authorIds = [...new Set(posts.map((item: any) => item.author_id))]
-  const { data: userSettings } = await supabase
-    .from('user_settings')
-    .select('user_id, display_name, avatar_url')
-    .in('user_id', authorIds)
-  const authorMap = new Map((userSettings ?? []).map((s: any) => [s.user_id, { name: s.display_name, avatar_url: s.avatar_url ?? null }]))
-
-  const result = posts.map((item: any) => ({
-    ...item,
-    author: {
-      name: authorMap.get(item.author_id)?.name ?? item.author_id?.slice(0, 8),
-      avatar_url: authorMap.get(item.author_id)?.avatar_url ?? null,
-    },
-    like_count: item.like_count?.[0]?.count ?? 0,
-    comment_count: item.comment_count?.[0]?.count ?? 0,
-  })) as unknown as PostWithAuthor[]
-
-  await attachTagsToPosts(result)
-
-  return { data: result, count: total ?? 0, tagName: tag.name, error: null }
+  return tags.map((t) => {
+    const author = t.created_by ? authorMap.get(t.created_by) : null
+    return {
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      color: t.color ?? '#3B82F6',
+      created_at: t.created_at,
+      created_by: t.created_by,
+      author_name: author?.name ?? null,
+      author_email: author?.email ?? null,
+      post_count: countMap.get(t.id) ?? 0,
+    }
+  })
 }

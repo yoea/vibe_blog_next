@@ -1,11 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { getPublishedPosts, getPostsByAuthor, getAllUsers, getPostsByTag } from '@/lib/db/queries'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
-import type { ActionResult } from '@/lib/db/types'
+import type { ActionResult, Tag } from '@/lib/db/types'
 
 export async function savePost(formData: FormData): Promise<ActionResult> {
   const supabase = await createClient()
@@ -33,7 +34,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       .eq('author_id', user.id)
     if (error) return { error: error.message }
     // Update tags
-    const tagError = await savePostTags(supabase, postId, tags)
+    const tagError = await savePostTags(supabase, postId, tags, user.id)
     if (tagError) return { error: tagError }
     // Revalidate all relevant paths
     const slug = formData.get('_slug') as string | null
@@ -65,7 +66,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     })
     if (error) return { error: error.message }
     // Save tags
-    const tagError = await savePostTags(supabase, id, tags)
+    const tagError = await savePostTags(supabase, id, tags, user.id)
     if (tagError) return { error: tagError }
     revalidatePath('/')
     revalidatePath('/profile')
@@ -90,7 +91,7 @@ function randomTagColor(): string {
  * Upsert tags for a post: create any new tags, then replace all post_tags.
  * Returns an error message on failure, or null on success.
  */
-async function savePostTags(supabase: Awaited<ReturnType<typeof createClient>>, postId: string, tagNames: string[]): Promise<string | null> {
+async function savePostTags(supabase: Awaited<ReturnType<typeof createClient>>, postId: string, tagNames: string[], userId?: string): Promise<string | null> {
   if (tagNames.length === 0) {
     // Remove all tags from this post
     const { error } = await supabase.from('post_tags').delete().eq('post_id', postId)
@@ -119,9 +120,11 @@ async function savePostTags(supabase: Awaited<ReturnType<typeof createClient>>, 
       tagIds.push(existing.id)
     } else {
       // Create new tag with a random color
+      const insertData: any = { name: trimmed, slug, color: randomTagColor() }
+      if (userId) insertData.created_by = userId
       const { data: newTag, error: createError } = await supabase
         .from('tags')
-        .insert({ name: trimmed, slug, color: randomTagColor() })
+        .insert(insertData)
         .select('id')
         .single()
       if (createError) return `创建标签「${trimmed}」失败: ${createError.message}`
@@ -205,4 +208,66 @@ export async function loadMoreAuthors(page: number) {
 
 export async function loadMorePostsByTag(tagSlug: string, page: number) {
   return await getPostsByTag(tagSlug, page, 10)
+}
+
+export async function createTag(name: string): Promise<ActionResult & { tag?: Tag }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '请先登录' }
+
+  const trimmed = name.trim()
+  if (!trimmed) return { error: '标签名不能为空' }
+  if (trimmed.length > 50) return { error: '标签名不能超过50个字符' }
+
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[<>#"{}|\\^`]/g, '')
+
+  // Check if slug already exists
+  const { data: existing } = await supabase
+    .from('tags')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (existing) return { error: `标签「${trimmed}」已存在` }
+
+  const { data: newTag, error } = await supabase
+    .from('tags')
+    .insert({ name: trimmed, slug, created_by: user.id })
+    .select()
+    .single()
+
+  if (error) return { error: `创建标签失败: ${error.message}` }
+  revalidatePath('/tags')
+  return { tag: newTag as Tag }
+}
+
+export async function deleteTag(tagId: string): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '请先登录' }
+
+  // Verify ownership
+  const { data: tag } = await supabase
+    .from('tags')
+    .select('created_by')
+    .eq('id', tagId)
+    .single()
+
+  if (!tag) return { error: '标签不存在' }
+  if (tag.created_by !== user.id) return { error: '只能删除自己创建的标签' }
+
+  // Use admin client to bypass RLS and delete all post_tags + tag
+  const admin = createAdminClient()
+  const { error: ptError } = await admin.from('post_tags').delete().eq('tag_id', tagId)
+  if (ptError) return { error: `删除文章标签关联失败: ${ptError.message}` }
+
+  const { error: tagError } = await admin.from('tags').delete().eq('id', tagId)
+  if (tagError) return { error: `删除标签失败: ${tagError.message}` }
+
+  revalidatePath('/tags')
+  revalidatePath('/')
+  return {}
 }
