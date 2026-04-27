@@ -61,13 +61,17 @@ export function AuthorListClient({
     )
   }
 
+  const activeAuthors = authors.filter((a) => !a.isDeleted)
+  const deletedAuthors = authors.filter((a) => a.isDeleted)
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">{authors.length}+ 位注册用户</p>
 
       <div className="grid gap-3">
-        {authors.map((user) => {
+        {activeAuthors.map((user) => {
           const days = formatDaysAgo(user.createdAt)
+          const hasPosts = user.postCount > 0
 
           return (
             <Link
@@ -97,18 +101,64 @@ export function AuthorListClient({
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span>文章{user.postCount}篇</span>
                   <span>注册 {days}</span>
-                  {user.isDeleted && (
-                    <span className="inline-flex items-center gap-1 text-gray-400">
-                      <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
-                      已注销
-                    </span>
-                  )}
+                  <span className={`inline-flex items-center gap-1 ${hasPosts ? 'text-green-600' : 'text-muted-foreground'}`}>
+                    <span className={`inline-block h-2 w-2 rounded-full ${hasPosts ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    {hasPosts ? '活跃' : '未发布'}
+                  </span>
                 </div>
               </div>
             </Link>
           )
         })}
       </div>
+
+      {deletedAuthors.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold text-muted-foreground pt-4 border-t">已注销用户</h2>
+          <div className="grid gap-3">
+            {deletedAuthors.map((user) => {
+              const days = formatDaysAgo(user.createdAt)
+
+              return (
+                <Link
+                  key={user.id}
+                  href={`/author/${user.id}`}
+                  className="block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow opacity-60"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        avatarUrl={user.avatarUrl}
+                        displayName={user.displayName}
+                        userId={user.id}
+                        size="sm"
+                        defer
+                      />
+                      <div>
+                        <span
+                          className="font-semibold text-base"
+                          style={{ color: getUserColor(user.id) }}
+                        >
+                          {user.displayName}
+                        </span>
+                        <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span>文章{user.postCount}篇</span>
+                      <span>注册 {days}</span>
+                      <span className="inline-flex items-center gap-1 text-gray-400">
+                        <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+                        已注销
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {hasMore && (
         <div className="flex justify-center pt-2">
