@@ -84,6 +84,7 @@ export function GuestbookSection({
                 onCancelReply={() => setReplyTarget(null)}
                 onSubmitReply={handleSubmit}
                 onDelete={handleDelete}
+                canDelete={currentUserId !== null && (currentUserId === message.author_id || currentUserId === toAuthorId)}
                 deleteTitle="删除留言"
                 deleteDescription="确定删除这条留言？此操作不可撤销。"
               />
