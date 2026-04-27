@@ -103,11 +103,15 @@ export function MyPostRowList({
         ))}
       </div>
 
-      {hasMore && (
+      {hasMore ? (
         <div className="flex justify-center pt-2">
-          <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={loading}>
+          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
             {loading ? '加载中...' : '加载更多'}
-          </Button>
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-center pt-2">
+          <span className="text-sm text-muted-foreground/60">已显示全部文章</span>
         </div>
       )}
     </div>

@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
 import { CommentForm } from './comment-form'
-import { Button } from '@/components/ui/button'
 import { Heart } from 'lucide-react'
 import type { CommentWithAuthor } from '@/lib/db/types'
 
@@ -97,11 +96,15 @@ export function CommentSection({
         </div>
       )}
 
-      {hasMore && (
+      {hasMore ? (
         <div className="flex justify-center pt-2">
-          <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={loading}>
+          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
             {loading ? '加载中...' : '加载更多评论'}
-          </Button>
+          </button>
+        </div>
+      ) : comments.length > 0 && (
+        <div className="flex justify-center pt-2">
+          <span className="text-sm text-muted-foreground/60">已显示全部评论</span>
         </div>
       )}
     </div>
