@@ -55,8 +55,9 @@ if [ ! -f .next/BUILD_STAMP ] || find src next.config.ts -newer .next/BUILD_STAM
   # 清理旧构建缓存，防止 Turbopack 缓存问题
   rm -rf .next
   npm run build
-  # standalone 模式不会自动复制 public/，需要手动复制
+  # standalone 模式需要手动复制 public 和 static 资源
   cp -r public .next/standalone/public
+  cp -r .next/static .next/standalone/.next/static
   touch .next/BUILD_STAMP
 else
   echo "跳过 build"
