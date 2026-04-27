@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { getPublishedPosts, getPostsByAuthor, getAllUsers, getPostsByTag } from '@/lib/db/queries'
+import { isSuperAdmin } from '@/lib/utils/admin'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
 import type { ActionResult, Tag } from '@/lib/db/types'
 
@@ -249,7 +250,7 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
 
-  // Verify ownership
+  // Verify ownership (admin can delete any tag)
   const { data: tag } = await supabase
     .from('tags')
     .select('created_by')
@@ -257,7 +258,8 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
     .single()
 
   if (!tag) return { error: '标签不存在' }
-  if (tag.created_by !== user.id) return { error: '只能删除自己创建的标签' }
+  const isAdmin = await isSuperAdmin()
+  if (tag.created_by !== user.id && !isAdmin) return { error: '只能删除自己创建的标签' }
 
   // Use admin client to bypass RLS and delete all post_tags + tag
   const admin = createAdminClient()
