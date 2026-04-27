@@ -6,7 +6,7 @@ import { formatDaysAgo } from '@/lib/utils/time'
 import { getUserColor } from '@/lib/utils/colors'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-react'
+import { Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -142,17 +142,16 @@ export function AuthorListClient({
               </Link>
               {isAdmin && (() => {
                 const isProtected = user.id === currentUserId || adminUserIds?.includes(user.id)
-                const tooltip = user.id === currentUserId ? '不能删除自己' : '不能删除其他管理员'
                 return (
                   <Button
                     variant="ghost"
                     size="icon"
                     disabled={isProtected}
-                    title={isProtected ? tooltip : undefined}
                     onClick={isProtected ? undefined : () => setConfirmDeleteId(user.id)}
-                    className={`absolute top-1/2 -translate-y-1/2 right-2 h-6 w-6 ${isProtected ? 'text-gray-300 cursor-not-allowed' : 'text-muted-foreground hover:text-destructive'}`}
+                    className={`absolute top-1/2 -translate-y-1/2 right-2 h-6 w-6 ${isProtected ? 'text-muted-foreground/40' : 'text-muted-foreground hover:text-destructive'}`}
+                    title={isProtected ? undefined : '删除用户'}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    {isProtected ? <Shield className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5" />}
                   </Button>
                 )
               })()}
