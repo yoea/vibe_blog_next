@@ -54,8 +54,7 @@ npm run dev
 ---
 
 ## 生产环境部署
-
-参见 [DEPLOY.md](./DEPLOY.md)。
+略
 
 ## 缓存策略
 

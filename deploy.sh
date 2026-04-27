@@ -53,7 +53,11 @@ fi
 echo "构建项目..."
 if [ ! -f .next/BUILD_STAMP ] || find src app pages -newer .next/BUILD_STAMP | grep -q .; then
   echo "需要重新构建"
+  # 清理旧构建缓存，防止 Turbopack 缓存问题
+  rm -rf .next
   npm run build
+  # standalone 模式不会自动复制 public/，需要手动复制
+  cp -r public .next/standalone/public
   touch .next/BUILD_STAMP
 else
   echo "跳过 build"
