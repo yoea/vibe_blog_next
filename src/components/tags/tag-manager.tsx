@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createTag, deleteTag } from '@/lib/actions/post-actions'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,21 +14,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Plus, Trash2, Hash, Calendar, User } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { TagWithCreator } from '@/lib/db/queries'
 
 interface Props {
   initialTags: TagWithCreator[]
   currentUserId: string | null
+  isAdmin: boolean
 }
 
-export function TagManager({ initialTags, currentUserId }: Props) {
+export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
   const [tags, setTags] = useState(initialTags)
   const [showCreate, setShowCreate] = useState(false)
   const [newTagName, setNewTagName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<TagWithCreator | null>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+
+  // Sync state when tags are refreshed from server
+  useEffect(() => {
+    setTags(initialTags)
+  }, [initialTags])
 
   const handleCreate = () => {
     const name = newTagName.trim()
@@ -91,43 +98,30 @@ export function TagManager({ initialTags, currentUserId }: Props) {
         </div>
       )}
 
-      <div className="border rounded-lg divide-y">
+      <div className="flex flex-wrap gap-3">
         {tags.map((tag) => {
           const isOwner = currentUserId === tag.created_by
+          const canDelete = isOwner || isAdmin
+          const creatorLabel = tag.author_name ?? tag.author_email ?? ''
           return (
-            <div key={tag.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
-              <div className="flex-1 min-w-0 flex items-center gap-2">
-                <span
-                  className="text-xs font-medium px-2 py-0.5 rounded shrink-0"
-                  style={{ color: tag.color, backgroundColor: tag.color + '18' }}
-                >
-                  {tag.name}
-                </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                  <Hash className="h-3 w-3" />
-                  {tag.post_count}
-                </span>
-                {tag.author_name || tag.author_email ? (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                    <User className="h-3 w-3" />
-                    {tag.author_name ?? tag.author_email}
-                  </span>
-                ) : null}
-              </div>
-              <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {new Date(tag.created_at).toLocaleDateString('zh-CN')}
-              </span>
-              {isOwner && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+            <div key={tag.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border hover:shadow-sm transition-shadow" title={creatorLabel ? `创建者: ${creatorLabel}` : undefined}>
+              <Link
+                href={`/tags/${encodeURIComponent(tag.slug)}`}
+                className="text-sm font-medium hover:underline"
+                style={{ color: tag.color }}
+              >
+                {tag.name}
+              </Link>
+              <span className="text-xs text-muted-foreground">({tag.post_count})</span>
+              {canDelete && (
+                <button
+                  type="button"
                   onClick={() => setDeleteTarget(tag)}
+                  className="ml-1 p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                   title="删除标签"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                  <Trash2 className="h-3 w-3" />
+                </button>
               )}
             </div>
           )
