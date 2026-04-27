@@ -139,11 +139,11 @@ export function AuthorListClient({
               {isAdmin && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={() => setConfirmDeleteId(user.id)}
-                  className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                  className="absolute top-1/2 -translate-y-1/2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               )}
             </div>

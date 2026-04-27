@@ -19,12 +19,11 @@ export async function deleteUserAsAdmin(targetUserId: string): Promise<ActionRes
   )
 
   // Mark user_settings as deleted
-  await admin.from('user_settings').upsert({
-    user_id: targetUserId,
+  await admin.from('user_settings').update({
     display_name: `用户${targetUserId.slice(0, 4)}已注销`,
     is_deleted: true,
     deleted_at: new Date().toISOString(),
-  })
+  }).eq('user_id', targetUserId)
 
   // Clear comment email references
   await admin.from('post_comments').update({ author_email: null }).eq('author_id', targetUserId)
