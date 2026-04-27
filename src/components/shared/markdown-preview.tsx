@@ -7,6 +7,7 @@ import rehypeHighlight from 'rehype-highlight'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import type { Schema } from 'hast-util-sanitize'
 import 'highlight.js/styles/github-dark-dimmed.css'
+import { CodeBlock } from '@/components/shared/code-block'
 
 // Allow highlight.js generated className attributes on <span> and <code>
 const sanitizeSchema: Schema = {
@@ -30,6 +31,11 @@ export function MarkdownPreview({ content }: { content: string }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeHighlight, [rehypeSanitize, sanitizeSchema]]}
+        components={{
+          pre: ({ children, className }) => (
+            <CodeBlock className={className}>{children}</CodeBlock>
+          ),
+        }}
       >
         {content}
       </ReactMarkdown>

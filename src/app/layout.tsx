@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/footer'
 import { Toaster } from 'sonner'
 import { ProgressBar } from '@/components/layout/progress-bar'
 import { ThemeProvider } from '@/components/layout/theme-provider'
+import { CommandPalette } from '@/components/layout/command-palette'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -63,6 +64,7 @@ export default async function RootLayout({
       <body className="flex flex-col bg-background min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
           <ProgressBar />
+          <CommandPalette />
           <Header siteTitle={siteTitle} />
           <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col">{children}</main>
           <Footer />
