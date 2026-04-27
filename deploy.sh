@@ -32,19 +32,16 @@ mkdir -p .next/standalone/public .next/standalone/.next/static
 cp -r public/. .next/standalone/public/
 cp -r .next/static/. .next/standalone/.next/static/
 # =========================
-# 5. PM2 处理 — 总是删除旧进程重新创建
+# 5. PM2 处理 — 只重启主应用，不动 webhook
 # =========================
-echo "停止旧 PM2 服务（如有）..."
-pm2 delete "$PM2_NAME" 2>/dev/null || true
-
-echo "创建新 PM2 服务..."
-pm2 start ecosystem.config.js
+echo "启动/重启主应用..."
+pm2 restart "$PM2_NAME" 2>/dev/null || pm2 start ecosystem.config.js --only "$PM2_NAME"
 
 # 保存 PM2 状态（防重启丢失）
 pm2 save
 
 # =========================
-# 6. 健康检查（带超时）
+# 6. 健康检查（直接检查本地端口，不经过 nginx）
 # =========================
 echo "健康检查..."
 sleep 5
@@ -62,7 +59,6 @@ check_url() {
   echo "  ✓ $name (HTTP $code)"
 }
 
-check_url "$SITE_URL" "首页"
-check_url "${SITE_URL}/logo.svg" "静态资源 logo.svg"
+check_url "http://127.0.0.1:8083" "本地服务"
 
 echo "=== 部署完成 ==="
