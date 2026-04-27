@@ -4,7 +4,6 @@ set -euo pipefail
 PROJECT_DIR="/home/ewing/craft/vibe_blog_next"
 SITE_URL="https://blog.ewing.top"
 PM2_NAME="vibe_blog_next"
-ENTRY_FILE=".next/standalone/server.js"  # 你可以按实际改
 
 echo "=== 开始部署 ==="
 
@@ -69,10 +68,10 @@ echo "检查 PM2 服务..."
 
 if pm2 list | grep -q "$PM2_NAME"; then
   echo "PM2 已存在，重载服务..."
-  pm2 reload "$PM2_NAME"
+  pm2 reload ecosystem.config.js
 else
   echo "PM2 不存在，创建新服务..."
-  pm2 start "$ENTRY_FILE" --name "$PM2_NAME" --time
+  pm2 start ecosystem.config.js
 fi
 
 # 保存 PM2 状态（防重启丢失）
