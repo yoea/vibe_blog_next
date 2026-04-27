@@ -51,7 +51,7 @@ fi
 # 4. 构建（失败直接退出）
 # =========================
 echo "构建项目..."
-if [ ! -f .next/BUILD_STAMP ] || find src app pages -newer .next/BUILD_STAMP | grep -q .; then
+if [ ! -f .next/BUILD_STAMP ] || find src next.config.ts -newer .next/BUILD_STAMP | grep -q .; then
   echo "需要重新构建"
   # 清理旧构建缓存，防止 Turbopack 缓存问题
   rm -rf .next
