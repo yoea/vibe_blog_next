@@ -47,7 +47,7 @@ export function PostEditor({ initialData }: Props) {
   const [excerpt, setExcerpt] = useState(draftData?.excerpt ?? initialData?.excerpt ?? '')
 
   // Cloud auto-save
-  const { status: autoSaveStatus, retry } = useAutoSave({
+  const { status: autoSaveStatus, countdown, hasContent, retry } = useAutoSave({
     postId,
     title,
     content,
@@ -245,7 +245,7 @@ export function PostEditor({ initialData }: Props) {
         <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-3">
           <SubmitButton isEditing={isEditing || !!postId} />
 
-          <AutoSaveIndicator status={autoSaveStatus} onRetry={retry} />
+          <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} onRetry={retry} />
 
           <label className="flex items-center gap-2 cursor-pointer">
             <span className="text-xs font-medium text-muted-foreground select-none">
@@ -278,9 +278,12 @@ export function PostEditor({ initialData }: Props) {
               <Switch checked={fsTab === 'preview'} onChange={(c) => setFsTab(c ? 'preview' : 'edit')} />
               <span className={`text-xs font-medium select-none ${fsTab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {contentLength}/{CONTENT_MAX_LENGTH} 字
-            </span>
+            <div className="flex items-center gap-3">
+              <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} onRetry={retry} />
+              <span className="text-xs text-muted-foreground">
+                {contentLength}/{CONTENT_MAX_LENGTH} 字
+              </span>
+            </div>
           </div>
 
           {fsTab === 'edit' ? (
@@ -340,8 +343,16 @@ function Switch({ checked, onChange, size = 'sm' }: { checked: boolean; onChange
 }
 
 // ── Auto-save status indicator ──
-function AutoSaveIndicator({ status, onRetry }: { status: AutoSaveStatus; onRetry: () => void }) {
-  if (status === 'idle') return null
+function AutoSaveIndicator({ status, countdown, hasContent, onRetry }: { status: AutoSaveStatus; countdown: number; hasContent: boolean; onRetry: () => void }) {
+  if (!hasContent) return null
+  if (status === 'idle') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+        {countdown}秒后自动保存
+      </span>
+    )
+  }
   const label = status === 'saving' ? '保存中...' : status === 'saved' ? '已自动保存' : '保存失败'
   const dotColor = status === 'saving' ? 'bg-muted-foreground/50' : status === 'saved' ? 'bg-green-500' : 'bg-red-500'
   const textColor = status === 'error' ? 'text-red-500' : 'text-muted-foreground'

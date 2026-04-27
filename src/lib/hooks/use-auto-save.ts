@@ -25,6 +25,7 @@ export function useAutoSave({
 }: UseAutoSaveOptions) {
   const [status, setStatus] = useState<AutoSaveStatus>('idle')
   const [postId, setPostId] = useState<string | null>(initialPostId)
+  const [countdown, setCountdown] = useState(SAVE_INTERVAL_MS / 1000)
 
   // Refs to avoid restarting the timer when values change
   const postIdRef = useRef(postId)
@@ -33,7 +34,9 @@ export function useAutoSave({
   const excerptRef = useRef(excerpt)
   const lastSavedRef = useRef({ title: '', content: '', excerpt: '' })
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onPostCreatedRef = useRef(onPostCreated)
+  const hasContentRef = useRef(false)
 
   // Keep refs in sync
   postIdRef.current = postId
@@ -41,6 +44,7 @@ export function useAutoSave({
   contentRef.current = content
   excerptRef.current = excerpt
   onPostCreatedRef.current = onPostCreated
+  hasContentRef.current = !!(title.trim() || content.trim() || excerpt.trim())
 
   // Sync postId from props
   useEffect(() => {
@@ -48,6 +52,9 @@ export function useAutoSave({
   }, [initialPostId])
 
   const doSave = useCallback(async () => {
+    // Skip when all fields empty and no draft yet
+    if (!hasContentRef.current && !postIdRef.current) return
+
     const current = {
       title: titleRef.current,
       content: contentRef.current,
@@ -81,16 +88,35 @@ export function useAutoSave({
 
     lastSavedRef.current = current
     setStatus('saved')
+    setCountdown(SAVE_INTERVAL_MS / 1000)
 
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     savedTimerRef.current = setTimeout(() => setStatus('idle'), SAVED_VISIBLE_MS)
   }, []) // stable: all values via refs
 
-  // Timer
+  // Save interval timer
   useEffect(() => {
     const timer = setInterval(doSave, SAVE_INTERVAL_MS)
     return () => clearInterval(timer)
   }, [doSave])
+
+  // Countdown ticker — only tick when idle
+  useEffect(() => {
+    if (status !== 'idle') {
+      if (countdownRef.current) clearInterval(countdownRef.current)
+      countdownRef.current = null
+      return
+    }
+
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => prev <= 0 ? SAVE_INTERVAL_MS / 1000 : prev - 1)
+    }, 1000)
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current)
+      countdownRef.current = null
+    }
+  }, [status])
 
   // Final save on unmount
   useEffect(() => {
@@ -113,6 +139,7 @@ export function useAutoSave({
   }, [])
 
   const retry = useCallback(() => { doSave() }, [doSave])
+  const hasContent = !!(title.trim() || content.trim() || excerpt.trim())
 
-  return { status, postId, retry }
+  return { status, postId, countdown, hasContent, retry }
 }
