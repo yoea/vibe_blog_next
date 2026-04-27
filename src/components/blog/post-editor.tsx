@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { MarkdownPreview } from '@/components/shared/markdown-preview'
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import { savePost } from '@/lib/actions/post-actions'
 import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save'
 import { toast } from 'sonner'
@@ -136,15 +137,6 @@ export function PostEditor({ initialData }: Props) {
     }
   }
 
-  const autoSaveLabel = (status: AutoSaveStatus): string | null => {
-    switch (status) {
-      case 'saving': return '保存中...'
-      case 'saved': return '已自动保存'
-      case 'error': return '保存失败'
-      default: return null
-    }
-  }
-
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} method="post" className="space-y-4" noValidate>
@@ -204,22 +196,10 @@ export function PostEditor({ initialData }: Props) {
         <Separator />
 
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">源码</span>
-            <button
-              type="button"
-              onClick={() => setTab(tab === 'edit' ? 'preview' : 'edit')}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                tab === 'preview' ? 'bg-primary' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-background rounded-full transition-transform shadow-sm ${
-                  tab === 'preview' ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-            <span className="text-sm text-muted-foreground">Markdown 渲染</span>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-medium ${tab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>源码</span>
+            <Switch checked={tab === 'preview'} onChange={(c) => setTab(c ? 'preview' : 'edit')} />
+            <span className={`text-xs font-medium ${tab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
           </div>
 
           {tab === 'edit' ? (
@@ -261,53 +241,24 @@ export function PostEditor({ initialData }: Props) {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-3">
           <SubmitButton isEditing={isEditing || !!postId} />
-          <span className="text-sm text-muted-foreground">公开状态</span>
-          <label className="inline-flex items-center cursor-pointer gap-2">
-            <input
-              type="checkbox"
-              name="published"
-              checked={published}
-              onChange={(e) => setPublished(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className={`relative w-9 h-5 rounded-full transition-colors ${published ? 'bg-primary' : 'bg-gray-300'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-background rounded-full transition-transform ${published ? 'translate-x-4' : 'translate-x-0'}`} />
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {published ? '公开发布' : '私密'}
+
+          <AutoSaveIndicator status={autoSaveStatus} onRetry={retry} />
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs font-medium text-muted-foreground select-none">
+              {published ? '公开' : '私密'}
             </span>
+            <input type="hidden" name="published" value={published ? 'on' : 'off'} />
+            <Switch checked={published} onChange={setPublished} />
           </label>
         </div>
-        <div className="flex items-center gap-3 text-xs">
-          <p className="text-muted-foreground/70">
-            {published
-              ? '公开发布后，所有人都能查看和评论这篇文章'
-              : '私密文章仅你自己可见，其他人无法访问'
-            }
-          </p>
-          <span className="ml-auto inline-flex items-center gap-1.5">
-            {autoSaveStatus !== 'idle' && (
-              <>
-                <span className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  autoSaveStatus === 'saving' ? 'bg-muted-foreground/50' :
-                  autoSaveStatus === 'saved' ? 'bg-green-500' : 'bg-red-500'
-                }`} />
-                <span className={`${
-                  autoSaveStatus === 'error' ? 'text-red-500' : 'text-muted-foreground'
-                }`}>
-                  {autoSaveLabel(autoSaveStatus)}
-                </span>
-                {autoSaveStatus === 'error' && (
-                  <button type="button" onClick={retry} className="underline hover:text-foreground cursor-pointer">
-                    重试
-                  </button>
-                )}
-              </>
-            )}
-          </span>
-        </div>
+        <p className="text-xs text-muted-foreground/70">
+          {published
+            ? '公开发布后，所有人都能查看和评论这篇文章'
+            : '私密文章仅你自己可见，其他人无法访问'}
+        </p>
       </form>
 
       {fullscreen && (
@@ -346,12 +297,52 @@ export function PostEditor({ initialData }: Props) {
 function SubmitButton({ isEditing }: { isEditing: boolean }) {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
-    >
+    <Button type="submit" disabled={pending} size="sm">
       {pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')}
+    </Button>
+  )
+}
+
+// ── Reusable toggle switch ──
+function Switch({ checked, onChange, size = 'sm' }: { checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }) {
+  const width = size === 'sm' ? 'w-9' : 'w-11'
+  const height = size === 'sm' ? 'h-5' : 'h-6'
+  const circle = size === 'sm' ? 'w-4 h-4' : 'w-4 h-4'
+  const translate = size === 'sm' ? 'translate-x-4' : 'translate-x-[1.125rem]'
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative ${width} ${height} rounded-full transition-colors cursor-pointer ${
+        checked ? 'bg-primary' : 'bg-gray-300'
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 ${circle} bg-background rounded-full transition-transform shadow-sm ${
+          checked ? translate : 'translate-x-0'
+        }`}
+      />
     </button>
+  )
+}
+
+// ── Auto-save status indicator ──
+function AutoSaveIndicator({ status, onRetry }: { status: AutoSaveStatus; onRetry: () => void }) {
+  if (status === 'idle') return null
+  const label = status === 'saving' ? '保存中...' : status === 'saved' ? '已自动保存' : '保存失败'
+  const dotColor = status === 'saving' ? 'bg-muted-foreground/50' : status === 'saved' ? 'bg-green-500' : 'bg-red-500'
+  const textColor = status === 'error' ? 'text-red-500' : 'text-muted-foreground'
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs">
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
+      <span className={textColor}>{label}</span>
+      {status === 'error' && (
+        <button type="button" onClick={onRetry} className="underline hover:text-foreground cursor-pointer">
+          重试
+        </button>
+      )}
+    </span>
   )
 }
