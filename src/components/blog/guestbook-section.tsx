@@ -5,7 +5,6 @@ import { createGuestbookMessage, deleteGuestbookMessage, getMoreGuestbookMessage
 import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
 import { CommentForm } from './comment-form'
-import { Button } from '@/components/ui/button'
 import type { GuestbookMessageWithAuthor } from '@/lib/db/types'
 
 export function GuestbookSection({
@@ -95,11 +94,15 @@ export function GuestbookSection({
         </div>
       )}
 
-      {hasMore && (
+      {hasMore ? (
         <div className="flex justify-center pt-2">
-          <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={loading}>
+          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
             {loading ? '加载中...' : '加载更多留言'}
-          </Button>
+          </button>
+        </div>
+      ) : messages.length > 0 && (
+        <div className="flex justify-center pt-2">
+          <span className="text-sm text-muted-foreground/60">已显示全部留言</span>
         </div>
       )}
     </div>
