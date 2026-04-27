@@ -51,13 +51,13 @@ npx tsc --noEmit   # TypeScript 类型检查
 - **主题**: Context Provider 支持 light/dark/system, 通过 localStorage + cookie 持久化
 - **Markdown**: `react-markdown` + remark-gfm + rehype-sanitize + rehype-highlight
 
-### 数据库 (supabase/schema.sql)
+### 数据库 (supabase/init.sql)
 
-**表**: posts, post_likes, post_comments, comment_likes, user_settings, site_views, site_likes, guestbook_messages
+**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages
 
 **触发器**: 自动更新 `updated_at`; 注册时自动创建 `user_settings` 行
 
-**RLS**: 所有表启用行级安全策略, 详见 schema.sql
+**RLS**: 所有表启用行级安全策略, 详见 init.sql
 
 ## 环境变量
 
