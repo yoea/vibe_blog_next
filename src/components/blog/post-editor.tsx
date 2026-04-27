@@ -211,7 +211,7 @@ export function PostEditor({ initialData }: Props) {
               placeholder="一句话概括文章..."
               maxLength={SUMMARY_MAX_LENGTH}
               rows={2}
-              className="w-full px-3 py-2 pl-9 rounded-md border bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full px-3 py-2 pl-9 rounded-md border bg-transparent text-[16px] sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
             <p className="absolute bottom-2 right-3 text-xs text-muted-foreground pointer-events-none select-none">
               {excerpt.length}/{SUMMARY_MAX_LENGTH}

@@ -76,7 +76,7 @@ export function CommentForm({
             onBlur={() => { if (guestName.trim()) localStorage.setItem('guest_name', guestName.trim()) }}
             placeholder="输入昵称（可选）"
             maxLength={50}
-            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-[16px] sm:text-xs focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
       )}

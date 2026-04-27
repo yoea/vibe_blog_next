@@ -31,12 +31,14 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
       .select('id')
       .eq('post_id', postId)
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (existing) {
-      await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id)
+      const { error } = await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id)
+      if (error) return { error: error.message }
     } else {
-      await supabase.from('post_likes').insert({ post_id: postId, user_id: user.id })
+      const { error } = await supabase.from('post_likes').insert({ post_id: postId, user_id: user.id })
+      if (error) return { error: error.message }
     }
   } else {
     // Unauthenticated: track by IP
@@ -48,12 +50,14 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
       .select('id')
       .eq('post_id', postId)
       .eq('ip', ip)
-      .single()
+      .maybeSingle()
 
     if (existing) {
-      await supabase.from('post_likes').delete().eq('post_id', postId).eq('ip', ip)
+      const { error } = await supabase.from('post_likes').delete().eq('post_id', postId).eq('ip', ip)
+      if (error) return { error: error.message }
     } else {
-      await supabase.from('post_likes').insert({ post_id: postId, ip })
+      const { error } = await supabase.from('post_likes').insert({ post_id: postId, ip })
+      if (error) return { error: error.message }
     }
   }
 
