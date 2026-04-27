@@ -50,19 +50,15 @@ fi
 # 4. 构建（失败直接退出）
 # =========================
 echo "构建项目..."
-if [ ! -f .next/BUILD_STAMP ] || find src next.config.ts -newer .next/BUILD_STAMP | grep -q .; then
-  echo "需要重新构建"
-  # 清理旧构建缓存，防止 Turbopack 缓存问题
-  rm -rf .next
-  npm run build
-  # standalone 模式需要手动复制 public 和 static 资源
-  mkdir -p .next/standalone/public .next/standalone/.next/static
-  cp -r public/. .next/standalone/public/
-  cp -r .next/static/. .next/standalone/.next/static/
-  touch .next/BUILD_STAMP
-else
-  echo "跳过 build"
-fi
+# 清理旧构建缓存，防止构建产物残留问题
+rm -rf .next
+
+echo "需要重新构建"
+npm run build
+# standalone 模式需要手动复制 public 和 static 资源
+mkdir -p .next/standalone/public .next/standalone/.next/static
+cp -r public/. .next/standalone/public/
+cp -r .next/static/. .next/standalone/.next/static/
 # =========================
 # 5. PM2 处理 — 总是删除旧进程重新创建
 # =========================

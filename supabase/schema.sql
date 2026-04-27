@@ -26,6 +26,9 @@ create table if not exists post_likes (
   unique(post_id, ip)
 );
 
+-- 兼容：为旧表补加 ip 列（已有则跳过）
+alter table post_likes add column if not exists ip varchar(45);
+
 -- Post comments table
 create table if not exists post_comments (
   id uuid default gen_random_uuid() primary key,
@@ -50,6 +53,9 @@ create table if not exists comment_likes (
   unique(comment_id, user_id),
   unique(comment_id, ip)
 );
+
+-- 兼容：为旧表补加 ip 列（已有则跳过）
+alter table comment_likes add column if not exists ip varchar(45);
 
 -- User settings table
 create table if not exists user_settings (
