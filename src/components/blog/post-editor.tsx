@@ -7,7 +7,6 @@ import { MarkdownPreview } from '@/components/shared/markdown-preview'
 import { Separator } from '@/components/ui/separator'
 import { savePost } from '@/lib/actions/post-actions'
 import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save'
-import { useLocalDraft } from '@/lib/hooks/use-local-draft'
 import { toast } from 'sonner'
 import type { PostWithAuthor } from '@/lib/db/types'
 
@@ -45,11 +44,6 @@ export function PostEditor({ initialData }: Props) {
   const [published, setPublished] = useState(initialData?.published ?? false)
   const [excerpt, setExcerpt] = useState(draftData?.excerpt ?? initialData?.excerpt ?? '')
 
-  // Local draft recovery (for crash recovery, not active auto-save)
-  const draftKey = isEditing && initialData ? `post_draft_${initialData.id}` : null
-  const { hasNewerDraft, timeAgo, clear, restore, discard } = useLocalDraft(draftKey, initialData)
-  const [showRecovery, setShowRecovery] = useState(false)
-
   // Cloud auto-save
   const { status: autoSaveStatus, retry } = useAutoSave({
     postId,
@@ -63,24 +57,6 @@ export function PostEditor({ initialData }: Props) {
       window.history.replaceState(null, '', `/posts-edit/${newSlug}`)
     }, []),
   })
-
-  // hydration 后检测本地草稿，避免服务端/客户端 HTML 不匹配
-  useEffect(() => {
-    if (hasNewerDraft) setShowRecovery(true)
-  }, [hasNewerDraft])
-
-  // 新建文章：静默恢复本地草稿（优先于云草稿）
-  useEffect(() => {
-    if (!isEditing) {
-      const restored = restore()
-      if (restored) {
-        setTitle(restored.title ?? '')
-        setContent(restored.content ?? '')
-        setExcerpt(restored.excerpt ?? '')
-        if (restored.published !== undefined) setPublished(restored.published)
-      }
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetch('/api/generate-summary')
@@ -155,7 +131,6 @@ export function PostEditor({ initialData }: Props) {
     if (result.error) {
       setError(result.error)
     } else {
-      clear()
       router.push('/my-posts')
       router.refresh()
     }
@@ -172,36 +147,6 @@ export function PostEditor({ initialData }: Props) {
 
   return (
     <div className="space-y-6">
-      {isEditing && showRecovery && hasNewerDraft && (
-        <div className="flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span>检测到本地有未保存的草稿（{timeAgo}），是否恢复？</span>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                const restored = restore()
-                if (restored) {
-                  setTitle(restored.title ?? '')
-                  setContent(restored.content ?? '')
-                  setExcerpt(restored.excerpt ?? '')
-                  if (restored.published !== undefined) setPublished(restored.published)
-                }
-                setShowRecovery(false)
-              }}
-              className="rounded-md bg-amber-200 px-3 py-1 font-medium hover:bg-amber-300 transition-colors cursor-pointer"
-            >
-              恢复草稿
-            </button>
-            <button
-              type="button"
-              onClick={() => { discard(); setShowRecovery(false) }}
-              className="rounded-md px-3 py-1 text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
-            >
-              忽略
-            </button>
-          </div>
-        </div>
-      )}
       <form onSubmit={handleSubmit} method="post" className="space-y-4" noValidate>
         {isEditing && <input type="hidden" name="_mode" value="update" />}
         {isEditing && <input type="hidden" name="_id" value={initialData.id} />}
