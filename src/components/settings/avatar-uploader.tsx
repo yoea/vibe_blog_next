@@ -149,7 +149,7 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
 
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center gap-3">
         <Avatar
           avatarUrl={avatarUrl}
           displayName={displayName}
@@ -157,7 +157,7 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
           size="xl"
           previewable
         />
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <input
             ref={fileInputRef}
             type="file"
@@ -165,7 +165,7 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
             onChange={handleFileSelect}
             className="hidden"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -184,12 +184,12 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
                 disabled={uploading}
               >
                 <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                删除头像
+                删除
               </Button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            选择的图片支持 JPG、PNG，最大 20MB。
+          <p className="text-xs text-muted-foreground text-center">
+            支持 JPG、PNG，最大 20MB
           </p>
         </div>
       </div>

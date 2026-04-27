@@ -38,6 +38,10 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
   const router = useRouter()
 
   const handleSaveName = async () => {
+    if (name === displayName) {
+      setEditing(false)
+      return
+    }
     setSaving(true)
     const res = await updateUserSettings(name)
     setSaving(false)
@@ -65,10 +69,10 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6">
-      <div className="flex flex-col sm:flex-row gap-6">
-        {/* Avatar section */}
-        <div className="shrink-0">
+    <div className="rounded-lg border bg-card p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row gap-6 sm:gap-6">
+        {/* Avatar section — centered on mobile */}
+        <div className="shrink-0 flex justify-center sm:block">
           <AvatarUploader userId={userId} displayName={displayName} currentAvatarUrl={avatarUrl} />
         </div>
 
@@ -82,6 +86,7 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') { setName(displayName); setEditing(false) } }}
                     maxLength={8}
                     className="px-2 py-1 text-base font-medium rounded-md border bg-transparent focus:outline-none focus:ring-2 focus:ring-ring w-40"
                     autoFocus
