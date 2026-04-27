@@ -150,7 +150,12 @@ function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: str
     <>
       <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
         <div className="flex-1 min-w-0 flex items-center gap-2">
-          {pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-primary rotate-45" />}
+          {pinned && (
+            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
+              <Pin className="h-3 w-3 rotate-45" />
+              置顶
+            </span>
+          )}
           <Link
             href={`/posts/${post.slug}`}
             className="truncate text-sm font-medium hover:text-primary transition-colors"

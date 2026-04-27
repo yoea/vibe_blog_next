@@ -402,6 +402,7 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
       comment_count:post_comments(count)
     `, { count: 'exact' })
     .eq('author_id', authorId)
+    .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
 

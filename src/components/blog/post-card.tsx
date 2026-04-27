@@ -105,7 +105,12 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
               >
                 {post.title}
               </Link>
-              {pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-primary rotate-45" />}
+              {pinned && (
+                <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
+                  <Pin className="h-3 w-3 rotate-45" />
+                  置顶
+                </span>
+              )}
               <span className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded ${
                 post.published
                   ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950'
@@ -162,9 +167,17 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <Link href={`/posts/${post.slug}`} className="block min-w-0 hover:text-primary transition-colors">
-          <h2 className="text-xl font-semibold leading-tight truncate">{post.title}</h2>
-        </Link>
+        <div className="flex items-start gap-2">
+          <Link href={`/posts/${post.slug}`} className="block min-w-0 flex-1 hover:text-primary transition-colors">
+            <h2 className="text-xl font-semibold leading-tight truncate">{post.title}</h2>
+          </Link>
+          {pinned && (
+            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
+              <Pin className="h-3 w-3 rotate-45" />
+              置顶
+            </span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {post.excerpt && (
