@@ -442,32 +442,31 @@ export async function getTotalPostsCount() {
 }
 
 export async function getAllUsers(page = 1, limit = 20) {
-  const { createAdminClient } = await import('@/lib/supabase/admin')
-  const supabase = createAdminClient()
+  const supabase = await createClient()
 
-  const { data: { users }, error } = await supabase.auth.admin.listUsers({ page, perPage: limit })
+  // Count total users with settings
+  const { count: total } = await supabase
+    .from('user_settings')
+    .select('*', { count: 'exact', head: true })
+
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  // Fetch user settings with post counts
+  const { data: settings, error } = await supabase
+    .from('user_settings')
+    .select('user_id, display_name, avatar_url, is_deleted, deleted_at, created_at')
+    .order('is_deleted', { ascending: true })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
   if (error) return { data: [], count: 0, error: error.message }
 
-  // Estimate total count for pagination
-  const hasMore = users.length >= limit
-
-  // Fetch display names from user_settings
-  const userIds = users.map((u) => u.id)
-  const settingsMap = new Map<string, { display_name: string; avatar_url: string | null }>()
+  // Fetch post counts for these users
+  const userIds = (settings ?? []).map((s) => s.user_id)
   const postCountMap = new Map<string, number>()
   if (userIds.length > 0) {
-    const db = await createClient()
-    const { data: settings } = await db
-      .from('user_settings')
-      .select('user_id, display_name, avatar_url, updated_at')
-      .in('user_id', userIds)
-    if (settings) {
-      for (const s of settings) {
-        settingsMap.set(s.user_id, { display_name: s.display_name ?? '', avatar_url: s.avatar_url ?? null })
-      }
-    }
-
-    const { data: posts } = await db
+    const { data: posts } = await supabase
       .from('posts')
       .select('author_id')
       .eq('published', true)
@@ -479,33 +478,18 @@ export async function getAllUsers(page = 1, limit = 20) {
     }
   }
 
-  const oneMonthAgo = Date.now() - 30 * 86400000
-
   return {
-    data: users.map((u) => {
-      const s = settingsMap.get(u.id)
-      const displayName = s?.display_name || u.email?.split('@')[0] || ''
-      const avatarUrl = s?.avatar_url ?? null
-      const isDeleted = displayName === '已注销用户'
-      return {
-        id: u.id,
-        email: u.email ?? '',
-        displayName,
-        avatarUrl,
-        createdAt: u.created_at,
-        lastSignIn: u.last_sign_in_at ?? null,
-        isActive: !isDeleted && u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() > oneMonthAgo : false,
-        isDeleted,
-        postCount: postCountMap.get(u.id) ?? 0,
-      }
-    }).sort((a, b) => {
-      // Deleted users at the bottom
-      if (a.isDeleted !== b.isDeleted) return a.isDeleted ? 1 : -1
-      // Then sort by post count desc
-      return b.postCount - a.postCount
-    }),
-    count: users.length,
-    hasMore,
+    data: (settings ?? []).map((s) => ({
+      id: s.user_id,
+      displayName: s.display_name ?? '',
+      avatarUrl: s.avatar_url ?? null,
+      createdAt: s.created_at,
+      postCount: postCountMap.get(s.user_id) ?? 0,
+      isDeleted: s.is_deleted ?? false,
+      deletedAt: s.deleted_at ?? null,
+    })),
+    count: total ?? 0,
+    hasMore: (total ?? 0) > to + 1,
     error: null,
   }
 }

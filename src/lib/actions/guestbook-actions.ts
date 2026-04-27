@@ -93,12 +93,12 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
 
   const { data: message } = await supabase
     .from('guestbook_messages')
-    .select('author_id')
+    .select('author_id, to_author_id')
     .eq('id', messageId)
     .single()
 
   if (!message) return { error: '留言不存在' }
-  if (message.author_id !== user.id) return { error: '无权限删除' }
+  if (message.author_id !== user.id && message.to_author_id !== user.id) return { error: '无权限删除' }
 
   const { error } = await supabase
     .from('guestbook_messages')

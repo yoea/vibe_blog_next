@@ -7,15 +7,6 @@ export const metadata = {
 }
 
 export default async function AuthorListPage() {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">作者列表</h1>
-        <p className="text-muted-foreground">管理员功能暂未开放。</p>
-      </div>
-    )
-  }
-
   const { data: users, hasMore = false, error } = await getAllUsers(1, 20)
 
   if (error) {

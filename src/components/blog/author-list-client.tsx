@@ -8,13 +8,11 @@ import { Avatar } from '@/components/ui/avatar'
 
 interface AuthorData {
   id: string
-  email: string
   displayName: string
   avatarUrl: string | null
   createdAt: string
-  lastSignIn: string | null
-  isActive: boolean
   isDeleted: boolean
+  deletedAt: string | null
   postCount: number
 }
 
@@ -99,14 +97,12 @@ export function AuthorListClient({
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span>文章{user.postCount}篇</span>
                   <span>注册 {days}</span>
-                  <span
-                    className={`inline-flex items-center gap-1 ${
-                      user.isDeleted ? 'text-gray-400' : user.isActive ? 'text-green-600' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <span className={`inline-block h-2 w-2 rounded-full ${user.isDeleted ? 'bg-gray-300' : user.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    {user.isDeleted ? '注销' : user.isActive ? '活跃' : '不活跃'}
-                  </span>
+                  {user.isDeleted && (
+                    <span className="inline-flex items-center gap-1 text-gray-400">
+                      <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+                      已注销
+                    </span>
+                  )}
                 </div>
               </div>
             </Link>
