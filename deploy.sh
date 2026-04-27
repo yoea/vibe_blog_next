@@ -56,8 +56,9 @@ if [ ! -f .next/BUILD_STAMP ] || find src next.config.ts -newer .next/BUILD_STAM
   rm -rf .next
   npm run build
   # standalone 模式需要手动复制 public 和 static 资源
-  cp -r public .next/standalone/public
-  cp -r .next/static .next/standalone/.next/static
+  mkdir -p .next/standalone/public .next/standalone/.next/static
+  cp -r public/. .next/standalone/public/
+  cp -r .next/static/. .next/standalone/.next/static/
   touch .next/BUILD_STAMP
 else
   echo "跳过 build"
