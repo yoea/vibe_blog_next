@@ -1,3 +1,10 @@
+export interface Tag {
+  id: string
+  name: string
+  slug: string
+  created_at: string
+}
+
 export interface Post {
   id: string
   author_id: string
@@ -16,6 +23,7 @@ export interface PostWithAuthor extends Post {
   like_count: number
   comment_count: number
   is_liked_by_current_user: boolean
+  tags: Tag[]
 }
 
 export interface Comment {

@@ -29,6 +29,7 @@ interface PostCardData {
   like_count?: number
   comment_count?: number
   author?: { email?: string | null; name?: string | null; avatar_url?: string | null } | null
+  tags?: { id: string; name: string; slug: string }[]
 }
 
 export function PostCard({ post, showActions }: { post: PostCardData; showActions?: boolean }) {
@@ -120,6 +121,19 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
                 {post.published ? '公开' : '私密'}
               </span>
             </div>
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1">
+                {post.tags.map((tag) => (
+                  <Link
+                    key={tag.slug}
+                    href={`/tags/${tag.slug}`}
+                    className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-primary hover:bg-muted/80 transition-colors"
+                  >
+                    {tag.name}
+                  </Link>
+                ))}
+              </div>
+            )}
             {post.excerpt && (
               <p className="text-sm text-muted-foreground line-clamp-2 mb-1">{post.excerpt}</p>
             )}
@@ -180,6 +194,19 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {post.tags.map((tag) => (
+              <Link
+                key={tag.slug}
+                href={`/tags/${tag.slug}`}
+                className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-primary hover:bg-muted/80 transition-colors"
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        )}
         {post.excerpt && (
           <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
         )}

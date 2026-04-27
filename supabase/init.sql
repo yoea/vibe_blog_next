@@ -164,6 +164,40 @@ create index if not exists idx_guestbook_to_author on guestbook_messages(to_auth
 create index if not exists idx_guestbook_ip on guestbook_messages(ip);
 
 -- ============================================
+-- Tags (multi-tag support for posts)
+-- ============================================
+create table if not exists tags (
+  id uuid default gen_random_uuid() primary key,
+  name varchar(50) not null,
+  slug varchar(100) unique not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists post_tags (
+  id uuid default gen_random_uuid() primary key,
+  post_id uuid references posts(id) on delete cascade not null,
+  tag_id uuid references tags(id) on delete cascade not null,
+  unique(post_id, tag_id)
+);
+
+create index if not exists idx_tags_slug on tags(slug);
+create index if not exists idx_post_tags_post on post_tags(post_id);
+create index if not exists idx_post_tags_tag on post_tags(tag_id);
+
+alter table tags enable row level security;
+alter table post_tags enable row level security;
+
+create policy "tags_select" on tags for select using (true);
+create policy "tags_insert" on tags for insert with check (true);
+create policy "post_tags_select" on post_tags for select using (true);
+create policy "post_tags_insert" on post_tags for insert with check (
+  auth.uid() = (select author_id from posts where id = post_id)
+);
+create policy "post_tags_delete" on post_tags for delete using (
+  auth.uid() = (select author_id from posts where id = post_id)
+);
+
+-- ============================================
 -- Row Level Security (RLS)
 -- ============================================
 

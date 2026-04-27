@@ -1,6 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
-import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor } from '@/lib/db/types'
+import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor, Tag } from '@/lib/db/types'
 import { headers } from 'next/headers'
+
+// ── Helper: attach tags to an array of posts ──
+async function attachTagsToPosts(posts: any[]) {
+  if (posts.length === 0) return
+  const supabase = await createClient()
+  const postIds = posts.map((p: any) => p.id)
+  const { data: postTags } = await supabase
+    .from('post_tags')
+    .select(`post_id, tag_id, tags(*)`)
+    .in('post_id', postIds)
+
+  const tagMap = new Map<string, Tag[]>()
+  for (const pt of postTags ?? []) {
+    const tag = pt.tags as unknown as Tag
+    if (!tagMap.has(pt.post_id)) tagMap.set(pt.post_id, [])
+    tagMap.get(pt.post_id)!.push(tag)
+  }
+  for (const post of posts) {
+    (post as any).tags = tagMap.get(post.id) ?? []
+  }
+}
 
 export async function getPublishedPosts(page = 1, limit = 10) {
   const supabase = await createClient()
@@ -41,6 +62,8 @@ export async function getPublishedPosts(page = 1, limit = 10) {
     comment_count: item.comment_count?.[0]?.count ?? 0,
   })) as unknown as PostWithAuthor[]
 
+  await attachTagsToPosts(result)
+
   return { data: result, count, error: null }
 }
 
@@ -61,8 +84,8 @@ export async function getPostBySlug(slug: string) {
     return { data: null, error: '文章不存在' }
   }
 
-  // Fetch author settings, like count, comment count, user/IP like check, and draft in parallel
-  const [authorSettingsResult, { count: likeCount }, commentCountResult, userLikeResult, draftResult] = await Promise.all([
+  // Fetch author settings, like count, comment count, user/IP like check, draft, and tags in parallel
+  const [authorSettingsResult, { count: likeCount }, commentCountResult, userLikeResult, draftResult, tagsResult] = await Promise.all([
     supabase.from('user_settings').select('display_name, avatar_url').eq('user_id', post.author_id).maybeSingle(),
     supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id),
     supabase.from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id),
@@ -74,6 +97,8 @@ export async function getPostBySlug(slug: string) {
     user && user.id === post.author_id
       ? supabase.from('post_drafts').select('title, content, excerpt, updated_at').eq('post_id', post.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    // Tags
+    supabase.from('post_tags').select(`tag_id, tags(*)`).eq('post_id', post.id),
   ])
 
   // For unauthenticated users, check IP-based like
@@ -95,6 +120,7 @@ export async function getPostBySlug(slug: string) {
   }
 
   const commentCount = commentCountResult.count ?? 0
+  const tags = (tagsResult?.data ?? []).map((pt: any) => pt.tags as Tag).filter(Boolean)
 
   const result = {
     ...post,
@@ -106,6 +132,7 @@ export async function getPostBySlug(slug: string) {
     like_count: likeCount ?? 0,
     comment_count: commentCount,
     is_liked_by_current_user: !!userLikeResult?.data || ipLike,
+    tags,
     // Attach draft data if the current user is the author
     ...(draftResult?.data ? {
       draft_title: draftResult.data.title,
@@ -412,6 +439,7 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
     like_count: p.like_count?.[0]?.count ?? 0,
     comment_count: p.comment_count?.[0]?.count ?? 0,
   }))
+  await attachTagsToPosts(mapped)
   return { data: mapped, count, error: null }
 }
 
@@ -547,5 +575,108 @@ export async function searchPosts(query: string, page = 1, limit = 20) {
     comment_count: item.comment_count?.[0]?.count ?? 0,
   })) as unknown as PostWithAuthor[]
 
+  await attachTagsToPosts(result)
+
   return { data: result, count, error: null }
+}
+
+export async function getTagsForPost(postId: string): Promise<Tag[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('post_tags')
+    .select(`tag_id, tags(*)`)
+    .eq('post_id', postId)
+  return (data ?? []).map((pt: any) => pt.tags as Tag).filter(Boolean)
+}
+
+export async function getAllTags(): Promise<{ name: string; slug: string; post_count: number }[]> {
+  const supabase = await createClient()
+  const { data: tags } = await supabase.from('tags').select('id, name, slug').order('name', { ascending: true })
+  if (!tags?.length) return []
+
+  const tagIds = tags.map((t) => t.id)
+  const { data: postTags } = await supabase
+    .from('post_tags')
+    .select('tag_id')
+    .in('tag_id', tagIds)
+
+  const countMap = new Map<string, number>()
+  for (const pt of postTags ?? []) {
+    countMap.set(pt.tag_id, (countMap.get(pt.tag_id) ?? 0) + 1)
+  }
+
+  return tags.map((t) => ({
+    name: t.name,
+    slug: t.slug,
+    post_count: countMap.get(t.id) ?? 0,
+  }))
+}
+
+export async function getPostsByTag(tagSlug: string, page = 1, limit = 10) {
+  const supabase = await createClient()
+
+  // Find the tag
+  const { data: tag } = await supabase
+    .from('tags')
+    .select('id, name')
+    .eq('slug', tagSlug)
+    .single()
+
+  if (!tag) return { data: [], count: 0, tagName: '', error: '标签不存在' }
+
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  // Count total posts with this tag
+  const { count: total } = await supabase
+    .from('post_tags')
+    .select('*', { count: 'exact', head: true })
+    .eq('tag_id', tag.id)
+
+  // Fetch post IDs for this tag
+  const { data: postTags } = await supabase
+    .from('post_tags')
+    .select('post_id')
+    .eq('tag_id', tag.id)
+    .order('created_at', { referencedTable: 'posts.created_at', ascending: false })
+    .range(from, to)
+
+  if (!postTags?.length) return { data: [], count: 0, tagName: tag.name, error: null }
+
+  const postIds = postTags.map((pt) => pt.post_id)
+
+  const { data: posts } = await supabase
+    .from('posts')
+    .select(`
+      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+      like_count:post_likes(count),
+      comment_count:post_comments(count)
+    `)
+    .in('id', postIds)
+    .eq('published', true)
+    .order('created_at', { ascending: false })
+
+  if (!posts?.length) return { data: [], count: 0, tagName: tag.name, error: null }
+
+  // Map author info
+  const authorIds = [...new Set(posts.map((item: any) => item.author_id))]
+  const { data: userSettings } = await supabase
+    .from('user_settings')
+    .select('user_id, display_name, avatar_url')
+    .in('user_id', authorIds)
+  const authorMap = new Map((userSettings ?? []).map((s: any) => [s.user_id, { name: s.display_name, avatar_url: s.avatar_url ?? null }]))
+
+  const result = posts.map((item: any) => ({
+    ...item,
+    author: {
+      name: authorMap.get(item.author_id)?.name ?? item.author_id?.slice(0, 8),
+      avatar_url: authorMap.get(item.author_id)?.avatar_url ?? null,
+    },
+    like_count: item.like_count?.[0]?.count ?? 0,
+    comment_count: item.comment_count?.[0]?.count ?? 0,
+  })) as unknown as PostWithAuthor[]
+
+  await attachTagsToPosts(result)
+
+  return { data: result, count: total ?? 0, tagName: tag.name, error: null }
 }

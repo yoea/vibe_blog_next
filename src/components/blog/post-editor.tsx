@@ -46,6 +46,12 @@ export function PostEditor({ initialData }: Props) {
   const [content, setContent] = useState(draftData?.content ?? initialData?.content ?? '')
   const [published, setPublished] = useState(initialData?.published ?? false)
   const [excerpt, setExcerpt] = useState(draftData?.excerpt ?? initialData?.excerpt ?? '')
+  const [tags, setTags] = useState<string[]>(
+    initialData && 'tags' in initialData
+      ? (initialData as any).tags?.map((t: any) => t.name) ?? []
+      : []
+  )
+  const [tagInput, setTagInput] = useState('')
 
   // Cloud auto-save
   const { status: autoSaveStatus, countdown, hasContent, needsSave, retry } = useAutoSave({
@@ -139,6 +145,7 @@ export function PostEditor({ initialData }: Props) {
     formData.set('content', content)
     formData.set('excerpt', excerpt)
     formData.set('published', published ? 'on' : 'off')
+    formData.set('tags', JSON.stringify(tags))
     // For new posts that have been auto-saved, pass the post ID
     if (!isEditing && postId && slug) {
       formData.set('_mode', 'update')
@@ -218,6 +225,44 @@ export function PostEditor({ initialData }: Props) {
                 重新生成摘要
               </button>
             ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">标签</label>
+          <p className="text-xs text-muted-foreground">按 Enter 添加标签，最多 5 个</p>
+          <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-md border bg-transparent min-h-[2.25rem] focus-within:ring-2 focus-within:ring-ring">
+            {tags.map((tag, i) => (
+              <span key={i} className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => setTags(tags.filter((_, j) => j !== i))}
+                  className="hover:text-destructive transition-colors cursor-pointer"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {tags.length < 5 && (
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    const val = tagInput.trim()
+                    if (val && !tags.includes(val) && tags.length < 5) {
+                      setTags([...tags, val.slice(0, 20)])
+                    }
+                    setTagInput('')
+                  }
+                }}
+                placeholder={tags.length === 0 ? '添加标签...' : ''}
+                className="flex-1 min-w-[80px] bg-transparent text-sm focus:outline-none"
+              />
+            )}
           </div>
         </div>
 
