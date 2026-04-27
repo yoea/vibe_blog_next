@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { getPublishedPosts, getPostsByAuthor, getAllUsers } from '@/lib/db/queries'
+import { checkIpRateLimit } from '@/lib/utils/rate-limit'
 import type { ActionResult } from '@/lib/db/types'
 
 export async function savePost(formData: FormData): Promise<ActionResult> {
@@ -27,6 +29,16 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     revalidatePath('/my-posts')
     return {}
   } else {
+    // Rate limit: 10 posts per hour per IP
+    const h = await headers()
+    const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim()
+      ?? h.get('x-real-ip')
+      ?? null
+    if (ip && ip !== 'unknown') {
+      const { allowed } = await checkIpRateLimit(ip, 'posts', 10, 60)
+      if (!allowed) return { error: '发布过于频繁，请稍后再试' }
+    }
+
     const id = crypto.randomUUID()
     const slug = id.slice(0, 8)
     const { error } = await supabase.from('posts').insert({

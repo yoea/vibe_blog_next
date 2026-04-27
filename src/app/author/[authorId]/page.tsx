@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { PostCard } from '@/components/blog/post-card'
 import { AuthorCard } from '@/components/blog/author-card'
 import { GuestbookSection } from '@/components/blog/guestbook-section'
@@ -36,24 +35,14 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const { data: authorSettings } = await supabase
     .from('user_settings')
-    .select('display_name, avatar_url')
+    .select('display_name, avatar_url, created_at, is_deleted')
     .eq('user_id', authorId)
     .maybeSingle()
 
-  // Fetch auth user for registration time
-  let createdAt: string | null = null
-  try {
-    const admin = createAdminClient()
-    const { data: authUser } = await admin.auth.admin.getUserById(authorId)
-    if (authUser?.user?.created_at) {
-      createdAt = authUser.user.created_at
-    }
-  } catch {
-    // Admin client may not have service role key
-  }
-
   const authorName = authorSettings?.display_name ?? authorId.slice(0, 8)
   const authorAvatarUrl = authorSettings?.avatar_url ?? null
+  const createdAt = authorSettings?.created_at ?? null
+  const isDeleted = authorSettings?.is_deleted ?? false
 
   // Fetch current user and posts in parallel
   const [{ data: { user: currentUser } }, { data: posts, error }] = await Promise.all([

@@ -63,9 +63,15 @@ create table if not exists user_settings (
   user_id uuid references auth.users(id) on delete cascade unique not null,
   display_name varchar(100),
   avatar_url text,
+  is_deleted boolean default false,
+  deleted_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- 兼容：为旧表补加 is_deleted 和 deleted_at 列（已有则跳过）
+alter table user_settings add column if not exists is_deleted boolean default false;
+alter table user_settings add column if not exists deleted_at timestamptz;
 -- Site views table
 create table if not exists site_views (
   id uuid default gen_random_uuid() primary key,
@@ -217,11 +223,8 @@ create policy "comment_likes_anon_delete"
 -- User Settings RLS
 alter table user_settings enable row level security;
 
-create policy "own_settings_select"
-  on user_settings for select using (auth.uid() = user_id);
-
-create policy "authenticated_settings_select_display_name"
-  on user_settings for select using (auth.role() = 'authenticated');
+create policy "user_settings_select_public"
+  on user_settings for select using (true);
 
 create policy "own_settings_insert"
   on user_settings for insert with check (auth.uid() = user_id);
@@ -270,7 +273,9 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create policy "guestbook_delete" on guestbook_messages for delete using (auth.uid() = author_id);
+  create policy "guestbook_delete" on guestbook_messages for delete using (
+    auth.uid() = author_id or auth.uid() = to_author_id
+  );
 exception when duplicate_object then null;
 end $$;
 
