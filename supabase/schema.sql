@@ -151,12 +151,12 @@ create policy "authenticated_unlike"
 
 create policy "anonymous_like"
   on post_likes for insert with check (
-    auth.role() = 'anon' and ip is not null
+    ip is not null
   );
 
 create policy "anonymous_unlike"
   on post_likes for delete using (
-    auth.role() = 'anon' and ip is not null
+    ip is not null
   );
 
 -- Post Comments RLS
@@ -206,12 +206,12 @@ create policy "comment_likes_delete"
 
 create policy "comment_likes_anon_insert"
   on comment_likes for insert with check (
-    auth.role() = 'anon' and ip is not null
+    ip is not null
   );
 
 create policy "comment_likes_anon_delete"
   on comment_likes for delete using (
-    auth.role() = 'anon' and ip is not null
+    ip is not null
   );
 
 -- User Settings RLS

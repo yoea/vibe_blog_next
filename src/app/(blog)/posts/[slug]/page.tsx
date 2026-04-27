@@ -11,8 +11,6 @@ import { formatTimeAgo } from '@/lib/utils/time'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
-export const revalidate = 300;
-
 interface PageProps {
   params: Promise<{ slug: string }>
 }

@@ -38,9 +38,7 @@ export function LikeButton({
       if (result.error) {
         setLiked(!newLiked)
         setCount((c) => (!newLiked ? c + 1 : c - 1))
-        if (result.error === '无法获取IP') {
-          toast.error('点赞失败，请重试')
-        }
+        toast.error(result.error)
       }
     })
   }
