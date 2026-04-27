@@ -1,7 +1,7 @@
 import { getAllUsers } from '@/lib/db/queries'
 import { loadMoreAuthors } from '@/lib/actions/post-actions'
 import { deleteUserAsAdmin } from '@/lib/actions/admin-actions'
-import { isSuperAdmin } from '@/lib/utils/admin'
+import { isSuperAdmin, getSuperAdminUserIds } from '@/lib/utils/admin'
 import { AuthorListClient } from '@/components/blog/author-list-client'
 import { createClient } from '@/lib/supabase/server'
 
@@ -18,6 +18,12 @@ export default async function AuthorListPage() {
 
   const isAdmin = await isSuperAdmin()
 
+  // Get the current user ID and all super admin user IDs for protection
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const currentUserId = user?.id ?? ''
+  const adminUserIds = isAdmin ? await getSuperAdminUserIds() : []
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">作者列表</h1>
@@ -27,6 +33,8 @@ export default async function AuthorListPage() {
         onLoadMore={loadMoreAuthors}
         isAdmin={isAdmin}
         onDeleteUser={deleteUserAsAdmin}
+        currentUserId={currentUserId}
+        adminUserIds={adminUserIds}
       />
     </div>
   )
