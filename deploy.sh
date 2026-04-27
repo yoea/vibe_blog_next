@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PROJECT_DIR="/home/ewing/craft/vibe_blog_demo"
+PROJECT_DIR="/home/ewing/craft/vibe_blog_next"
 SITE_URL="https://blog.ewing.top"
 PM2_NAME="vibe-blog"
 
