@@ -134,6 +134,29 @@ create index if not exists idx_post_comments_ip on post_comments(ip);
 create index if not exists idx_comment_likes_comment_id on comment_likes(comment_id);
 create index if not exists idx_comment_likes_user_id on comment_likes(user_id);
 create index if not exists idx_site_views_ip on site_views(ip);
+-- ============================================
+-- Post share clicks (per-post share tracking)
+-- ============================================
+create table if not exists post_shares (
+  id uuid default gen_random_uuid() primary key,
+  post_id uuid references posts(id) on delete cascade not null,
+  ip varchar(45),
+  shared_at timestamptz default now()
+);
+
+create index if not exists idx_post_shares_post on post_shares(post_id);
+
+-- ============================================
+-- Full-text search (pg_trgm for Chinese/模糊搜索)
+-- ============================================
+create extension if not exists pg_trgm;
+create index if not exists idx_posts_title_search on posts using gin (title gin_trgm_ops);
+create index if not exists idx_posts_content_search on posts using gin (content gin_trgm_ops);
+
+alter table post_shares enable row level security;
+create policy "post_shares_insert" on post_shares for insert with check (true);
+create policy "post_shares_select" on post_shares for select using (true);
+
 create index if not exists idx_site_views_accessed on site_views(accessed_at);
 create index if not exists idx_site_likes_ip on site_likes(ip);
 create index if not exists idx_site_likes_liked on site_likes(liked_at);

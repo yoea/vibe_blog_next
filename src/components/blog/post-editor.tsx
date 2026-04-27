@@ -28,6 +28,7 @@ export function PostEditor({ initialData }: Props) {
   const [error, setError] = useState('')
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [summaryCooldown, setSummaryCooldown] = useState(false)
+  const [isAutoGenerating, setIsAutoGenerating] = useState(false)
   const [modelName, setModelName] = useState('')
   const lastSummaryTime = useRef(0)
   const router = useRouter()
@@ -47,7 +48,7 @@ export function PostEditor({ initialData }: Props) {
   const [excerpt, setExcerpt] = useState(draftData?.excerpt ?? initialData?.excerpt ?? '')
 
   // Cloud auto-save
-  const { status: autoSaveStatus, countdown, hasContent, retry } = useAutoSave({
+  const { status: autoSaveStatus, countdown, hasContent, needsSave, retry } = useAutoSave({
     postId,
     title,
     content,
@@ -77,16 +78,16 @@ export function PostEditor({ initialData }: Props) {
   const contentLength = content.trim().length
   const canGenerateSummary = contentLength >= SUMMARY_MIN_CONTENT_LENGTH
 
-  const handleGenerateSummary = useCallback(async () => {
+  const handleGenerateSummary = useCallback(async (): Promise<string | null> => {
     if (!canGenerateSummary) {
       toast.warning(`正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`)
-      return
+      return null
     }
 
     const now = Date.now()
     const elapsed = now - lastSummaryTime.current
     if (elapsed < SUMMARY_COOLDOWN_MS) {
-      return
+      return null
     }
 
     lastSummaryTime.current = now
@@ -102,23 +103,37 @@ export function PostEditor({ initialData }: Props) {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? '生成摘要失败')
-      } else {
-        setExcerpt(data.summary.slice(0, SUMMARY_MAX_LENGTH))
-        setModelName(data.modelName)
+        return null
       }
+      const summary = data.summary.slice(0, SUMMARY_MAX_LENGTH)
+      setExcerpt(summary)
+      setModelName(data.modelName)
+      return summary
     } catch {
       setError('网络异常，请稍后重试')
+      return null
     } finally {
       setSummaryLoading(false)
+      setTimeout(() => setSummaryCooldown(false), SUMMARY_COOLDOWN_MS)
     }
-
-    setTimeout(() => setSummaryCooldown(false), SUMMARY_COOLDOWN_MS)
   }, [canGenerateSummary, content, title])
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
     if (!title.trim()) { toast.error('请输入文章标题'); return }
     if (!content.trim()) { toast.error('请输入正文内容'); return }
+
+    // Auto-generate excerpt if empty and content is sufficient
+    if (!excerpt.trim() && content.trim().length >= SUMMARY_MIN_CONTENT_LENGTH) {
+      setIsAutoGenerating(true)
+      toast.info('正在生成摘要...')
+      const summary = await handleGenerateSummary()
+      setIsAutoGenerating(false)
+      if (summary) {
+        toast.success('摘要已自动生成')
+      }
+    }
+
     const formData = new FormData(e.currentTarget)
     formData.set('title', title)
     formData.set('content', content)
@@ -192,6 +207,18 @@ export function PostEditor({ initialData }: Props) {
               {excerpt.length}/{SUMMARY_MAX_LENGTH}
             </p>
           </div>
+          <div className="flex items-center gap-2 h-5">
+            {summaryLoading ? (
+              <span className="inline-flex items-center gap-1.5 text-xs text-blue-500">
+                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                生成中...
+              </span>
+            ) : excerpt ? (
+              <button type="button" onClick={handleGenerateSummary} disabled={summaryCooldown} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
+                重新生成摘要
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <Separator />
@@ -243,9 +270,9 @@ export function PostEditor({ initialData }: Props) {
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-3">
-          <SubmitButton isEditing={isEditing || !!postId} />
+          <SubmitButton isEditing={isEditing || !!postId} isAutoGenerating={isAutoGenerating} />
 
-          <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} onRetry={retry} />
+          <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
 
           <label className="flex items-center gap-2 cursor-pointer">
             <span className="text-xs font-medium text-muted-foreground select-none">
@@ -279,7 +306,7 @@ export function PostEditor({ initialData }: Props) {
               <span className={`text-xs font-medium select-none ${fsTab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
             </div>
             <div className="flex items-center gap-3">
-              <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} onRetry={retry} />
+              <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
               <span className="text-xs text-muted-foreground">
                 {contentLength}/{CONTENT_MAX_LENGTH} 字
               </span>
@@ -308,11 +335,14 @@ export function PostEditor({ initialData }: Props) {
   )
 }
 
-function SubmitButton({ isEditing }: { isEditing: boolean }) {
+function SubmitButton({ isEditing, isAutoGenerating }: { isEditing: boolean; isAutoGenerating: boolean }) {
   const { pending } = useFormStatus()
+  const disabled = pending || isAutoGenerating
+  let label = pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')
+  if (isAutoGenerating) label = '生成摘要中...'
   return (
-    <Button type="submit" disabled={pending} size="sm">
-      {pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')}
+    <Button type="submit" disabled={disabled} size="sm">
+      {label}
     </Button>
   )
 }
@@ -343,8 +373,19 @@ function Switch({ checked, onChange, size = 'sm' }: { checked: boolean; onChange
 }
 
 // ── Auto-save status indicator ──
-function AutoSaveIndicator({ status, countdown, hasContent, onRetry }: { status: AutoSaveStatus; countdown: number; hasContent: boolean; onRetry: () => void }) {
+function AutoSaveIndicator({ status, countdown, hasContent, needsSave, onRetry }: { status: AutoSaveStatus; countdown: number; hasContent: boolean; needsSave: boolean; onRetry: () => void }) {
   if (!hasContent) return null
+
+  // No changes since last save
+  if (status === 'idle' && !needsSave) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+        已保存
+      </span>
+    )
+  }
+
   if (status === 'idle') {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">

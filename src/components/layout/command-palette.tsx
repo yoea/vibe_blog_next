@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from 'cmdk'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
@@ -49,6 +49,10 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [frequency, setFrequency] = useState<Record<string, number>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { mode, setMode } = useTheme()
   const router = useRouter()
 
@@ -68,7 +72,7 @@ export function CommandPalette() {
     })
   }, [])
 
-  // 快捷键
+  // 快捷键 (Cmd+K) + 自定义事件 (导航栏搜索按钮)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
@@ -76,9 +80,49 @@ export function CommandPalette() {
         setOpen((o) => !o)
       }
     }
+    const onOpen = () => setOpen(true)
     document.addEventListener('keydown', down)
-    return () => document.removeEventListener('keydown', down)
+    document.addEventListener('open-command-palette', onOpen)
+    return () => {
+      document.removeEventListener('keydown', down)
+      document.removeEventListener('open-command-palette', onOpen)
+    }
   }, [])
+
+  // 重置搜索状态
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery('')
+      setSearchResults([])
+      setIsSearching(false)
+    }
+  }, [open])
+
+  // Debounce 搜索
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`)
+        const data = await res.json()
+        setSearchResults(data.data ?? [])
+      } catch {
+        setSearchResults([])
+      }
+      setIsSearching(false)
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [searchQuery])
 
   // 记录使用 + 执行动作
   const pick = useCallback((id: string, action: () => void) => {
@@ -107,6 +151,7 @@ export function CommandPalette() {
     const filtered = commands.filter((c) => {
       if (c.requiresAuth && !user) return false
       if (c.requiresAnon && user) return false
+      if (searchQuery && !c.label.includes(searchQuery)) return false
       return true
     })
 
@@ -119,7 +164,7 @@ export function CommandPalette() {
       // 同频率保持定义顺序
       return commands.indexOf(a) - commands.indexOf(b)
     })
-  }, [commands, user, frequency])
+  }, [commands, user, frequency, searchQuery])
 
   const navItems = visible.filter((c) => c.group === '导航')
   const opItems = visible.filter((c) => c.group === '操作')
@@ -131,18 +176,52 @@ export function CommandPalette() {
         className="top-[18%] -translate-y-0 max-w-lg w-[90vw] p-0 gap-0 ring-1 ring-white/20 bg-white/80 dark:bg-gray-900/85 backdrop-blur-2xl shadow-2xl border-0 overflow-hidden"
       >
         <DialogTitle className="sr-only">命令面板</DialogTitle>
-        <Command className="rounded-none border-0 shadow-none">
+        <Command className="rounded-none border-0 shadow-none w-full overflow-hidden" shouldFilter={false}>
           <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200/50 dark:border-gray-700/50">
             <Search className="h-5 w-5 text-gray-400 shrink-0" />
             <CommandInput
               placeholder="搜索..."
               className="!border-0 !p-0 !ring-0 !shadow-none !outline-none text-base bg-transparent h-7"
+              onValueChange={setSearchQuery}
             />
           </div>
           <CommandList className="max-h-72">
             <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
-              无匹配结果
+              {searchQuery.trim() && !isSearching ? '未找到相关文章' : '无匹配结果'}
             </CommandEmpty>
+
+            {/* 搜索文章结果 */}
+            {searchQuery.trim() && (
+              <CommandGroup
+                heading={isSearching ? '搜索文章' : `搜索文章 · 共${searchResults.length}项`}
+                className="[&_[cmdk-group-heading]]:px-5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-400 [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:uppercase"
+              >
+                {isSearching ? (
+                  <div className="px-5 py-3 text-sm text-muted-foreground">搜索中...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((post: any) => (
+                    <CommandItem
+                      key={post.id}
+                      onSelect={() => {
+                        setOpen(false)
+                        router.push(`/posts/${post.slug}`)
+                      }}
+                      className={`${ITEM_CLASS} overflow-hidden`}
+                    >
+                      <FileText className="h-4 w-4 text-gray-400 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">{post.title}</div>
+                        {post.excerpt && (
+                          <div className="truncate text-[11px] text-muted-foreground leading-relaxed">{post.excerpt}</div>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))
+                ) : (
+                  <div className="px-5 py-3 text-sm text-muted-foreground">未找到相关文章</div>
+                )}
+              </CommandGroup>
+            )}
             {navItems.length > 0 && (
               <CommandGroup
                 heading="导航"

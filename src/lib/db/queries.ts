@@ -505,3 +505,46 @@ export async function getAllUsers(page = 1, limit = 20) {
     error: null,
   }
 }
+
+export async function searchPosts(query: string, page = 1, limit = 20) {
+  const supabase = await createClient()
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+  const pattern = `%${query}%`
+
+  const { data, error, count } = await supabase
+    .from('posts')
+    .select(
+      `
+      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+      like_count:post_likes(count),
+      comment_count:post_comments(count)
+    `,
+      { count: 'exact' }
+    )
+    .eq('published', true)
+    .or(`title.ilike.${pattern},content.ilike.${pattern}`)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) return { data: [], count: 0, error: error.message }
+
+  const authorIds = [...new Set(data.map((item: any) => item.author_id))]
+  const { data: userSettings } = await supabase
+    .from('user_settings')
+    .select('user_id, display_name, avatar_url')
+    .in('user_id', authorIds)
+  const authorMap = new Map((userSettings ?? []).map((s) => [s.user_id, { name: s.display_name, avatar_url: s.avatar_url ?? null }]))
+
+  const result = data.map((item: any) => ({
+    ...item,
+    author: {
+      name: authorMap.get(item.author_id)?.name ?? item.author_id?.slice(0, 8),
+      avatar_url: authorMap.get(item.author_id)?.avatar_url ?? null,
+    },
+    like_count: item.like_count?.[0]?.count ?? 0,
+    comment_count: item.comment_count?.[0]?.count ?? 0,
+  })) as unknown as PostWithAuthor[]
+
+  return { data: result, count, error: null }
+}
