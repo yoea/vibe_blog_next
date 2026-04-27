@@ -2,16 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Shield } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { updateUserSettings } from '@/lib/actions/settings-actions'
 import { resetPasswordForEmail, deleteAccount } from '@/lib/actions/auth-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -24,35 +20,19 @@ import { toast } from 'sonner'
 import { Sun, Moon, SunMoon, Heart } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
-import { AvatarUploader } from './avatar-uploader'
 
 interface Props {
   user: User
-  displayName: string
-  avatarUrl: string | null
   isAdmin?: boolean
 }
 
-export function SettingsForm({ user, displayName, avatarUrl, isAdmin }: Props) {
-  const [name, setName] = useState(displayName)
-  const [error, setError] = useState('')
+export function SettingsForm({ user, isAdmin }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [resettingPassword, setResettingPassword] = useState(false)
   const { mode, setMode } = useTheme()
   const router = useRouter()
-
-  const handleSave = async () => {
-    setError('')
-    const res = await updateUserSettings(name)
-    if (res.error) {
-      setError(res.error)
-    } else {
-      toast.success('保存成功')
-      router.refresh()
-    }
-  }
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -90,57 +70,10 @@ export function SettingsForm({ user, displayName, avatarUrl, isAdmin }: Props) {
   const formatDate = (val: string | undefined) =>
     val ? new Date(val).toLocaleString('zh-CN') : '-'
 
+  const displayName = user.email?.split('@')[0] ?? ''
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>个人信息</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <AvatarUploader
-            userId={user.id}
-            displayName={displayName}
-            currentAvatarUrl={avatarUrl}
-          />
-          <Separator />
-          <div className="space-y-2 text-sm">
-            <InfoRow label="用户 ID" value={user.id} />
-            <InfoRow label="邮箱" value={user.email ?? '-'} verified={!!user.email_confirmed_at} />
-            {isAdmin && (
-              <InfoRow
-                label="角色"
-                value={
-                  <span className="inline-flex items-center gap-1">
-                    <Shield className="h-3.5 w-3.5" />
-                    管理员
-                  </span>
-                }
-              />
-            )}
-            <InfoRow label="手机号" value={user.phone || '未设置'} verified={!!user.phone_confirmed_at} />
-            <InfoRow label="最后登录" value={formatDate(user.last_sign_in_at)} />
-            <InfoRow label="注册时间" value={formatDate(user.created_at)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="displayName">昵称</Label>
-            <Input
-              id="displayName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="邮箱前缀"
-              maxLength={8}
-              className="w-full sm:max-w-60"
-            />
-            <p className="text-xs text-muted-foreground">
-              留空则默认使用邮箱前缀，最多 8 个字符
-            </p>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button onClick={handleSave} className="mt-2">保存昵称</Button>
-          </div>
-
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>账户操作</CardTitle>
@@ -234,7 +167,7 @@ export function SettingsForm({ user, displayName, avatarUrl, isAdmin }: Props) {
           <div className="space-y-2 py-2 text-sm">
             <div className="flex items-center justify-between rounded-lg border px-3 py-2">
               <span className="text-muted-foreground">昵称</span>
-              <span className="font-medium">{displayName || user.email?.split('@')[0] || '-'}</span>
+              <span className="font-medium">{displayName || '-'}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg border px-3 py-2">
               <span className="text-muted-foreground">邮箱</span>
@@ -249,26 +182,6 @@ export function SettingsForm({ user, displayName, avatarUrl, isAdmin }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  )
-}
-
-function InfoRow({ label, value, verified }: { label: string; value: string | React.ReactNode; verified?: boolean }) {
-  return (
-    <div className="py-1">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-1.5">
-        {typeof value === 'string' ? (
-          <span className="font-mono text-xs break-all">{value}</span>
-        ) : (
-          <span className="text-xs">{value}</span>
-        )}
-        {verified !== undefined && (
-          verified
-            ? <span className="inline-flex items-center gap-0.5 text-xs text-green-600 shrink-0"><span className="text-green-500"> ✓</span>已验证</span>
-            : <span className="inline-flex items-center gap-0.5 text-xs text-orange-500 shrink-0"><span> ⚠</span>未验证</span>
-        )}
-      </div>
     </div>
   )
 }

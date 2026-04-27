@@ -1,20 +1,17 @@
-import { getPostsByAuthor } from '@/lib/db/queries'
+import { getPostsByAuthor, getGuestbookMessages } from '@/lib/db/queries'
 import { createClient } from '@/lib/supabase/server'
-import { AuthorCard } from '@/components/blog/author-card'
-import { PostListClient } from '@/components/blog/post-list-client'
+import { ProfileInfoCard } from '@/components/profile/profile-info-card'
+import { MyPostRowList } from '@/components/profile/my-post-row'
+import { GuestbookSection } from '@/components/blog/guestbook-section'
 import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import { isSuperAdmin } from '@/lib/utils/admin'
-import { Calendar, FileText } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { formatDaysAgo } from '@/lib/utils/time'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { title: '我的文章' }
+  if (!user) return { title: '个人中心' }
 
   const { data: userSettings } = await supabase
     .from('user_settings')
@@ -23,58 +20,75 @@ export async function generateMetadata(): Promise<Metadata> {
     .maybeSingle()
 
   const authorName = userSettings?.display_name ?? user.email?.split('@')[0] ?? user.id.slice(0, 8)
-  return { title: `${authorName}的文章` }
+  return { title: `${authorName}的个人中心` }
 }
 
-export default async function MyPostsPage() {
+export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login?redirect=/my-posts')
 
-  // Fetch display name
+  // Fetch user settings
   const { data: userSettings } = await supabase
     .from('user_settings')
     .select('display_name, avatar_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  const authorName = userSettings?.display_name ?? user.email?.split('@')[0] ?? user.id.slice(0, 8)
-  const authorAvatarUrl = userSettings?.avatar_url ?? null
+  const displayName = userSettings?.display_name ?? user.email?.split('@')[0] ?? user.id.slice(0, 8)
+  const avatarUrl = userSettings?.avatar_url ?? null
   const createdAt = user.created_at ?? null
 
-  const { data: posts, count, error } = await getPostsByAuthor(user.id, 1, 10)
+  // Fetch posts
+  const { data: posts, count, error: postsError } = await getPostsByAuthor(user.id, 1, 10)
+
+  // Fetch guestbook messages left for this user
+  const { data: guestbookMessages, total: guestbookTotal } = await getGuestbookMessages(user.id, { page: 1, pageSize: 10 })
+
   const isAdmin = await isSuperAdmin()
 
   return (
-    <div className="space-y-6">
-      <AuthorCard
-        userId={user.id}
-        displayName={authorName}
-        avatarUrl={authorAvatarUrl}
-        isAdmin={isAdmin}
-        stats={[
-          { icon: <Calendar className="h-3 w-3" />, label: `加入 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
-          { icon: <FileText className="h-3 w-3" />, label: `${count ?? 0} 篇文章` },
-        ]}
-        actions={
-          <Link href="/posts/new">
-            <Button size="sm">写新文章</Button>
-          </Link>
-        }
-      />
-      <h1 className="text-2xl font-bold">文章列表</h1>
-      {error ? (
-        <p className="text-destructive">加载失败: {error}</p>
-      ) : (
-        <PostListClient
-          initialPosts={posts ?? []}
-          initialTotal={count ?? 0}
-          showActions
-          onLoadMore={loadMoreMyPosts}
-          loadedAllText="已加载全部文章"
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold">个人中心</h1>
+
+      {/* Module 1: My Info */}
+      <section>
+        <ProfileInfoCard
+          userId={user.id}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          email={user.email ?? null}
+          emailVerified={!!user.email_confirmed_at}
+          createdAt={createdAt}
+          isAdmin={isAdmin}
         />
-      )}
+      </section>
+
+      {/* Module 2: My Articles */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">我的文章</h2>
+        {postsError ? (
+          <p className="text-sm text-destructive">加载失败: {postsError}</p>
+        ) : (
+          <MyPostRowList
+            initialPosts={posts ?? []}
+            initialTotal={count ?? 0}
+            onLoadMore={loadMoreMyPosts}
+          />
+        )}
+      </section>
+
+      {/* Module 3: Guestbook Messages */}
+      <section>
+        <GuestbookSection
+          toAuthorId={user.id}
+          currentUserId={user.id}
+          initialMessages={guestbookMessages}
+          initialTotal={guestbookTotal}
+          title="他人给我的留言"
+        />
+      </section>
     </div>
   )
 }

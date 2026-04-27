@@ -13,11 +13,13 @@ export function GuestbookSection({
   currentUserId,
   initialMessages,
   initialTotal,
+  title = '留言板',
 }: {
   toAuthorId: string
   currentUserId: string | null
   initialMessages: GuestbookMessageWithAuthor[]
   initialTotal: number
+  title?: string
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -62,7 +64,7 @@ export function GuestbookSection({
 
   return (
     <div id="guestbook" className="space-y-4">
-      <h2 className="text-xl font-bold">留言板</h2>
+      <h2 className="text-xl font-bold">{title}</h2>
 
       <CommentForm
         postId={toAuthorId}
