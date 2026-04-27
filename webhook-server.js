@@ -1,9 +1,26 @@
 const http = require('http')
 const crypto = require('crypto')
-const { execSync } = require('child_process')
+const { exec } = require('child_process')
 
 const SECRET = process.env.WEBHOOK_SECRET || ''
 const PORT = parseInt(process.env.WEBHOOK_PORT || '8084', 10)
+
+const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
+
+function runDeploy() {
+  const cmd = `cd ${DEPLOY_DIR} && git pull && bash deploy.sh`
+  const proc = exec(cmd, { timeout: 600000, maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
+    if (err) {
+      console.error(`[${new Date().toISOString()}] 部署失败:`, err.message)
+      if (stderr) console.error(stderr)
+      return
+    }
+    console.log(`[${new Date().toISOString()}] 部署成功:`, stdout.slice(-500))
+  })
+  // 实时输出日志
+  proc.stdout?.on('data', (d) => process.stdout.write(`[deploy] ${d}`))
+  proc.stderr?.on('data', (d) => process.stderr.write(`[deploy:err] ${d}`))
+}
 
 const server = http.createServer((req, res) => {
   if (req.method !== 'POST') {
@@ -14,7 +31,6 @@ const server = http.createServer((req, res) => {
   let body = ''
   req.on('data', (chunk) => { body += chunk })
   req.on('end', () => {
-    // Verify HMAC-SHA256 signature (Gitea webhook secret)
     if (SECRET) {
       const sig = req.headers['x-hub-signature-256']
       if (!sig) {
@@ -28,21 +44,13 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    console.log('收到 webhook 请求，开始部署...')
+    console.log(`[${new Date().toISOString()}] 收到 webhook 请求，开始部署...`)
 
-    try {
-      const output = execSync(
-        'cd /home/ewing/craft/vibe_blog_next && git pull && bash deploy.sh',
-        { timeout: 120000, stdio: 'pipe' }
-      ).toString()
-      console.log('部署成功:', output.slice(-500))
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({ status: 'ok' }))
-    } catch (err) {
-      console.error('部署失败:', err.message)
-      res.writeHead(500)
-      res.end(JSON.stringify({ status: 'error', message: err.message }))
-    }
+    // 立即返回 202，后台异步执行部署
+    res.writeHead(202, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ status: 'accepted' }))
+
+    runDeploy()
   })
 })
 
