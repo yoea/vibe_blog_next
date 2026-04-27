@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
-import { getPublishedPosts, getPostsByAuthor, getAllUsers } from '@/lib/db/queries'
+import { getPublishedPosts, getPostsByAuthor, getAllUsers, getPostsByTag } from '@/lib/db/queries'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
 import type { ActionResult } from '@/lib/db/types'
 
@@ -18,6 +18,13 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
   const excerpt = formData.get('excerpt') as string | null
   const published = formData.get('published') === 'on'
 
+  // Parse tags from FormData
+  let tags: string[] = []
+  try {
+    const raw = formData.get('tags') as string
+    if (raw) tags = JSON.parse(raw) as string[]
+  } catch {}
+
   if (mode === 'update') {
     const postId = formData.get('_id') as string
     const { error } = await supabase.from('posts')
@@ -25,6 +32,8 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       .eq('id', postId)
       .eq('author_id', user.id)
     if (error) return { error: error.message }
+    // Update tags
+    await savePostTags(postId, tags)
     revalidatePath('/')
     revalidatePath('/profile')
     return {}
@@ -51,9 +60,62 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       published,
     })
     if (error) return { error: error.message }
+    // Save tags
+    await savePostTags(id, tags)
     revalidatePath('/')
     revalidatePath('/profile')
     return {}
+  }
+}
+
+/**
+ * Upsert tags for a post: create any new tags, then replace all post_tags.
+ */
+async function savePostTags(postId: string, tagNames: string[]) {
+  const supabase = await createClient()
+
+  if (tagNames.length === 0) {
+    // Remove all tags from this post
+    await supabase.from('post_tags').delete().eq('post_id', postId)
+    return
+  }
+
+  // Find or create each tag
+  const tagIds: string[] = []
+  for (const name of tagNames) {
+    const trimmed = name.trim()
+    if (!trimmed) continue
+    const slug = trimmed
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[<>#"{}|\\^`]/g, '')
+
+    // Try to find existing tag
+    const { data: existing } = await supabase
+      .from('tags')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
+
+    if (existing) {
+      tagIds.push(existing.id)
+    } else {
+      // Create new tag
+      const { data: newTag } = await supabase
+        .from('tags')
+        .insert({ name: trimmed, slug })
+        .select('id')
+        .single()
+      if (newTag) tagIds.push(newTag.id)
+    }
+  }
+
+  // Replace all post_tags for this post
+  if (tagIds.length > 0) {
+    await supabase.from('post_tags').delete().eq('post_id', postId)
+    await supabase.from('post_tags').insert(
+      tagIds.map((tagId) => ({ post_id: postId, tag_id: tagId }))
+    )
   }
 }
 
@@ -115,4 +177,8 @@ export async function loadMoreMyPosts(page: number) {
 
 export async function loadMoreAuthors(page: number) {
   return await getAllUsers(page, 20)
+}
+
+export async function loadMorePostsByTag(tagSlug: string, page: number) {
+  return await getPostsByTag(tagSlug, page, 10)
 }

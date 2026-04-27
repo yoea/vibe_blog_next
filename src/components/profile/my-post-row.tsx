@@ -27,6 +27,7 @@ interface PostData {
   excerpt?: string | null
   like_count?: number
   comment_count?: number
+  tags?: { id: string; name: string; slug: string }[]
 }
 
 export function MyPostRowList({
@@ -170,6 +171,19 @@ function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: str
             {post.published ? <Globe className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />}
             {post.published ? '公开' : '私密'}
           </span>
+          {post.tags && post.tags.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1 shrink-0">
+              {post.tags.map((tag) => (
+                <Link
+                  key={tag.slug}
+                  href={`/tags/${tag.slug}`}
+                  className="text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground hover:text-primary hover:bg-muted/80 transition-colors"
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
