@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { getUserColor } from '@/lib/utils/colors'
@@ -45,14 +45,7 @@ export function AuthorListClient({
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
-
-  // Sync when initialAuthors changes (e.g., after refresh)
-  useEffect(() => {
-    setAuthors(initialAuthors)
-    setPage(1)
-    setHasMore(initialHasMore)
-  }, [initialAuthors, initialHasMore])
+  const [deleting, setDeleting] = useState(false)
 
   const handleLoadMore = async () => {
     setLoading(true)
@@ -70,22 +63,22 @@ export function AuthorListClient({
     setLoading(false)
   }
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = async (userId: string) => {
     if (!onDeleteUser) return
-    startTransition(async () => {
-      const result = await onDeleteUser(userId)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        setAuthors((prev) =>
-          prev.map((a) =>
-            a.id === userId ? { ...a, isDeleted: true, deletedAt: new Date().toISOString() } : a
-          )
+    setDeleting(true)
+    const result = await onDeleteUser(userId)
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      setAuthors((prev) =>
+        prev.map((a) =>
+          a.id === userId ? { ...a, isDeleted: true, deletedAt: new Date().toISOString() } : a
         )
-        setConfirmDeleteId(null)
-        toast.success('已删除用户')
-      }
-    })
+      )
+      setConfirmDeleteId(null)
+      toast.success('已删除用户')
+    }
+    setDeleting(false)
   }
 
   if (!authors.length) {
@@ -112,7 +105,7 @@ export function AuthorListClient({
             <div key={user.id} className="relative">
               <Link
                 href={`/author/${user.id}`}
-                className="block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow"
+                className={`block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow ${isAdmin ? 'pr-10' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -227,11 +220,11 @@ export function AuthorListClient({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={isPending}>
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
               取消
             </Button>
-            <Button variant="destructive" onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)} disabled={isPending}>
-              {isPending ? '删除中...' : '删除'}
+            <Button variant="destructive" onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)} disabled={deleting}>
+              {deleting ? '删除中...' : '删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
