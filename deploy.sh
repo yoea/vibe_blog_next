@@ -14,46 +14,18 @@ cd "$PROJECT_DIR"
 echo "进入项目目录: $PROJECT_DIR"
 
 # =========================
-# 2. 拉代码（更安全）
+# 2. 安装依赖
 # =========================
-echo "拉取最新代码..."
-
-# 如果有改动先 stash
-git stash push -u -m "deploy stash" || true
-
-# 保证不报错卡死
-git fetch origin main
-git reset --hard origin/main
-
-echo "代码更新完成，检测代码变更..."
-
-CHANGED_FILES=$(git diff --name-only HEAD@{1} HEAD || true)
-
-echo "$CHANGED_FILES"
-# =========================
-# 3. 安装依赖（避免卡死）
-# =========================
-NEED_INSTALL=false
-
-if echo "$CHANGED_FILES" | grep -E "package-lock.json|package.json|pnpm-lock.yaml"; then
-  NEED_INSTALL=true
-fi
-
-if [ "$NEED_INSTALL" = true ]; then
-  echo "依赖变化，执行 npm ci..."
-  npm ci --no-audit --no-fund --prefer-offline
-else
-  echo "跳过 npm ci（无依赖变化）"
-fi
+echo "安装依赖..."
+npm ci --no-audit --no-fund --prefer-offline
 
 # =========================
-# 4. 构建（失败直接退出）
+# 3. 构建（失败直接退出）
 # =========================
 echo "构建项目..."
 # 清理旧构建缓存，防止构建产物残留问题
 rm -rf .next
 
-echo "需要重新构建"
 npm run build
 # standalone 模式需要手动复制 public 和 static 资源
 mkdir -p .next/standalone/public .next/standalone/.next/static
