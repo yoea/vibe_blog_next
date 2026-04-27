@@ -30,6 +30,11 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s - ${siteTitle}`,
     },
     description: siteDescription,
+    alternates: {
+      types: {
+        'application/rss+xml': `${siteUrl}/rss`,
+      },
+    },
     icons: {
       icon: '/logo.svg',
     },

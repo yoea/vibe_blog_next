@@ -9,6 +9,7 @@ import { ArrowLeft, Edit2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { formatTimeAgo } from '@/lib/utils/time'
 import { createClient } from '@/lib/supabase/server'
+import { ShareButtons } from '@/components/blog/share-buttons'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -97,6 +98,8 @@ export default async function PostPage({ params }: PageProps) {
         </div>
 
         <Separator />
+
+        <ShareButtons title={post.title} slug={post.slug} />
 
         <PostInteraction
           postId={post.id}

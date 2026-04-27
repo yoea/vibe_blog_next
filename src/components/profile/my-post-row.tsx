@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock } from 'lucide-react'
+import { Calendar, Heart, MessageSquare, Edit2, Trash2, Globe, Lock, Pin, PinOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { deletePost } from '@/lib/actions/post-actions'
+import { deletePost, togglePinPost } from '@/lib/actions/post-actions'
 import { toast } from 'sonner'
 
 interface PostData {
@@ -22,6 +22,7 @@ interface PostData {
   title: string
   slug: string
   published: boolean
+  is_pinned?: boolean
   created_at: string
   excerpt?: string | null
   like_count?: number
@@ -121,6 +122,8 @@ export function MyPostRowList({
 function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: string) => void }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [pinning, setPinning] = useState(false)
+  const [pinned, setPinned] = useState(post.is_pinned ?? false)
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -129,10 +132,25 @@ function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: str
     })
   }
 
+  const handleTogglePin = () => {
+    setPinning(true)
+    startTransition(async () => {
+      const result = await togglePinPost(post.id)
+      setPinning(false)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        setPinned(result.pinned ?? !pinned)
+        toast.success(result.pinned ? '已置顶' : '已取消置顶')
+      }
+    })
+  }
+
   return (
     <>
       <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
         <div className="flex-1 min-w-0 flex items-center gap-2">
+          {pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-primary rotate-45" />}
           <Link
             href={`/posts/${post.slug}`}
             className="truncate text-sm font-medium hover:text-primary transition-colors"
@@ -165,6 +183,9 @@ function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: str
         </span>
 
         <div className="flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleTogglePin} disabled={pinning} title={pinned ? '取消置顶' : '置顶'}>
+            {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+          </Button>
           <Link href={`/posts-edit/${post.slug}`}>
             <Button variant="ghost" size="icon" className="h-7 w-7">
               <Edit2 className="h-3.5 w-3.5" />

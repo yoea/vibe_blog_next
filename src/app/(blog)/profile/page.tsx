@@ -5,6 +5,9 @@ import { MyPostRowList } from '@/components/profile/my-post-row'
 import { GuestbookSection } from '@/components/blog/guestbook-section'
 import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import { isSuperAdmin } from '@/lib/utils/admin'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -67,7 +70,15 @@ export default async function ProfilePage() {
 
       {/* Module 2: My Articles */}
       <section className="space-y-4">
-        <h2 className="text-xl font-bold">我的文章</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">我的文章</h2>
+          <Link href="/posts/new">
+            <Button size="sm">
+              <Plus className="h-4 w-4" />
+              新建文章
+            </Button>
+          </Link>
+        </div>
         {postsError ? (
           <p className="text-sm text-destructive">加载失败: {postsError}</p>
         ) : (
