@@ -9,7 +9,6 @@ import { ArrowLeft, Edit2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { formatTimeAgo } from '@/lib/utils/time'
 import { createClient } from '@/lib/supabase/server'
-import { ShareButtons } from '@/components/blog/share-buttons'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -99,8 +98,6 @@ export default async function PostPage({ params }: PageProps) {
 
         <Separator />
 
-        <ShareButtons title={post.title} slug={post.slug} />
-
         <PostInteraction
           postId={post.id}
           postAuthorId={post.author_id}
@@ -110,6 +107,8 @@ export default async function PostPage({ params }: PageProps) {
           initialCommentCount={post.comment_count}
           initialComments={comments ?? []}
           initialTotal={totalComments ?? 0}
+          shareUrl={`${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`}
+          published={post.published}
           editButton={currentUserId === post.author_id ? (
             <Button variant="outline" size="sm">
               <Link href={`/posts-edit/${post.slug}`} className="flex items-center gap-1">
