@@ -83,8 +83,28 @@ const server = http.createServer((req, res) => {
 
     console.log(`[${new Date().toISOString()}] 收到 webhook 请求`)
 
+    // 解析推送事件信息（GitHub / Gitee 格式兼容）
+    let eventInfo = {}
+    try {
+      const payload = JSON.parse(body)
+      eventInfo = {
+        repository: payload.repository?.name || payload.repository?.full_name || null,
+        branch: (payload.ref || '').replace('refs/heads/', '') || null,
+        pusher: payload.pusher?.name || payload.sender?.login || null,
+        commits: Array.isArray(payload.commits) ? payload.commits.length : null,
+      }
+    } catch { /* 非 JSON 体，跳过 */ }
+
+    const cancelledPrevious = !!currentDeploy
     res.writeHead(202, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ status: 'accepted' }))
+    res.end(JSON.stringify({
+      status: 'accepted',
+      timestamp: new Date().toISOString(),
+      deploy: {
+        cancelled_previous: cancelledPrevious,
+        ...eventInfo,
+      },
+    }))
 
     runDeploy()
   })
