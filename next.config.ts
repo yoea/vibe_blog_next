@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
   allowedDevOrigins: ['192.168.32.100'],
   images: {
     remotePatterns: [
