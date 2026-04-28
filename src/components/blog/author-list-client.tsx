@@ -131,7 +131,7 @@ export function AuthorListClient({
                       <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                     <span>文章{user.postCount}篇</span>
                     <span>注册 {days}</span>
                     <span className={`inline-flex items-center gap-1 ${hasPosts ? 'text-green-600' : 'text-muted-foreground'}`}>
@@ -174,7 +174,7 @@ export function AuthorListClient({
                   href={`/author/${user.id}`}
                   className="block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow opacity-60"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                       <Avatar
                         avatarUrl={user.avatarUrl}
@@ -193,7 +193,7 @@ export function AuthorListClient({
                         <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                       <span>文章{user.postCount}篇</span>
                       <span>注册 {days}</span>
                       <span className="inline-flex items-center gap-1 text-gray-400">
