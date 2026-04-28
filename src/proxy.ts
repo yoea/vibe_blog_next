@@ -5,7 +5,13 @@ export async function proxy(request: NextRequest) {
   // ============================================
   // Step 1: 维护模式检查
   // ============================================
-  if (!request.nextUrl.pathname.startsWith('/maintenance')) {
+
+  // 允许访问的路径列表（维护模式下仍可访问）
+  const maintenanceAllowlist = ['/about', '/privacy', '/legal', '/maintenance']
+  const pathname = request.nextUrl.pathname
+  const isAllowed = maintenanceAllowlist.some(p => pathname === p || pathname.startsWith(p + '/'))
+
+  if (!isAllowed) {
     try {
       const supabase = await createMiddlewareClient(request)
       const { data } = await supabase

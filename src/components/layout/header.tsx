@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { LogIn, FileText, Settings, Menu, X, Sun, Moon, SunMoon, Home, User, Search } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 
-export function Header({ siteTitle }: { siteTitle: string }) {
+export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMaintenance?: boolean }) {
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMac, setIsMac] = useState(false)
@@ -63,7 +63,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
 
   const loginHref = pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname)}`
 
-  const navLinks = (
+  const navLinks = isMaintenance ? null : (
     <>
       <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
         <Home className="h-4 w-4" />
@@ -100,14 +100,16 @@ export function Header({ siteTitle }: { siteTitle: string }) {
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-2">
           {navLinks}
-          <button
-            onClick={() => document.dispatchEvent(new CustomEvent('open-command-palette'))}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
-            title={`搜索 (${isMac ? '⌘K' : 'Ctrl+K'})`}
-          >
-            <Search className="h-4 w-4" />
-            <span>搜索</span>
-          </button>
+          {!isMaintenance && (
+            <button
+              onClick={() => document.dispatchEvent(new CustomEvent('open-command-palette'))}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
+              title={`搜索 (${isMac ? '⌘K' : 'Ctrl+K'})`}
+            >
+              <Search className="h-4 w-4" />
+              <span>搜索</span>
+            </button>
+          )}
           <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel} aria-label={themeLabel}>
             <ThemeIcon className="h-4 w-4" />
           </button>
@@ -115,20 +117,24 @@ export function Header({ siteTitle }: { siteTitle: string }) {
 
         {/* Mobile buttons */}
         <div className="flex items-center gap-1 sm:hidden">
-          <button onClick={() => document.dispatchEvent(new CustomEvent('open-command-palette'))} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title="搜索">
-            <Search className="h-4 w-4" />
-          </button>
+          {!isMaintenance && (
+            <button onClick={() => document.dispatchEvent(new CustomEvent('open-command-palette'))} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title="搜索">
+              <Search className="h-4 w-4" />
+            </button>
+          )}
           <button onClick={cycleMode} className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors" title={themeLabel} aria-label={themeLabel}>
             <ThemeIcon className="h-4 w-4" />
           </button>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label={menuOpen ? '关闭菜单' : '打开菜单'}>
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {!isMaintenance && (
+            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label={menuOpen ? '关闭菜单' : '打开菜单'}>
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mobile dropdown menu */}
-      {menuOpen && (
+      {menuOpen && !isMaintenance && (
         <div className="sm:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-lg z-50 px-4 py-3 space-y-2">
           {navLinks}
           <button

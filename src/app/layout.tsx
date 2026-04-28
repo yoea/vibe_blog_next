@@ -9,6 +9,7 @@ import { Toaster } from 'sonner'
 import { ProgressBar } from '@/components/layout/progress-bar'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { CommandPalette } from '@/components/layout/command-palette'
+import { createClient } from '@/lib/supabase/server'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -64,15 +65,23 @@ export default async function RootLayout({
   const resolved = cookieStore.get('themeResolved')?.value
   const initialDark = resolved === 'dark'
 
+  const supabase = await createClient()
+  const { data: siteConfig } = await supabase
+    .from('site_config')
+    .select('maintenance_mode')
+    .eq('id', 1)
+    .maybeSingle()
+  const isMaintenance = siteConfig?.maintenance_mode ?? false
+
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} antialiased${initialDark ? ' dark' : ''}`} suppressHydrationWarning>
       <body className="flex flex-col bg-background min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
           <ProgressBar />
           <CommandPalette />
-          <Header siteTitle={siteTitle} />
+          <Header siteTitle={siteTitle} isMaintenance={isMaintenance} />
           <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col">{children}</main>
-          <Footer />
+          <Footer isMaintenance={isMaintenance} />
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
