@@ -46,7 +46,7 @@ cp -r .next/static/. .next/standalone/.next/static/
 # 5. PM2 处理 — 启动新版本
 # =========================
 echo "启动新版本..."
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.js --only vibe_blog_next
 
 # 保存 PM2 状态（防重启丢失）
 pm2 save
