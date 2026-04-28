@@ -19,6 +19,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
+  // Fetch all tags
+  const { data: tags } = await supabase
+    .from('tags')
+    .select('slug')
+    .order('name')
+
+  const tagEntries: MetadataRoute.Sitemap = (tags ?? []).map((tag) => ({
+    url: `${siteUrl}/tags/${encodeURIComponent(tag.slug)}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }))
+
+  // Fetch all active authors (users who have published posts)
+  const { data: authors } = await supabase
+    .from('posts')
+    .select('author_id')
+    .eq('published', true)
+    .not('author_id', 'is', null)
+
+  const uniqueAuthorIds = [...new Set((authors ?? []).map((a) => a.author_id))]
+  const authorEntries: MetadataRoute.Sitemap = uniqueAuthorIds.map((id) => ({
+    url: `${siteUrl}/author/${id}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }))
+
   // Static pages
   return [
     {
@@ -28,5 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     ...postEntries,
+    ...tagEntries,
+    ...authorEntries,
   ]
 }
