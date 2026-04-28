@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/yoea/vibe-blog-nextjs/compare/v0.1.2...v0.1.3) (2026-04-28)
+
+
+### 其他变更
+
+* 优化部署流程与 webhook 密钥管理 ([3a95202](https://github.com/yoea/vibe-blog-nextjs/commit/3a9520264e658e846c807001ff26db0b2c2f6fb0))
+
+
+### Bug 修复
+
+* 更新关于页面与站点地图 ([fe8a02d](https://github.com/yoea/vibe-blog-nextjs/commit/fe8a02d7dda940aa9f7a506456877b5300bacbf3))
+* standalone 配置仅在生产构建时启用 ([aab6005](https://github.com/yoea/vibe-blog-nextjs/commit/aab6005847b2dc21e42a753cdc46cba17376b231))
+
 ### [0.1.2](https://github.com/yoea/vibe-blog-nextjs/compare/v0.1.1...v0.1.2) (2026-04-28)
 
 
