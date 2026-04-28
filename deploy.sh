@@ -50,7 +50,16 @@ pm2 start ecosystem.config.js --only "$PM2_NAME"
 
 # 保存 PM2 状态（防重启丢失）
 pm2 save
-echo "提示：若服务器重启后 PM2 为空，需在服务器上执行一次：pm2 startup"
+
+# 配置 PM2 开机自启（systemd）
+if command -v systemctl &>/dev/null; then
+  if ! find /etc/systemd/system -maxdepth 1 -name 'pm2-*.service' 2>/dev/null | grep -q .; then
+    echo "配置 PM2 开机自启..."
+    sudo pm2 startup systemd -u "$(whoami)" --hp "$HOME" 2>/dev/null && \
+      echo "  ✓ 开机自启已配置" || \
+      echo "  ⚠️ 自动配置失败，请手动执行：sudo pm2 startup systemd -u $(whoami) --hp $HOME"
+  fi
+fi
 
 # =========================
 # 6. 健康检查（直接检查本地端口，不经过 nginx）
