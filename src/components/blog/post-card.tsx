@@ -122,7 +122,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
               </span>
             </div>
             {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-1">
+              <div className="flex flex-wrap gap-1.5 mb-1">
                 {post.tags.map((tag) => (
                   <Link
                     key={tag.slug}
@@ -196,7 +196,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
       </CardHeader>
       <CardContent className="space-y-3">
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
               <Link
                 key={tag.slug}

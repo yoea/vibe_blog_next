@@ -307,23 +307,21 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
 
         <Separator />
 
-        <div className="flex items-center justify-between gap-4 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className={`text-xs font-medium ${tab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>源码</span>
             <Switch checked={tab === 'preview'} onChange={(c) => setTab(c ? 'preview' : 'edit')} />
             <span className={`text-xs font-medium ${tab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <SubmitButton isEditing={isEditing || !!postId} isAutoGenerating={isAutoGenerating} />
             <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
-            <label className="flex flex-col items-end gap-0 cursor-pointer">
-              <span className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground select-none">
-                  {published ? '公开' : '私密'}
-                </span>
-                <input type="hidden" name="published" value={published ? 'on' : 'off'} />
-                <Switch checked={published} onChange={setPublished} />
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span className="text-xs font-medium text-muted-foreground select-none">
+                {published ? '公开' : '私密'}
               </span>
+              <input type="hidden" name="published" value={published ? 'on' : 'off'} />
+              <Switch checked={published} onChange={setPublished} />
             </label>
           </div>
         </div>
