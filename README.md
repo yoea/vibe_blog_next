@@ -66,7 +66,7 @@ npm run dev
 
 ```
 用户 → nginx (443) → PM2 (8083) → .next/standalone/server.js
-Git Push → Webhook (8084) → git pull + deploy.sh → PM2 重启
+Git Push → Webhook (8084) → git pull + scripts/deploy.sh → PM2 重启
 ```
 
 ### 部署步骤
@@ -77,7 +77,7 @@ cd /home/ewing/craft/vibe_blog_next
 git pull
 
 # 2. 一键部署（构建 + PM2 重启）
-bash deploy.sh
+bash scripts/deploy.sh
 ```
 
 ### 自动部署
@@ -85,7 +85,7 @@ bash deploy.sh
 项目配置了双远程推送自动部署（GitHub / Gitea），通过标签推送触发：
 
 1. 本地 `git push` 推送后，远程仓库向 webhook 服务发送 POST 请求
-2. `webhook-server.js` 验证签名后执行 `git pull && bash deploy.sh`
+2. `webhook-server.js` 验证签名后执行 `git pull && bash scripts/deploy.sh`
 3. PM2 重启 Next.js 应用（webhook 进程不会被重启，部署互不影响）
 
 ### PM2 管理
@@ -98,7 +98,7 @@ pm2 logs <name>                                # 查看实时日志流
 pm2 logs <name> --lines 50                     # 查看最近 50 行
 pm2 logs <name> --timestamp --lines 50         # 查看带时间戳的最近 50 行
 
-pm2 start ecosystem.config.js --only <name>    # 启动指定进程
+pm2 start scripts/ecosystem.config.js --only <name>    # 启动指定进程
 pm2 restart <name>                             # 重启指定进程
 pm2 stop <name>                                # 停止指定进程
 

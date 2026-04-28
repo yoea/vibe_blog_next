@@ -8,7 +8,7 @@ const PORT = parseInt(process.env.WEBHOOK_PORT || '8084', 10)
 
 function loadEnvFile() {
   try {
-    const envPath = path.join(__dirname, '.env.local')
+    const envPath = path.join(__dirname, '..', '.env.local')
     const content = fs.readFileSync(envPath, 'utf8')
     for (const line of content.split('\n')) {
       const trimmed = line.trim()
@@ -37,7 +37,7 @@ function runDeploy() {
     currentDeploy = null
   }
 
-  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git pull && bash deploy.sh`], {
+  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git pull && bash scripts/deploy.sh`], {
     detached: true,   // 创建新进程组，便于整树清理
     stdio: ['ignore', 'pipe', 'pipe'],
     timeout: 600000,

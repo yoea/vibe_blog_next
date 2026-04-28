@@ -28,6 +28,12 @@ npm ci --no-audit --no-fund --prefer-offline
 echo "停服..."
 pm2 stop "$PM2_NAME" 2>/dev/null || true
 
+echo "启动维护页面..."
+node scripts/maintenance-server.js &
+MAINT_PID=$!
+# 脚本异常退出时清理维护进程，防止端口残留
+trap 'kill $MAINT_PID 2>/dev/null' EXIT
+
 echo "构建项目..."
 # 注入构建时信息（NEXT_PUBLIC_ 变量会被 Next.js 内联到客户端代码）
 export NEXT_PUBLIC_BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -43,10 +49,14 @@ mkdir -p .next/standalone/public .next/standalone/.next/static
 cp -r public/. .next/standalone/public/
 cp -r .next/static/. .next/standalone/.next/static/
 # =========================
-# 5. PM2 处理 — 启动新版本
+# 5. PM2 处理 — 先关维护页，再启动新版本
 # =========================
+echo "关闭维护页面..."
+kill $MAINT_PID 2>/dev/null && wait $MAINT_PID 2>/dev/null
+trap - EXIT
+
 echo "启动新版本..."
-pm2 start ecosystem.config.js --only vibe_blog_next
+pm2 start scripts/ecosystem.config.js --only vibe_blog_next
 
 # 保存 PM2 状态（防重启丢失）
 pm2 save
