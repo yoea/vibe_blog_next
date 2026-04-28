@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SettingsForm } from '@/components/settings/settings-form'
 import { isSuperAdmin } from '@/lib/utils/admin'
-import { getBuildInfo } from '@/lib/build-info'
 
 export const metadata = {
   title: '设置',
@@ -14,12 +13,11 @@ export default async function SettingsPage() {
   if (!user) redirect('/login?redirect=/settings')
 
   const isAdmin = await isSuperAdmin()
-  const buildInfo = getBuildInfo()
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">设置</h1>
-      <SettingsForm user={user} isAdmin={isAdmin} buildInfo={buildInfo} />
+      <SettingsForm user={user} isAdmin={isAdmin} />
     </div>
   )
 }

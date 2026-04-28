@@ -9,6 +9,8 @@ export function Footer() {
             Copyright © {new Date().getFullYear()} <a href="https://github.com/yoea" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors"><strong>Yoea</strong></a>. All rights reserved.
             </p>
           <nav className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground">
+            <Link href="/about" className="hover:text-foreground transition-colors">关于</Link>
+            <span className="text-muted-foreground select-none">|</span>
             <Link href="/privacy" className="hover:text-foreground transition-colors">隐私政策</Link>
             <span className="text-muted-foreground select-none">|</span>
             <Link href="/legal" className="hover:text-foreground transition-colors">法律信息</Link>
