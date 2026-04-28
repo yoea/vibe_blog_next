@@ -51,6 +51,23 @@ npx tsc --noEmit   # TypeScript 类型检查
 - **主题**: Context Provider 支持 light/dark/system, 通过 localStorage + cookie 持久化
 - **Markdown**: `react-markdown` + remark-gfm + rehype-sanitize + rehype-highlight
 
+### 部署架构
+
+- **双远程推送**: `git push` 同时推送到 GitHub 和 Gitee，两个远程都会触发 webhook
+- **自动部署**: GitHub/Gitee 创建 tag 推送 → webhook-server.js → `git pull` + `bash deploy.sh`
+- **deploy.sh 流程**:
+  1. 检查 `package-lock.json` hash，无变更则跳过 `npm ci`
+  2. `rm -rf node_modules`（防止 npm ENOTEMPTY 错误）
+  3. `pm2 stop vibe_blog_next` + 启动维护页（端口 8083 返回维护页面）
+  4. 注入 `NEXT_PUBLIC_BUILD_*` 环境变量 → `next build`
+  5. 复制 `public/` 和 `.next/static` 到 standalone 目录
+  6. `pm2 start` 新版本 + 健康检查
+- **PM2 双进程** (`ecosystem.config.js`):
+  - `vibe_blog_next` — Next.js standalone server（端口 8083），每次部署重建
+  - `webhook` — webhook 接收服务（端口 8084），部署成功后自重启
+- **维护模式**: 构建期间 `maintenance-server.js` 接管端口 8083 显示维护页，构建完成恢复
+- **crontab @reboot**: 配置了 `pm2 resurrect` 开机自启
+
 ### 数据库 (supabase/init.sql)
 
 **表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages
