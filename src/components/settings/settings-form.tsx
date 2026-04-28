@@ -18,20 +18,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Sun, Moon, SunMoon, Heart } from 'lucide-react'
+import { Sun, Moon, SunMoon, Heart, Wrench } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
+import { toggleMaintenanceMode } from '@/lib/actions/admin-actions'
 
 interface Props {
   user: User
   isAdmin?: boolean
+  maintenanceMode?: boolean
 }
 
-export function SettingsForm({ user, isAdmin }: Props) {
+export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [resettingPassword, setResettingPassword] = useState(false)
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false)
   const { mode, setMode } = useTheme()
   const router = useRouter()
 
@@ -51,6 +54,18 @@ export function SettingsForm({ user, isAdmin }: Props) {
     } else {
       toast.success('账号已注销')
       router.push('/')
+    }
+  }
+
+  const handleMaintenanceToggle = async () => {
+    setMaintenanceLoading(true)
+    const { error } = await toggleMaintenanceMode()
+    setMaintenanceLoading(false)
+    if (error) {
+      toast.error(error)
+    } else {
+      toast.success(maintenanceMode ? '维护模式已关闭' : '维护模式已开启')
+      router.refresh()
     }
   }
 
@@ -152,6 +167,25 @@ export function SettingsForm({ user, isAdmin }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle>站点管理</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" onClick={handleMaintenanceToggle} disabled={maintenanceLoading} className="w-full sm:w-auto">
+              <Wrench className="h-4 w-4 mr-1.5" />
+              {maintenanceLoading ? '处理中...' : maintenanceMode ? '关闭维护模式' : '开启维护模式'}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              {maintenanceMode
+                ? '维护模式已开启，所有访客将被重定向到维护页面'
+                : '开启后所有访客将看到站点维护页面，管理员可通过 /maintenance 访问管理'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>
