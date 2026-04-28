@@ -89,4 +89,7 @@ check_url() {
 
 check_url "http://127.0.0.1:8083" "本地服务"
 
+echo "重启 webhook 进程（加载最新代码）..."
+pm2 restart webhook
+
 echo "=== 部署完成 ==="
