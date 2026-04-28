@@ -41,6 +41,15 @@ function pullOnly() {
   })
 }
 
+function restartSelf() {
+  // 通过 PM2 IPC 自重启，PM2 会先 SIGTERM 当前进程再拉起新进程
+  if (process.send) {
+    process.send({ type: 'pm2:restart' })
+  } else {
+    spawn('pm2', ['restart', 'webhook'], { stdio: 'inherit', cwd: DEPLOY_DIR })
+  }
+}
+
 function runDeploy() {
   // 如果已有部署在跑，杀掉整个进程组（包括所有子进程）
   if (currentDeploy) {
@@ -60,7 +69,8 @@ function runDeploy() {
   proc.on('exit', (code, signal) => {
     currentDeploy = null
     if (code === 0) {
-      console.log(`[${new Date().toISOString()}] 部署成功`)
+      console.log(`[${new Date().toISOString()}] 部署成功，重启 webhook 进程加载最新代码...`)
+      restartSelf()
     } else if (signal === 'SIGTERM') {
       console.log(`[${new Date().toISOString()}] 部署被终止（新请求覆盖）`)
     } else {
