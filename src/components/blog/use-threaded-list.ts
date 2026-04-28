@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { toast } from 'sonner'
 import type { ThreadedItemBase } from '@/lib/db/types'
 
 interface ThreadedItem extends ThreadedItemBase {
@@ -92,21 +91,13 @@ export function useThreadedList<T extends ThreadedItem>({
     const nextPage = page + 1
     const result = await onLoadMore(nextPage)
     const newItems = result.data
-    if (newItems) {
-      if (newItems.length === 0) {
-        toast.info(loadedAllText)
-      } else {
-        setItems((prev) => {
-          const existingIds = new Set(prev.map((item) => item.id))
-          const trulyNew = newItems.filter((item) => !existingIds.has(item.id))
-          if (trulyNew.length === 0) {
-            toast.info(loadedAllText)
-            return prev
-          }
-          return [...prev, ...trulyNew]
-        })
-        setPage(nextPage)
-      }
+    if (newItems && newItems.length > 0) {
+      setItems((prev) => {
+        const existingIds = new Set(prev.map((item) => item.id))
+        const trulyNew = newItems.filter((item) => !existingIds.has(item.id))
+        return [...prev, ...trulyNew]
+      })
+      setPage(nextPage)
     }
     setLoading(false)
   }

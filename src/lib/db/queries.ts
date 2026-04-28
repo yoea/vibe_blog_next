@@ -664,6 +664,7 @@ export async function getPostsByTag(tagSlug: string, page = 1, limit = 10) {
       `)
       .in('id', postIds)
       .eq('published', true)
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .range(from, to)
 

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { deletePost, togglePinPost } from '@/lib/actions/post-actions'
 import { toast } from 'sonner'
+import { LoadMore } from '@/components/shared/load-more'
 
 interface PostData {
   id: string
@@ -58,21 +59,13 @@ export function MyPostRowList({
     const nextPage = page + 1
     const result = await onLoadMore(nextPage)
     const newPosts = result.data
-    if (newPosts) {
-      if (newPosts.length === 0) {
-        toast.info('已加载全部文章')
-      } else {
-        setPosts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id))
-          const trulyNew = newPosts.filter((p) => !existingIds.has(p.id))
-          if (trulyNew.length === 0) {
-            toast.info('已加载全部文章')
-            return prev
-          }
-          return [...prev, ...trulyNew]
-        })
-        setPage(nextPage)
-      }
+    if (newPosts && newPosts.length > 0) {
+      setPosts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id))
+        const trulyNew = newPosts.filter((p) => !existingIds.has(p.id))
+        return [...prev, ...trulyNew]
+      })
+      setPage(nextPage)
     }
     setLoading(false)
   }
@@ -105,17 +98,14 @@ export function MyPostRowList({
         ))}
       </div>
 
-      {hasMore ? (
-        <div className="flex justify-center pt-2">
-          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
-            {loading ? '加载中...' : '加载更多'}
-          </button>
-        </div>
-      ) : (
-        <div className="flex justify-center pt-2">
-          <span className="text-sm text-muted-foreground/60">已显示全部文章</span>
-        </div>
-      )}
+      <LoadMore
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={handleLoadMore}
+        remaining={total - posts.length}
+        idleText="加载更多"
+        loadedAllText="已显示全部文章"
+      />
     </div>
   )
 }

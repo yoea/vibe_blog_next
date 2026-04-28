@@ -6,6 +6,7 @@ import { formatDaysAgo } from '@/lib/utils/time'
 import { getUserColor } from '@/lib/utils/colors'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { LoadMore } from '@/components/shared/load-more'
 import { Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -209,15 +210,13 @@ export function AuthorListClient({
       )}
 
       {hasMore && (
-        <div className="flex justify-center pt-2">
-          <button
-            onClick={handleLoadMore}
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium rounded-md border bg-card hover:bg-muted transition-colors disabled:opacity-50"
-          >
-            {loading ? '加载中...' : '加载更多'}
-          </button>
-        </div>
+        <LoadMore
+          hasMore={hasMore}
+          loading={loading}
+          onLoadMore={handleLoadMore}
+          idleText="加载更多"
+          showLoadedAll={false}
+        />
       )}
 
       <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>

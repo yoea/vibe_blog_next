@@ -8,6 +8,7 @@ import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
 import { CommentForm } from './comment-form'
 import { Heart } from 'lucide-react'
+import { LoadMore } from '@/components/shared/load-more'
 import type { CommentWithAuthor } from '@/lib/db/types'
 
 export function CommentSection({
@@ -31,6 +32,7 @@ export function CommentSection({
 
   const {
     items: comments,
+    total,
     hasMore,
     replyTarget,
     setReplyTarget,
@@ -95,17 +97,14 @@ export function CommentSection({
         </div>
       )}
 
-      {hasMore ? (
-        <div className="flex justify-center pt-2">
-          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
-            {loading ? '加载中...' : '加载更多评论'}
-          </button>
-        </div>
-      ) : comments.length > 0 && (
-        <div className="flex justify-center pt-2">
-          <span className="text-sm text-muted-foreground/60">已显示全部评论</span>
-        </div>
-      )}
+      <LoadMore
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={handleLoadMore}
+        remaining={total - comments.length}
+        idleText="加载更多评论"
+        loadedAllText="已显示全部评论"
+      />
     </div>
   )
 }
