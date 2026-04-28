@@ -4,10 +4,9 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from 'cmdk'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Home, Users, FileText, User, Settings, LogIn, Sun, Moon, SunMoon, Search } from 'lucide-react'
+import { Home, Users, FileText, User, Settings, LogIn, Search } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 
 const STORAGE_KEY = 'command_frequency'
 
@@ -54,11 +53,7 @@ export function CommandPalette() {
   const [isSearching, setIsSearching] = useState(false)
   const [isMac, setIsMac] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { mode, setMode } = useTheme()
   const router = useRouter()
-
-  const themeOrder: ThemeMode[] = ['light', 'dark', 'system']
-  const themeLabels: Record<ThemeMode, string> = { light: '浅色', dark: '深色', system: '跟随系统' }
 
   // 加载使用频率
   useEffect(() => {
@@ -144,9 +139,7 @@ export function CommandPalette() {
     { id: 'settings',    label: '设置',     icon: Settings, group: '导航', requiresAuth: true,  action: () => router.push('/settings') },
     { id: 'authors',     label: '作者列表', icon: Users,    group: '导航',                      action: () => router.push('/author') },
     { id: 'login',       label: '登录',     icon: LogIn,    group: '导航', requiresAnon: true,  action: () => router.push('/login') },
-    { id: 'theme',       label: '切换主题', icon: Sun,      group: '操作',                      action: () => setMode(themeOrder[(themeOrder.indexOf(mode) + 1) % themeOrder.length]) },
-  ], [router, mode, setMode])  // eslint-disable-line react-hooks/exhaustive-deps
-  // themeOrder 是常量无需加依赖
+  ], [router])
 
   // 过滤 + 排序
   const visible = useMemo(() => {
@@ -158,18 +151,14 @@ export function CommandPalette() {
     })
 
     return [...filtered].sort((a, b) => {
-      // 操作类始终放在底部
-      if (a.group !== b.group) return a.group === '操作' ? 1 : -1
       const fa = frequency[a.id] || 0
       const fb = frequency[b.id] || 0
       if (fa !== fb) return fb - fa
-      // 同频率保持定义顺序
       return commands.indexOf(a) - commands.indexOf(b)
     })
   }, [commands, user, frequency, searchQuery])
 
   const navItems = visible.filter((c) => c.group === '导航')
-  const opItems = visible.filter((c) => c.group === '操作')
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -240,28 +229,7 @@ export function CommandPalette() {
                 })}
               </CommandGroup>
             )}
-            {opItems.length > 0 && (
-              <CommandGroup
-                heading="操作"
-                className="[&_[cmdk-group-heading]]:px-5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-400 [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:uppercase"
-              >
-                {opItems.map((c) => {
-                  const Icon = c.icon
-                  const isTheme = c.id === 'theme'
-                  return (
-                    <CommandItem key={c.id} onSelect={() => pick(c.id, c.action)} className={ITEM_CLASS}>
-                      <Icon className="h-4 w-4 text-gray-400" />
-                      <span>{c.label}</span>
-                      {isTheme && (
-                        <span className="ml-auto text-[11px] text-gray-400">{themeLabels[mode]}</span>
-                      )}
-                    </CommandItem>
-                  )
-                })}
-              </CommandGroup>
-            )}
           </CommandList>
-          {/* 底部键盘提示 */}
           <div className="hidden sm:flex items-center justify-center gap-4 px-5 pt-4 pb-2 border-t border-gray-200/50 dark:border-gray-700/50">
             <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
               <kbd className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-mono text-[10px] text-gray-500 dark:text-gray-400">↑↓</kbd>
