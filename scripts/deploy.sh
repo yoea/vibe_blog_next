@@ -17,10 +17,18 @@ echo "进入项目目录: $PROJECT_DIR"
 # git pull origin main
 
 # =========================
-# 2. 安装依赖
+# 2. 安装依赖（仅 package-lock.json 有变更时才重装）
 # =========================
-echo "安装依赖..."
-npm ci --no-audit --no-fund --prefer-offline
+LOCK_HASH_FILE="node_modules/.package-lock-hash"
+CURRENT_HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
+
+if [ -f "$LOCK_HASH_FILE" ] && [ "$(cat "$LOCK_HASH_FILE")" = "$CURRENT_HASH" ]; then
+  echo "依赖无变更，跳过 npm ci"
+else
+  echo "安装依赖..."
+  npm ci --no-audit --no-fund --prefer-offline
+  echo "$CURRENT_HASH" > "$LOCK_HASH_FILE"
+fi
 
 # =========================
 # 3. 构建（先停服释放端口，避免资源竞争）
