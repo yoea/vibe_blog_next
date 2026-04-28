@@ -9,7 +9,7 @@ module.exports = {
     },
     {
       name: 'webhook',
-      script: 'webhook-server.js',
+      script: 'scripts/webhook-server.js',
       env: {
         WEBHOOK_PORT: 8084,
       },
