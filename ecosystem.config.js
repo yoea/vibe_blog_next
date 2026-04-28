@@ -12,7 +12,6 @@ module.exports = {
       script: 'webhook-server.js',
       env: {
         WEBHOOK_PORT: 8084,
-        WEBHOOK_SECRET: '',
       },
     },
   ],
