@@ -3,123 +3,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>系统维护中</title>
+<title>字里行间 - 系统维护中</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    color: #1e293b;
+
+  :root {
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-border: #e2e8f0;
+    --muted: #f8fafc;
+    --muted-foreground: #64748b;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --accent: #eef2ff;
+    --radius: 0.625rem;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   }
+
+  .dark {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --card: #1e293b;
+    --card-border: #334155;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1e1b4b;
+  }
+
   @media (prefers-color-scheme: dark) {
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
+    :root {
+      --background: #0f172a;
+      --foreground: #f1f5f9;
+      --card: #1e293b;
+      --card-border: #334155;
+      --muted: #1e293b;
+      --muted-foreground: #94a3b8;
+      --accent: #1e1b4b;
     }
   }
-  .container {
-    text-align: center;
-    padding: 2rem;
-    max-width: 480px;
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
   }
-  .icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 1.5rem;
-    border-radius: 16px;
-    background: #2563eb;
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid var(--card-border);
+    background: var(--background);
+  }
+  .header-inner {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .logo {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .site-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Main */
+  .main {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 2rem 1rem;
   }
-  .icon svg {
-    width: 32px;
-    height: 32px;
-    fill: white;
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
   }
-  h1 {
-    font-size: 1.5rem;
+  .card-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .card h1 {
+    font-size: 1.125rem;
     font-weight: 700;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
-  p {
-    font-size: 0.938rem;
+  .card p {
+    font-size: 0.875rem;
     line-height: 1.6;
-    color: #64748b;
-    margin-bottom: 0.5rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.375rem;
   }
-  @media (prefers-color-scheme: dark) {
-    p { color: #94a3b8; }
-  }
+
+  /* Status badge */
   .status {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-top: 1.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 1rem;
     border-radius: 999px;
-    font-size: 0.813rem;
-    background: #f1f5f9;
-    color: #475569;
-  }
-  @media (prefers-color-scheme: dark) {
-    .status { background: #1e293b; color: #94a3b8; }
+    font-size: 0.8125rem;
+    background: var(--accent);
+    color: var(--primary);
+    font-weight: 500;
   }
   .status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: #22c55e;
-    margin-right: 6px;
-    animation: blink 1.5s ease-in-out infinite;
+    background: var(--primary-light);
+    animation: blink 1.2s ease-in-out infinite;
   }
   @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.7); }
   }
-  footer {
-    margin-top: 2rem;
-    font-size: 0.75rem;
-    color: #94a3b8;
+
+  /* Progress bar */
+  .progress {
+    margin-top: 1.5rem;
+    height: 3px;
+    background: var(--muted);
+    border-radius: 999px;
+    overflow: hidden;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    border-radius: 999px;
+    animation: progress 2s ease-in-out infinite;
+  }
+  @keyframes progress {
+    0% { transform: translateX(-100%); width: 30%; }
+    50% { width: 60%; }
+    100% { transform: translateX(300%); width: 30%; }
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--card-border);
+    background: var(--background);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+  }
+  .footer-inner {
+    max-width: 56rem;
+    margin: 0 auto;
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="icon">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-    </svg>
-  </div>
-  <h1>正在升级新版本</h1>
-  <p>站点正在进行短时维护，以带来更好的体验。</p>
-  <p>请稍后再来访问，预计很快完成。</p>
-  <div class="status" id="status">
-    <span class="status-dot"></span>
-    <span id="statusText">部署进行中</span>
-  </div>
-  <footer id="footer">自动检测中，部署完成后将自动刷新</footer>
-</div>
-<script>
-  const statusText = document.getElementById('statusText')
-  let attempts = 0
+  <header class="header">
+    <div class="header-inner">
+      <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#a855f7"/>
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="14" fill="url(#logo-grad)"/>
+        <path d="M10 22 L14 10 L16 8 L18 10 L22 22 Z" fill="white" opacity="0.95"/>
+        <path d="M14 14 L16 12 L18 14 L18 16 L16 22 L14 16 Z" fill="#6366f1" opacity="0.3"/>
+      </svg>
+      <span class="site-title">字里行间</span>
+    </div>
+  </header>
 
-  async function check() {
-    attempts++
-    try {
-      const res = await fetch('/', { cache: 'no-store' })
-      if (res.ok) {
-        statusText.textContent = '部署完成，正在跳转...'
-        location.reload()
-      }
-    } catch {}
-    setTimeout(check, 5000)
-  }
+  <main class="main">
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h1>正在升级新版本</h1>
+      <p>站点正在进行短时维护，以带来更好的体验。</p>
+      <p>请稍后再来访问，预计很快完成。</p>
 
-  check()
-</script>
+      <div class="status">
+        <span class="status-dot"></span>
+        <span id="statusText">部署进行中</span>
+      </div>
+
+      <div class="progress">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      Copyright &copy; 2026 <strong>Yoea</strong>. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    const statusText = document.getElementById('statusText')
+
+    async function check() {
+      try {
+        const res = await fetch('/', { cache: 'no-store' })
+        if (res.ok) {
+          statusText.textContent = '部署完成，正在跳转...'
+          location.reload()
+        }
+      } catch {}
+      setTimeout(check, 5000)
+    }
+
+    check()
+  </script>
 </body>
 </html>
