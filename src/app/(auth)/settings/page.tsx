@@ -14,10 +14,20 @@ export default async function SettingsPage() {
 
   const isAdmin = await isSuperAdmin()
 
+  let maintenanceMode = false
+  if (isAdmin) {
+    const { data } = await supabase
+      .from('site_config')
+      .select('maintenance_mode')
+      .eq('id', 1)
+      .maybeSingle()
+    maintenanceMode = data?.maintenance_mode ?? false
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">设置</h1>
-      <SettingsForm user={user} isAdmin={isAdmin} />
+      <SettingsForm user={user} isAdmin={isAdmin} maintenanceMode={maintenanceMode} />
     </div>
   )
 }
