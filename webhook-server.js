@@ -116,7 +116,7 @@ const server = http.createServer((req, res) => {
     // 仅标签推送触发部署（对应 /gitpush release 的发版流程）
     // 普通分支推送只确认收到，不执行部署
     if (!isTagPush) {
-      console.log(`[${new Date().toISOString()}] 分支推送跳过部署（ref=${ref}）`)
+      console.log(`[${new Date().toISOString()}] 此次为分支推送，不会执行部署脚本（ref=${ref}）`)
       return
     }
 
