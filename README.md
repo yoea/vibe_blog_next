@@ -1,6 +1,6 @@
 # Blog
 
-用Vibe Coding一个基于 Next.js 16 + Supabase 的个人博客系统。
+基于 Next.js 16 + Supabase 的个人博客系统。
 
 ## 功能特性
 
@@ -46,7 +46,7 @@ npm install
 
 ### 3. 初始化数据库
 
-在 Supabase Dashboard 的 **SQL Editor** 中执行 `supabase/schema.sql`，创建所有表和 RLS 策略。
+在 Supabase Dashboard 的 **SQL Editor** 中执行 `supabase/init.sql`，创建所有表和 RLS 策略。
 
 ### 4. 启动开发服务器
 
@@ -66,7 +66,7 @@ npm run dev
 
 ```
 用户 → nginx (443) → PM2 (8083) → .next/standalone/server.js
-Gitea Push → Webhook (8084) → git pull + deploy.sh → PM2 重启
+Git Push → Webhook (8084) → git pull + deploy.sh → PM2 重启
 ```
 
 ### 部署步骤
@@ -82,21 +82,44 @@ bash deploy.sh
 
 ### 自动部署
 
-项目已配置 Gitea Webhook 自动部署：
+项目配置了双远程推送自动部署（GitHub / Gitea），通过标签推送触发：
 
-1. 本地 `git push` 到 Gitea
-2. Gitea 发送 POST 到 `http://127.0.0.1:8084`
-3. `webhook-server.js` 验证签名后执行 `git pull && bash deploy.sh`
-4. PM2 自动重启应用
+1. 本地 `git push` 推送后，远程仓库向 webhook 服务发送 POST 请求
+2. `webhook-server.js` 验证签名后执行 `git pull && bash deploy.sh`
+3. PM2 重启 Next.js 应用（webhook 进程不会被重启，部署互不影响）
 
 ### PM2 管理
 
 ```bash
-pm2 list                           # 查看所有进程
-pm2 logs webhook                   # 查看部署日志
-pm2 logs vibe_blog_next            # 查看应用日志
-pm2 restart ecosystem.config.js    # 重启所有进程
+pm2 list                                       # 查看所有进程
+pm2 show <name>                                # 查看进程详情（日志路径、运行模式等）
+
+pm2 logs <name>                                # 查看实时日志流
+pm2 logs <name> --lines 50                     # 查看最近 50 行
+pm2 logs <name> --timestamp --lines 50         # 查看带时间戳的最近 50 行
+
+pm2 start ecosystem.config.js --only <name>    # 启动指定进程
+pm2 restart <name>                             # 重启指定进程
+pm2 stop <name>                                # 停止指定进程
+
+pm2 save                                       # 保存当前进程列表
+pm2 startup                                    # 配置开机自启
+pm2 resurrect                                  # 恢复保存的进程列表
 ```
+
+#### 日志说明
+
+| 进程 | 日志路径 | 内容 |
+|------|----------|------|
+| `vibe_blog_next` | `~/.pm2/logs/vibe-blog-next-out.log` | 应用访问日志 |
+| `vibe_blog_next` | `~/.pm2/logs/vibe-blog-next-error.log` | 应用错误日志 |
+| `webhook` | `~/.pm2/logs/webhook-out.log` | Webhook 请求 + 部署输出（带 `[deploy]` 前缀） |
+| `webhook` | `~/.pm2/logs/webhook-error.log` | 部署过程中的 stderr 输出 |
+
+**常见问题：**
+
+- **Server Action 错误** — 旧浏览器缓存导致，等待用户刷新页面后自动恢复，无需处理
+- **`Failed to find Server Action`** — 新部署后旧页面发起的请求，无害
 
 ## 缓存策略
 
