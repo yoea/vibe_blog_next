@@ -1,0 +1,112 @@
+import { createClient } from '@/lib/supabase/server'
+import { isSuperAdmin } from '@/lib/utils/admin'
+import { MaintenanceClient } from './maintenance-client'
+
+export const metadata = {
+  title: '系统维护中',
+}
+
+export default async function MaintenancePage() {
+  const isAdmin = await isSuperAdmin()
+
+  return (
+    <>
+      <style>{maintenanceCSS}</style>
+      <header className="m-header">
+        <div className="m-header-inner">
+          <svg className="m-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="100%" stopColor="#a855f7" />
+              </linearGradient>
+            </defs>
+            <circle cx="16" cy="16" r="14" fill="url(#logo-grad)" />
+            <path d="M10 22 L14 10 L16 8 L18 10 L22 22 Z" fill="white" opacity="0.95" />
+            <path d="M14 14 L16 12 L18 14 L18 16 L16 22 L14 16 Z" fill="#6366f1" opacity="0.3" />
+          </svg>
+          <span className="m-site-title">字里行间</span>
+        </div>
+      </header>
+
+      <main className="m-main">
+        <div className="m-card">
+          <div className="m-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <h1 className="m-h1">站点维护中</h1>
+          <p className="m-p">站点正在进行维护，暂时无法访问。</p>
+          <p className="m-p">请稍后再来，感谢你的理解。</p>
+
+          <MaintenanceClient isAdmin={isAdmin} />
+        </div>
+      </main>
+
+      <footer className="m-footer">
+        <div className="m-footer-inner">
+          Copyright &copy; 2026 <strong>Yoea</strong>. All rights reserved.
+        </div>
+      </footer>
+    </>
+  )
+}
+
+const maintenanceCSS = `
+  .m-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+  }
+  .m-header-inner {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .m-logo { width: 28px; height: 28px; flex-shrink: 0; }
+  .m-site-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+  .m-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .m-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+  }
+  .m-card-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .m-card-icon svg { width: 28px; height: 28px; }
+  .m-h1 { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+  .m-p { font-size: 0.875rem; line-height: 1.6; color: var(--muted-foreground); margin-bottom: 0.375rem; }
+  .m-footer {
+    border-top: 1px solid var(--border);
+    background: var(--background);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+  }
+  .m-footer-inner { max-width: 56rem; margin: 0 auto; }
+`
