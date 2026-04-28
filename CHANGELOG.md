@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.12](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.11...v0.1.12) (2026-04-28)
+
+
+### 其他变更
+
+* 发版脚本改为附注标签，含完整 CHANGELOG 描述 ([2f04241](https://git.ewing.top/yoea/vibe_blog_next/commit/2f042415b22d5260c1f8d5a14738cef722e39ea3))
+* 优化webhook分支推送跳过日志文案 ([d806298](https://git.ewing.top/yoea/vibe_blog_next/commit/d806298eb0bb1c11b1393a96eaa0e6906701e186))
+
+
+### 新功能
+
+* 运维文件归入scripts目录，新增维护页 ([7bf8cde](https://git.ewing.top/yoea/vibe_blog_next/commit/7bf8cde1e4b1e636786bc9403cedcd2c43aea3ee))
+
+
+### Bug 修复
+
+* 修复 deploy.sh 可执行权限 ([acd227f](https://git.ewing.top/yoea/vibe_blog_next/commit/acd227f96deeacf8fa1ec2ff5b9c792d9978691a))
+* 修复面包屑移动端竖向排列问题 ([7e28028](https://git.ewing.top/yoea/vibe_blog_next/commit/7e280287f76a52f31bf4fc760bb0be69fc244ca8))
+* 移动端面包屑防换行与截断优化 ([6e473c1](https://git.ewing.top/yoea/vibe_blog_next/commit/6e473c127506f482be78c2cb657b40a851f7b5be))
+
 ### [0.1.11](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.10...v0.1.11) (2026-04-28)
 
 
