@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/yoea/vibe-blog-nextjs/compare/v0.1.5...v0.1.6) (2026-04-28)
+
+
+### Bug 修复
+
+* 点赞失败时显示真实错误信息 ([87edcf9](https://github.com/yoea/vibe-blog-nextjs/commit/87edcf96e6b3d35049e98224522f1d15f6c7e713))
+
 ### [0.1.5](https://github.com/yoea/vibe-blog-nextjs/compare/v0.1.4...v0.1.5) (2026-04-28)
 
 
