@@ -37,3 +37,36 @@ export async function deleteUserAsAdmin(targetUserId: string): Promise<ActionRes
   revalidatePath('/author')
   return {}
 }
+
+export async function toggleMaintenanceMode(): Promise<ActionResult> {
+  if (!await isSuperAdmin()) return { error: '无权限' }
+
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) return { error: '服务器未配置' }
+
+  const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceKey,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  // 读取当前状态并取反
+  const { data: config } = await admin
+    .from('site_config')
+    .select('maintenance_mode')
+    .eq('id', 1)
+    .single()
+
+  const newMode = !config?.maintenance_mode
+
+  const { error } = await admin
+    .from('site_config')
+    .update({ maintenance_mode: newMode, updated_at: new Date().toISOString() })
+    .eq('id', 1)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/')
+  return {}
+}
