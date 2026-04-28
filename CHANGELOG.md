@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.12...v0.2.0) (2026-04-26)
+
+字里行间 v0.2.0 — 基于 Next.js 16 + Supabase 的个人博客系统。
+
+### 功能特性
+
+- **Markdown 写作**，支持代码高亮、表格、任务列表
+- **文章标签分类**，快速定位感兴趣的内容
+- **评论与回复**，支持多级嵌套
+- **留言板**，与作者和读者直接交流
+- **深色/浅色主题**自由切换
+- **RSS 订阅**，不错过任何更新
+- **响应式设计**，桌面和移动端皆可流畅浏览
+
+### 技术栈
+
+Next.js 16 · Supabase · Tailwind CSS v4 · shadcn/ui · PM2 · Nginx
+
+
+### 性能优化
+
+* 跳过不必要的npm ci重装 ([ef7a0fc](https://git.ewing.top/yoea/vibe_blog_next/commit/ef7a0fca7e090c17b24832f05cda46c7d4c7e9d4))
+
+
+### Bug 修复
+
+* 分支推送webhook改为git pull拉取代码 ([552fa86](https://git.ewing.top/yoea/vibe_blog_next/commit/552fa86ff317f2f82ae879e45bd6ec15f93b2cb7))
+* webhook日志增强，部署后自动重启webhook进程 ([425fd2a](https://git.ewing.top/yoea/vibe_blog_next/commit/425fd2ace7c7940a6982cc1ca7abf7f252c1fcfd))
+* webhook注册改用delete+start防止路径残留 ([9309ac5](https://git.ewing.top/yoea/vibe_blog_next/commit/9309ac56bd94eb2ab818065344037ea07499e44c))
+* webhook自重启移出deploy.sh避免自残进程 ([a34286c](https://git.ewing.top/yoea/vibe_blog_next/commit/a34286cb62370bd0b6e932f42048d61587ff99fb))
+
 ### [0.1.12](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.11...v0.1.12) (2026-04-28)
 
 
