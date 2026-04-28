@@ -36,11 +36,16 @@ export default function AboutPage() {
           </ul>
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-3">
           <h2 className="text-lg font-semibold">技术栈</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            本站使用 Next.js、Supabase、Tailwind CSS 构建，支持 Markdown 写作、评论互动、标签分类等功能。
-          </p>
+          <div className="rounded-lg border divide-y text-sm">
+            <TechRow label="框架" value="Next.js 16 (App Router), React 19" />
+            <TechRow label="数据库" value="Supabase (PostgreSQL) + RLS 行级安全" />
+            <TechRow label="认证" value="Supabase Auth (PKCE 流程)" />
+            <TechRow label="样式" value="Tailwind CSS v4, shadcn/ui" />
+            <TechRow label="部署" value="PM2, Nginx (反向代理 + SSL)" />
+            <TechRow label="域名" value="ewing.top (Cloudflare DNS)" />
+          </div>
         </section>
 
         <section className="space-y-3">
@@ -49,12 +54,21 @@ export default function AboutPage() {
             <InfoRow label="版本" value={`${process.env.NEXT_PUBLIC_SITE_TITLE || 'Blog'} v${buildInfo.version}`} />
             {buildInfo.buildTime && <InfoRow label="构建时间" value={new Date(buildInfo.buildTime).toLocaleString('zh-CN')} />}
             {buildInfo.commit && <InfoRow label="提交" value={buildInfo.commit} mono />}
-            {buildInfo.commitCount !== null && <InfoRow label="提交次数" value={buildInfo.commitCount.toLocaleString()} />}
+            {buildInfo.commitCount !== null && <InfoRow label="提交次数" value={`${buildInfo.commitCount}次`} />}
             {buildInfo.contributors && <InfoRow label="开发者" value={buildInfo.contributors} />}
             <InfoRow label="运行时" value={`Node ${buildInfo.nodeVersion}`} />
           </div>
         </section>
       </div>
+    </div>
+  )
+}
+
+function TechRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className="text-right">{value}</span>
     </div>
   )
 }
