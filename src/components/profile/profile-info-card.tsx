@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, Settings, Mail, Calendar, Edit3, Check, KeyRound } from 'lucide-react'
+import { Shield, Settings, Mail, Calendar, Edit3, Check, KeyRound, Camera, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { AvatarUploader } from '@/components/settings/avatar-uploader'
+import type { AvatarUploaderHandle } from '@/components/settings/avatar-uploader'
 import { updateUserSettings } from '@/lib/actions/settings-actions'
 import { resetPasswordForEmail } from '@/lib/actions/auth-actions'
 import { formatDaysAgo } from '@/lib/utils/time'
@@ -35,6 +36,7 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
   const [saving, setSaving] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const avatarRef = useRef<AvatarUploaderHandle>(null)
   const router = useRouter()
 
   const handleSaveName = async () => {
@@ -70,14 +72,22 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
 
   return (
     <div className="rounded-lg border bg-card p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row gap-6 sm:gap-6">
-        {/* Avatar section — centered on mobile */}
-        <div className="shrink-0 flex justify-center sm:block">
-          <AvatarUploader userId={userId} displayName={displayName} currentAvatarUrl={avatarUrl} />
+      {/* Mobile: vertical stack | Desktop: 2-column grid */}
+      <div className="sm:grid sm:grid-cols-[auto_1fr] sm:gap-x-6 sm:gap-y-4">
+        {/* Row 1, Col 1: Avatar */}
+        <div className="flex justify-center sm:block">
+          <AvatarUploader
+            ref={avatarRef}
+            userId={userId}
+            displayName={displayName}
+            currentAvatarUrl={avatarUrl}
+            size="2xl"
+            actionsClassName="sm:hidden"
+          />
         </div>
 
-        {/* Info section */}
-        <div className="flex-1 min-w-0 space-y-3">
+        {/* Row 1, Col 2: Info */}
+        <div className="min-w-0 space-y-3 mt-6 sm:mt-0">
           {/* Top row: display name + settings link */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
@@ -141,15 +151,37 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="pt-1">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowResetConfirm(true)}>
-              <KeyRound className="h-3.5 w-3.5" />
-              重置密码
+        {/* Row 2, Col 1: Avatar buttons + hint (desktop only) */}
+        <div className="hidden sm:flex flex-col items-center gap-1.5">
+          <div className="flex items-center justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => avatarRef.current?.openFilePicker()}>
+              <Camera className="h-3.5 w-3.5 mr-1.5" />
+              更换头像
             </Button>
-            <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱</p>
+            {avatarUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => avatarRef.current?.openDeleteConfirm()}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                删除
+              </Button>
+            )}
           </div>
+          <p className="text-xs text-muted-foreground text-center">支持 JPG、PNG，最大 20MB</p>
+        </div>
+
+        {/* Row 2, Col 2: Reset password */}
+        <div className="mt-4 sm:mt-0">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowResetConfirm(true)}>
+            <KeyRound className="h-3.5 w-3.5" />
+            重置密码
+          </Button>
+          <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱</p>
         </div>
       </div>
 

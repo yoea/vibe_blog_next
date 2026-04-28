@@ -36,16 +36,11 @@ export default function AboutPage() {
           </ul>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-1.5">
           <h2 className="text-lg font-semibold">技术栈</h2>
-          <div className="rounded-lg border divide-y text-sm">
-            <TechRow label="框架" value="Next.js 16 (App Router), React 19" />
-            <TechRow label="数据库" value="Supabase (PostgreSQL) + RLS 行级安全" />
-            <TechRow label="认证" value="Supabase Auth (PKCE 流程)" />
-            <TechRow label="样式" value="Tailwind CSS v4, shadcn/ui" />
-            <TechRow label="部署" value="PM2, Nginx (反向代理 + SSL)" />
-            <TechRow label="域名" value="ewing.top (Cloudflare DNS)" />
-          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Next.js 16 · Supabase · Tailwind CSS v4 · shadcn/ui · PM2 · Nginx
+          </p>
         </section>
 
         <section className="space-y-3">
@@ -60,15 +55,6 @@ export default function AboutPage() {
           </div>
         </section>
       </div>
-    </div>
-  )
-}
-
-function TechRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-2.5">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="text-right">{value}</span>
     </div>
   )
 }

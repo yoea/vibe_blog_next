@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import type { Point, Area } from 'react-easy-crop'
 import browserImageCompression from 'browser-image-compression'
 import { uploadAvatar, deleteAvatar } from '@/lib/actions/avatar-actions'
 import { Avatar } from '@/components/ui/avatar'
+import type { AvatarProps } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,6 +24,17 @@ interface AvatarUploaderProps {
   userId: string
   displayName: string
   currentAvatarUrl: string | null
+  size?: AvatarProps['size']
+  /** 按钮区域额外类名，可用于响应式控制（如 sm:hidden） */
+  actionsClassName?: string
+}
+
+export interface AvatarUploaderHandle {
+  openFilePicker: () => void
+  openDeleteConfirm: () => void
+  uploading: boolean
+  deleting: boolean
+  hasAvatar: boolean
 }
 
 function createImage(url: string): Promise<HTMLImageElement> {
@@ -52,7 +64,10 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<Blob> {
   })
 }
 
-export function AvatarUploader({ userId, displayName, currentAvatarUrl }: AvatarUploaderProps) {
+export const AvatarUploader = forwardRef<AvatarUploaderHandle, AvatarUploaderProps>(function AvatarUploader(
+  { userId, displayName, currentAvatarUrl, size = 'xl', actionsClassName },
+  ref
+) {
   const [cropOpen, setCropOpen] = useState(false)
   const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
@@ -65,6 +80,14 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
   const fileInputRef = useRef<HTMLInputElement>(null)
   const objectUrlRef = useRef<string | null>(null)
   const router = useRouter()
+
+  useImperativeHandle(ref, () => ({
+    openFilePicker: () => fileInputRef.current?.click(),
+    openDeleteConfirm: () => setDeleteConfirmOpen(true),
+    get uploading() { return uploading },
+    get deleting() { return deleting },
+    get hasAvatar() { return !!avatarUrl },
+  }), [uploading, deleting, avatarUrl])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -79,7 +102,6 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
       return
     }
 
-    // Revoke previous object URL to avoid memory leak
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
 
     const url = URL.createObjectURL(file)
@@ -89,7 +111,6 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
     setCrop({ x: 0, y: 0 })
     setCropOpen(true)
 
-    // Reset file input so re-selecting the same file triggers onChange
     e.target.value = ''
   }
 
@@ -154,44 +175,48 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
           avatarUrl={avatarUrl}
           displayName={displayName}
           userId={userId}
-          size="xl"
+          size={size}
           previewable
         />
-        <div className="space-y-1.5">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              <Camera className="h-3.5 w-3.5 mr-1.5" />
-              {uploading ? '上传中...' : '更换头像'}
-            </Button>
-            {avatarUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setDeleteConfirmOpen(true)}
-                disabled={uploading}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                删除
-              </Button>
-            )}
+        {actionsClassName !== undefined && (
+          <div className={actionsClassName}>
+            <div className="space-y-1.5">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Camera className="h-3.5 w-3.5 mr-1.5" />
+                  {uploading ? '上传中...' : '更换头像'}
+                </Button>
+                {avatarUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    disabled={uploading}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    删除
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                支持 JPG、PNG，最大 20MB
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            支持 JPG、PNG，最大 20MB
-          </p>
-        </div>
+        )}
       </div>
 
       <Dialog open={cropOpen} onOpenChange={(open) => {
@@ -267,4 +292,4 @@ export function AvatarUploader({ userId, displayName, currentAvatarUrl }: Avatar
       </Dialog>
     </>
   )
-}
+})

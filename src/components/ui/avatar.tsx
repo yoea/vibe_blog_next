@@ -9,11 +9,11 @@ import {
   DialogContent,
 } from '@/components/ui/dialog'
 
-interface AvatarProps {
+export interface AvatarProps {
   avatarUrl?: string | null
   displayName?: string | null
   userId: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   className?: string
   previewable?: boolean
   /** 延迟加载头像图片，先显示 fallback 再异步加载，适合列表页批量使用 */
@@ -26,6 +26,7 @@ const sizeMap = {
   md: { px: 40, fontSize: 'text-base' },
   lg: { px: 48, fontSize: 'text-lg' },
   xl: { px: 64, fontSize: 'text-xl' },
+  '2xl': { px: 80, fontSize: 'text-2xl' },
 }
 
 export function Avatar({ avatarUrl, displayName, userId, size = 'md', className, previewable, defer }: AvatarProps) {
