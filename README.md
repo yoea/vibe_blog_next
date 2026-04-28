@@ -124,5 +124,3 @@ pm2 restart ecosystem.config.js    # 重启所有进程
 3. 在 **Redirect URLs** 中添加：`https://yourdomain.com/api/auth/callback`
 
 这样邮箱验证、密码重置等功能才能正常工作。
-
----
