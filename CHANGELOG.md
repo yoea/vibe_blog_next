@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.11](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.10...v0.1.11) (2026-04-28)
+
+
+### 文档
+
+* 更新 README，补充 PM2 管理说明与修复路径错误 ([409d99d](https://git.ewing.top/yoea/vibe_blog_next/commit/409d99d6f8982dc2d9152ed75ba0c1b03465563c))
+
+
+### Bug 修复
+
+* 部署时仅重启 Next.js，避免重启 webhook 自身 ([7ed7ea0](https://git.ewing.top/yoea/vibe_blog_next/commit/7ed7ea0bbfea7c40274e6aa310471ed13cada54c))
+* 适配作者列表页移动端排版 ([8b60c30](https://git.ewing.top/yoea/vibe_blog_next/commit/8b60c3008fc5061783d79c3d3c7dd73b3b01526d))
+
 ### [0.1.10](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.9...v0.1.10) (2026-04-28)
 
 
