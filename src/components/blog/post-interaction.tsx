@@ -55,13 +55,13 @@ export function PostInteraction({
     }).catch(() => {})
     setShareCount(c => c + 1)
 
-    // Use Web Share API on supported devices (mobile)
-    if (navigator.share && shareUrl) {
+    // 移动端：调用系统分享接口
+    if ((/Mobi|Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) && navigator.share && shareUrl) {
       navigator.share({ title: document.title, url: shareUrl }).catch(() => {})
       return
     }
 
-    // Fallback: open share dialog
+    // 桌面端：显示分享对话框（复制链接 + 二维码）
     setShowShare(true)
   }
 

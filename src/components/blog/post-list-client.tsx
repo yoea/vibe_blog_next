@@ -23,12 +23,14 @@ export function PostListClient({
   showActions,
   onLoadMore,
   loadedAllText = '已加载全部',
+  linkRef,
 }: {
   initialPosts: PostData[]
   initialTotal: number
   showActions?: boolean
   onLoadMore: (page: number) => Promise<{ data?: PostData[]; count?: number | null; error?: string | null }>
   loadedAllText?: string
+  linkRef?: string
 }) {
   const [posts, setPosts] = useState(initialPosts)
   const [total, setTotal] = useState(initialTotal)
@@ -80,7 +82,7 @@ export function PostListClient({
     <div className="space-y-4">
       <div className="grid gap-4">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} showActions={showActions} />
+          <PostCard key={post.id} post={post} showActions={showActions} linkRef={linkRef} />
         ))}
       </div>
 

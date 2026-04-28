@@ -100,7 +100,7 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
 
       <div className="flex flex-wrap gap-3">
         {tags.map((tag) => {
-          const isOwner = currentUserId === tag.created_by
+          const isOwner = tag.created_by !== null && currentUserId === tag.created_by
           const canDelete = isOwner || isAdmin
           const creatorLabel = tag.author_name ?? tag.author_email ?? ''
           return (

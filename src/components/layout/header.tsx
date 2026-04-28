@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -11,8 +11,28 @@ export function Header({ siteTitle }: { siteTitle: string }) {
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMac, setIsMac] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
   const { mode, resolved, setMode } = useTheme()
   const pathname = usePathname()
+
+  // 点击/滑动非菜单区域折叠
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleEvent = (e: MouseEvent | TouchEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    const handleScroll = () => setMenuOpen(false)
+    document.addEventListener('mousedown', handleEvent)
+    document.addEventListener('touchstart', handleEvent, { passive: true })
+    window.addEventListener('scroll', handleScroll, { once: true })
+    return () => {
+      document.removeEventListener('mousedown', handleEvent)
+      document.removeEventListener('touchstart', handleEvent)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [menuOpen])
 
   const cycleMode = () => {
     const order: ThemeMode[] = ['light', 'dark', 'system']
@@ -67,7 +87,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
   )
 
   return (
-    <header className="border-b bg-background relative">
+    <header ref={headerRef} className="border-b bg-background relative">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />

@@ -86,6 +86,7 @@ export default async function ProfilePage() {
             initialPosts={posts ?? []}
             initialTotal={count ?? 0}
             onLoadMore={loadMoreMyPosts}
+            linkRef="profile"
           />
         )}
       </section>

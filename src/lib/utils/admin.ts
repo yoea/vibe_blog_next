@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { User } from '@supabase/supabase-js'
 
 const SUPER_ADMIN_EMAILS = () =>
   (process.env.SUPER_ADMIN_EMAILS ?? '')
@@ -6,14 +7,17 @@ const SUPER_ADMIN_EMAILS = () =>
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
 
-export async function isSuperAdmin(): Promise<boolean> {
+export async function isSuperAdmin(user?: User | null): Promise<boolean> {
   const emails = SUPER_ADMIN_EMAILS()
   if (emails.length === 0) return false
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user?.email) return false
+  if (!user) {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  }
 
+  if (!user?.email) return false
   return emails.includes(user.email.toLowerCase())
 }
 

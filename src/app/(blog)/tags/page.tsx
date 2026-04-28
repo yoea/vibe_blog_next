@@ -14,7 +14,7 @@ export default async function TagsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const currentUserId = user?.id ?? null
-  const isAdmin = await isSuperAdmin()
+  const isAdmin = await isSuperAdmin(user)
 
   return (
     <div className="space-y-6">

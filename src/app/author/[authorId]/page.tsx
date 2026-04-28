@@ -113,7 +113,7 @@ export default async function AuthorPage({ params }: PageProps) {
       {postsWithAuthor.length > 0 ? (
         <div className="grid gap-4">
           {postsWithAuthor.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} linkRef={`author:${authorName}`} />
           ))}
         </div>
       ) : (

@@ -35,10 +35,12 @@ export function MyPostRowList({
   initialPosts,
   initialTotal,
   onLoadMore,
+  linkRef,
 }: {
   initialPosts: PostData[]
   initialTotal: number
   onLoadMore: (page: number) => Promise<{ data?: PostData[]; count?: number | null; error?: string | null }>
+  linkRef?: string
 }) {
   const [posts, setPosts] = useState(initialPosts)
   const [total, setTotal] = useState(initialTotal)
@@ -94,7 +96,7 @@ export function MyPostRowList({
     <div className="space-y-4">
       <div className="border rounded-lg divide-y">
         {posts.map((post) => (
-          <CompactPostRow key={post.id} post={post} onDelete={handleDelete} />
+          <CompactPostRow key={post.id} post={post} linkRef={linkRef} onDelete={handleDelete} />
         ))}
       </div>
 
@@ -110,7 +112,7 @@ export function MyPostRowList({
   )
 }
 
-function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: string) => void }) {
+function CompactPostRow({ post, linkRef, onDelete }: { post: PostData; linkRef?: string; onDelete: (id: string) => void }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [pinning, setPinning] = useState(false)
@@ -148,7 +150,7 @@ function CompactPostRow({ post, onDelete }: { post: PostData; onDelete: (id: str
             </span>
           )}
           <Link
-            href={`/posts/${post.slug}`}
+            href={`/posts/${post.slug}${linkRef ? `?ref=${encodeURIComponent(linkRef)}` : ''}`}
             className="truncate text-sm font-medium hover:text-primary transition-colors"
           >
             {post.title}

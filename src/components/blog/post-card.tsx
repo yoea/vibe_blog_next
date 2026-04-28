@@ -32,7 +32,7 @@ interface PostCardData {
   tags?: { id: string; name: string; slug: string; color?: string }[]
 }
 
-export function PostCard({ post, showActions }: { post: PostCardData; showActions?: boolean }) {
+export function PostCard({ post, showActions, linkRef }: { post: PostCardData; showActions?: boolean; linkRef?: string }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [pinning, setPinning] = useState(false)
   const [pinned, setPinned] = useState(post.is_pinned ?? false)
@@ -102,7 +102,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
             <div className="flex items-center gap-2 mb-1">
               <Link
                 href={`/posts/${post.slug}`}
-                className="truncate font-semibold text-lg hover:text-primary transition-colors block min-w-0"
+                className="line-clamp-1 font-semibold text-lg hover:text-primary transition-colors block min-w-0"
               >
                 {post.title}
               </Link>
@@ -180,12 +180,16 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
 
   // Public list layout
   return (
-    <Card className="hover:shadow-md transition-shadow gap-2">
+    <Card className="relative hover:shadow-md transition-shadow gap-2">
+      {/* Stretched link — 覆盖整个卡片 */}
+      <Link
+        href={`/posts/${post.slug}${linkRef ? `?ref=${encodeURIComponent(linkRef)}` : ''}`}
+        className="absolute inset-0 z-10 rounded-lg"
+        aria-label={post.title}
+      />
       <CardHeader className="pb-2">
         <div className="flex items-start gap-2">
-          <Link href={`/posts/${post.slug}`} className="block min-w-0 flex-1 hover:text-primary transition-colors">
-            <h2 className="text-xl font-semibold leading-tight truncate">{post.title}</h2>
-          </Link>
+          <h2 className="text-xl font-semibold leading-tight line-clamp-1">{post.title}</h2>
           {pinned && (
             <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
               <Pin className="h-3 w-3 rotate-45" />
@@ -196,13 +200,14 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
       </CardHeader>
       <CardContent className="space-y-3">
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 relative z-20">
             {post.tags.map((tag) => (
               <Link
                 key={tag.slug}
                 href={`/tags/${tag.slug}`}
                 className="text-xs px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
                 style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
+                onClick={(e) => e.stopPropagation()}
               >
                 {tag.name}
               </Link>
@@ -212,7 +217,9 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
         {post.excerpt && (
           <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
         )}
-        {metaRow}
+        <div className="relative z-20">
+          {metaRow}
+        </div>
       </CardContent>
     </Card>
   )
