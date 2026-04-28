@@ -47,7 +47,6 @@ export function PostInteraction({
 
   const handleShareClick = () => {
     if (published === false) return
-    setShowShare(true)
     // Record share click
     fetch('/api/shares', {
       method: 'POST',
@@ -55,6 +54,15 @@ export function PostInteraction({
       body: JSON.stringify({ postId }),
     }).catch(() => {})
     setShareCount(c => c + 1)
+
+    // Use Web Share API on supported devices (mobile)
+    if (navigator.share && shareUrl) {
+      navigator.share({ title: document.title, url: shareUrl }).catch(() => {})
+      return
+    }
+
+    // Fallback: open share dialog
+    setShowShare(true)
   }
 
   return (

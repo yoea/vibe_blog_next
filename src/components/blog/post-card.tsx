@@ -102,7 +102,7 @@ export function PostCard({ post, showActions }: { post: PostCardData; showAction
             <div className="flex items-center gap-2 mb-1">
               <Link
                 href={`/posts/${post.slug}`}
-                className="truncate font-semibold text-lg hover:text-primary transition-colors block"
+                className="truncate font-semibold text-lg hover:text-primary transition-colors block min-w-0"
               >
                 {post.title}
               </Link>

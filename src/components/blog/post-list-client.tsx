@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
 import { PostCard } from './post-card'
-import { Button } from '@/components/ui/button'
+import { LoadMore } from '@/components/shared/load-more'
 
 interface PostData {
   id: string
@@ -52,19 +51,14 @@ export function PostListClient({
     const newPosts = result.data
     if (newPosts) {
       if (newPosts.length === 0) {
-        toast.info(loadedAllText)
-      } else {
-        setPosts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id))
-          const trulyNew = newPosts.filter((p) => !existingIds.has(p.id))
-          if (trulyNew.length === 0) {
-            toast.info(loadedAllText)
-            return prev
-          }
-          return [...prev, ...trulyNew]
-        })
-        setPage(nextPage)
+        return
       }
+      setPosts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id))
+        const trulyNew = newPosts.filter((p) => !existingIds.has(p.id))
+        return [...prev, ...trulyNew]
+      })
+      setPage(nextPage)
     }
     setLoading(false)
   }
@@ -90,13 +84,15 @@ export function PostListClient({
         ))}
       </div>
 
-      {hasMore && (
-        <div className="flex justify-center pt-2">
-          <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={loading}>
-            {loading ? '加载中...' : '加载更多'}
-          </Button>
-        </div>
-      )}
+      <LoadMore
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={handleLoadMore}
+        remaining={total - posts.length}
+        idleText="加载更多"
+        loadedAllText={loadedAllText}
+        showLoadedAll={false}
+      />
     </div>
   )
 }

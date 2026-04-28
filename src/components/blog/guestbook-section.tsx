@@ -6,6 +6,7 @@ import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
 import { CommentForm } from './comment-form'
 import type { GuestbookMessageWithAuthor } from '@/lib/db/types'
+import { LoadMore } from '@/components/shared/load-more'
 
 export function GuestbookSection({
   toAuthorId,
@@ -24,6 +25,7 @@ export function GuestbookSection({
 
   const {
     items: messages,
+    total,
     hasMore,
     replyTarget,
     setReplyTarget,
@@ -94,17 +96,14 @@ export function GuestbookSection({
         </div>
       )}
 
-      {hasMore ? (
-        <div className="flex justify-center pt-2">
-          <button type="button" onClick={handleLoadMore} disabled={loading} className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50">
-            {loading ? '加载中...' : '加载更多留言'}
-          </button>
-        </div>
-      ) : messages.length > 0 && (
-        <div className="flex justify-center pt-2">
-          <span className="text-sm text-muted-foreground/60">已显示全部留言</span>
-        </div>
-      )}
+      <LoadMore
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={handleLoadMore}
+        remaining={total - messages.length}
+        idleText="加载更多留言"
+        loadedAllText="已显示全部留言"
+      />
     </div>
   )
 }
