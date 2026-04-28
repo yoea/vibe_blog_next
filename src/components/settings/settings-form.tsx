@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { resetPasswordForEmail, deleteAccount } from '@/lib/actions/auth-actions'
-import type { BuildInfo } from '@/lib/build-info'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import {
   Dialog,
@@ -25,10 +25,9 @@ import { DonateButton } from '@/components/donate-button'
 interface Props {
   user: User
   isAdmin?: boolean
-  buildInfo: BuildInfo
 }
 
-export function SettingsForm({ user, isAdmin, buildInfo }: Props) {
+export function SettingsForm({ user, isAdmin }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -146,39 +145,10 @@ export function SettingsForm({ user, isAdmin, buildInfo }: Props) {
           <CardTitle>关于</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">站点</span>
-              <span>{process.env.NEXT_PUBLIC_SITE_TITLE || 'Blog'} v{buildInfo.version}</span>
-            </div>
-            {buildInfo.buildTime && (
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">构建时间</span>
-                <span>{new Date(buildInfo.buildTime).toLocaleString('zh-CN')}</span>
-              </div>
-            )}
-            {buildInfo.commit && (
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">提交</span>
-                <span className="font-mono text-xs">{buildInfo.commit}</span>
-              </div>
-            )}
-            {buildInfo.commitCount !== null && (
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">提交次数</span>
-                <span>{buildInfo.commitCount.toLocaleString()}</span>
-              </div>
-            )}
-            {buildInfo.contributors && (
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">开发者</span>
-                <span className="text-right max-w-[60%] truncate" title={buildInfo.contributors}>{buildInfo.contributors}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">运行时</span>
-              <span className="text-xs">Node {buildInfo.nodeVersion}</span>
-            </div>
+          <div className="text-sm text-muted-foreground">
+            <Link href="/about" className="hover:text-foreground transition-colors">
+              查看站点信息及构建详情 →
+            </Link>
           </div>
         </CardContent>
       </Card>
