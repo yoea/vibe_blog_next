@@ -1,9 +1,30 @@
 const http = require('http')
 const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
 const { spawn } = require('child_process')
 
-const SECRET = process.env.WEBHOOK_SECRET || ''
 const PORT = parseInt(process.env.WEBHOOK_PORT || '8084', 10)
+
+function loadEnvFile() {
+  try {
+    const envPath = path.join(__dirname, '.env.local')
+    const content = fs.readFileSync(envPath, 'utf8')
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx === -1) continue
+      const key = trimmed.slice(0, eqIdx).trim()
+      const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '')
+      if (!process.env[key]) process.env[key] = val
+    }
+  } catch { /* .env.local 不存在就跳过 */ }
+}
+
+loadEnvFile()
+
+const SECRET = process.env.WEBHOOK_SECRET || null
 
 const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
 let currentDeploy = null // 追踪当前部署进程
@@ -70,7 +91,8 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Webhook 接收器运行在 http://0.0.0.0:${PORT}`)
+  const status = SECRET ? '签名验证已启用' : '⚠️ 无签名验证（不安全）'
+  console.log(`Webhook 接收器运行在 http://0.0.0.0:${PORT}（${status}）`)
 })
 
 // PM2 停止时清理部署进程组

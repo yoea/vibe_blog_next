@@ -23,8 +23,11 @@ echo "安装依赖..."
 npm ci --no-audit --no-fund --prefer-offline
 
 # =========================
-# 3. 构建（失败直接退出）
+# 3. 构建（先停服释放端口，避免资源竞争）
 # =========================
+echo "停服..."
+pm2 stop "$PM2_NAME" 2>/dev/null || true
+
 echo "构建项目..."
 # 注入构建时信息（NEXT_PUBLIC_ 变量会被 Next.js 内联到客户端代码）
 export NEXT_PUBLIC_BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -40,13 +43,14 @@ mkdir -p .next/standalone/public .next/standalone/.next/static
 cp -r public/. .next/standalone/public/
 cp -r .next/static/. .next/standalone/.next/static/
 # =========================
-# 5. PM2 处理 — 只重启主应用，不动 webhook
+# 5. PM2 处理 — 启动新版本
 # =========================
-echo "启动/重启主应用..."
-pm2 restart "$PM2_NAME" 2>/dev/null || pm2 start ecosystem.config.js --only "$PM2_NAME"
+echo "启动新版本..."
+pm2 start ecosystem.config.js --only "$PM2_NAME"
 
 # 保存 PM2 状态（防重启丢失）
 pm2 save
+echo "提示：若服务器重启后 PM2 为空，需在服务器上执行一次：pm2 startup"
 
 # =========================
 # 6. 健康检查（直接检查本地端口，不经过 nginx）
