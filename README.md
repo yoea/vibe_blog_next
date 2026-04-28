@@ -116,6 +116,12 @@ pm2 resurrect                                  # 恢复保存的进程列表
 | `webhook` | `~/.pm2/logs/webhook-out.log` | Webhook 请求 + 部署输出（带 `[deploy]` 前缀） |
 | `webhook` | `~/.pm2/logs/webhook-error.log` | 部署过程中的 stderr 输出 |
 
+##### 常用命令
+
+推送标签后，可立即使用以下命令查看服务器日志，包含deploy.sh的输出
+
+```pm2 logs webhook --lines 30```
+
 **常见问题：**
 
 - **Server Action 错误** — 旧浏览器缓存导致，等待用户刷新页面后自动恢复，无需处理
