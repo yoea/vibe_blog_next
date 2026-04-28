@@ -85,26 +85,40 @@ const server = http.createServer((req, res) => {
 
     // 解析推送事件信息（GitHub / Gitee 格式兼容）
     let eventInfo = {}
+    let ref = ''
     try {
       const payload = JSON.parse(body)
+      ref = payload.ref || ''
       eventInfo = {
         repository: payload.repository?.name || payload.repository?.full_name || null,
-        branch: (payload.ref || '').replace('refs/heads/', '') || null,
+        ref: payload.ref || null,
+        branch: ref.startsWith('refs/heads/') ? ref.replace('refs/heads/', '') : null,
+        tag: ref.startsWith('refs/tags/') ? ref.replace('refs/tags/', '') : null,
         pusher: payload.pusher?.name || payload.sender?.login || null,
         commits: Array.isArray(payload.commits) ? payload.commits.length : null,
       }
     } catch { /* 非 JSON 体，跳过 */ }
 
     const cancelledPrevious = !!currentDeploy
+    const isTagPush = ref.startsWith('refs/tags/')
+
     res.writeHead(202, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({
       status: 'accepted',
       timestamp: new Date().toISOString(),
       deploy: {
-        cancelled_previous: cancelledPrevious,
+        triggered: isTagPush,
+        cancelled_previous: isTagPush ? cancelledPrevious : false,
         ...eventInfo,
       },
     }))
+
+    // 仅标签推送触发部署（对应 /gitpush release 的发版流程）
+    // 普通分支推送只确认收到，不执行部署
+    if (!isTagPush) {
+      console.log(`[${new Date().toISOString()}] 分支推送跳过部署（ref=${ref}）`)
+      return
+    }
 
     runDeploy()
   })
