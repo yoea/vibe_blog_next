@@ -10,6 +10,7 @@ import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 export function Header({ siteTitle }: { siteTitle: string }) {
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isMac, setIsMac] = useState(false)
   const { mode, resolved, setMode } = useTheme()
   const pathname = usePathname()
 
@@ -23,6 +24,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
   const themeLabel = mode === 'system' ? '跟随系统' : mode === 'dark' ? '深色模式' : '浅色模式'
 
   useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0)
     const supabase = createClient()
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) setUser({ email: session.user.email ?? null })
@@ -78,7 +80,7 @@ export function Header({ siteTitle }: { siteTitle: string }) {
           <button
             onClick={() => document.dispatchEvent(new CustomEvent('open-command-palette'))}
             className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
-            title="搜索 (Cmd+K)"
+            title={`搜索 (${isMac ? '⌘K' : 'Ctrl+K'})`}
           >
             <Search className="h-4 w-4" />
             <span>搜索</span>

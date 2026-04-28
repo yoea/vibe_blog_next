@@ -52,6 +52,7 @@ export function CommandPalette() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [isMac, setIsMac] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { mode, setMode } = useTheme()
   const router = useRouter()
@@ -62,6 +63,7 @@ export function CommandPalette() {
   // 加载使用频率
   useEffect(() => {
     setFrequency(loadFrequency())
+    setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0)
   }, [])
 
   // 跟踪登录状态
@@ -260,7 +262,7 @@ export function CommandPalette() {
             )}
           </CommandList>
           {/* 底部键盘提示 */}
-          <div className="flex items-center justify-center gap-4 px-5 pt-4 pb-2 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div className="hidden sm:flex items-center justify-center gap-4 px-5 pt-4 pb-2 border-t border-gray-200/50 dark:border-gray-700/50">
             <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
               <kbd className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-mono text-[10px] text-gray-500 dark:text-gray-400">↑↓</kbd>
               <span>选择</span>
@@ -272,6 +274,10 @@ export function CommandPalette() {
             <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
               <kbd className="inline-flex items-center justify-center h-5 px-1.5 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-mono text-[10px] text-gray-500 dark:text-gray-400">Esc</kbd>
               <span>关闭</span>
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+              <kbd className="inline-flex items-center justify-center h-5 px-1.5 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-mono text-[10px] text-gray-500 dark:text-gray-400">{isMac ? '⌘K' : 'Ctrl+K'}</kbd>
+              <span>打开</span>
             </span>
           </div>
         </Command>
