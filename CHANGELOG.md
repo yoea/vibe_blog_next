@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.10](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.9...v0.1.10) (2026-04-28)
+
+
+### 重构
+
+* 抽取公用工具函数与 linkRef 常量 ([72a72aa](https://git.ewing.top/yoea/vibe_blog_next/commit/72a72aa0fda60918a426e582b00a2ce3ffb1ee8d))
+
 ### [0.1.9](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.1.8...v0.1.9) (2026-04-28)
 
 
