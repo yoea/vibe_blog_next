@@ -79,10 +79,13 @@ export function SiteStats({ initialViews, initialLikes }: { initialViews: number
       })
       console.log('[SiteStats] API response:', res.status)
       if (!res.ok) {
+        let errMsg = ''
+        try { const data = await res.json(); errMsg = data.error || '' } catch {}
+        console.error('[SiteStats] API error:', res.status, errMsg)
         if (res.status === 429) {
           toast.info('感谢你的喜爱！今天已经点赞够了，明天再来吧 😊')
         } else {
-          toast.error('点赞失败，请重试')
+          toast.error(errMsg ? `点赞失败：${errMsg}` : '点赞失败，请重试')
         }
         setLikes((p) => p - 1)
         const times = getClickTimes()

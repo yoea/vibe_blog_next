@@ -46,11 +46,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'rate limit exceeded' }, { status: 429 })
       }
 
-      await supabase.from('site_likes').insert({ ip })
-    }
-  } catch {
-    // Silently ignore
-  }
+      const { error: insertError } = await supabase.from('site_likes').insert({ ip })
+      if (insertError) {
+        return NextResponse.json({ error: insertError.message }, { status: 500 })
+      }
 
-  return NextResponse.json({ ok: true })
+      return NextResponse.json({ ok: true })
+    }
+
+    return NextResponse.json({ error: 'invalid type' }, { status: 400 })
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : 'internal error' }, { status: 500 })
+  }
 }
