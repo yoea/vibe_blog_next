@@ -97,11 +97,29 @@
   <h1>正在升级新版本</h1>
   <p>站点正在进行短时维护，以带来更好的体验。</p>
   <p>请稍后再来访问，预计很快完成。</p>
-  <div class="status">
+  <div class="status" id="status">
     <span class="status-dot"></span>
-    部署进行中
+    <span id="statusText">部署进行中</span>
   </div>
-  <footer>自动刷新页面即可</footer>
+  <footer id="footer">自动检测中，部署完成后将自动刷新</footer>
 </div>
+<script>
+  const statusText = document.getElementById('statusText')
+  let attempts = 0
+
+  async function check() {
+    attempts++
+    try {
+      const res = await fetch('/', { cache: 'no-store' })
+      if (res.ok) {
+        statusText.textContent = '部署完成，正在跳转...'
+        location.reload()
+      }
+    } catch {}
+    setTimeout(check, 5000)
+  }
+
+  check()
+</script>
 </body>
 </html>

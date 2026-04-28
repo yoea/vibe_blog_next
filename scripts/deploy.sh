@@ -60,7 +60,8 @@ cp -r .next/static/. .next/standalone/.next/static/
 # 5. PM2 处理 — 先关维护页，再启动新版本
 # =========================
 echo "关闭维护页面..."
-kill $MAINT_PID 2>/dev/null && wait $MAINT_PID 2>/dev/null
+kill $MAINT_PID 2>/dev/null || true
+wait $MAINT_PID 2>/dev/null || true
 trap - EXIT
 
 echo "启动新版本..."
