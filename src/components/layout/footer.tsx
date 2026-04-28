@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="border-t bg-background mt-auto">
       <div className="max-w-4xl mx-auto px-4 py-3">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 text-center sm:text-left">
             <p className="text-[10px] sm:text-[11px] text-muted-foreground">
             Copyright © {new Date().getFullYear()} <a href="https://github.com/yoea" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors"><strong>Yoea</strong></a>. All rights reserved.
             </p>

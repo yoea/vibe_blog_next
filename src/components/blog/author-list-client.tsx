@@ -112,7 +112,7 @@ export function AuthorListClient({
                 href={`/author/${user.id}`}
                 className={`block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow ${isAdmin ? 'pr-10' : ''}`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <Avatar
                       avatarUrl={user.avatarUrl}
