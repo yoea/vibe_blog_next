@@ -51,7 +51,17 @@ export async function createComment(
   }
 
   if (parentId) {
-    insertData.parent_id = parentId
+    // Resolve to top-level parent for flat 1-level nesting
+    const { data: parent } = await supabase
+      .from('post_comments')
+      .select('id, parent_id')
+      .eq('id', parentId)
+      .single()
+    if (parent) {
+      insertData.parent_id = parent.parent_id ?? parent.id
+    } else {
+      insertData.parent_id = parentId
+    }
   }
 
   const { data: comment, error } = await supabase.from('post_comments')
@@ -120,6 +130,11 @@ export async function deleteComment(commentId: string, postId: string): Promise<
   if (!isCommentAuthor && !isPostAuthor) {
     return { error: '无权限删除此评论' }
   }
+
+  // Also delete child replies (1-level nesting)
+  await supabase.from('post_comments')
+    .delete()
+    .eq('parent_id', commentId)
 
   const { error } = await supabase.from('post_comments')
     .delete()

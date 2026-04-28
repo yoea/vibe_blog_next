@@ -45,7 +45,19 @@ export async function createGuestbookMessage(
     insertData.ip = ip
   }
 
-  if (parentId) insertData.parent_id = parentId
+  if (parentId) {
+    // Resolve to top-level parent for flat 1-level nesting
+    const { data: parent } = await supabase
+      .from('guestbook_messages')
+      .select('id, parent_id')
+      .eq('id', parentId)
+      .single()
+    if (parent) {
+      insertData.parent_id = parent.parent_id ?? parent.id
+    } else {
+      insertData.parent_id = parentId
+    }
+  }
 
   const { data: message, error } = await supabase
     .from('guestbook_messages')
@@ -99,6 +111,12 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
 
   if (!message) return { error: '留言不存在' }
   if (message.author_id !== user.id && message.to_author_id !== user.id) return { error: '无权限删除' }
+
+  // Also delete child replies (1-level nesting)
+  await supabase
+    .from('guestbook_messages')
+    .delete()
+    .eq('parent_id', messageId)
 
   const { error } = await supabase
     .from('guestbook_messages')

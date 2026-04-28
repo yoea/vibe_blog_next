@@ -173,30 +173,17 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
   if (error) return { data: [], total: 0, error: error.message }
   if (!topLevelComments?.length) return { data: [], total, error: null }
 
-  // Fetch all replies for these top-level comments (2 levels deep)
+  // Fetch direct replies (1 level) for these top-level comments
   const topLevelIds = topLevelComments.map((c) => c.id)
   const allComments = [...topLevelComments]
-  const replyIds: string[] = []
 
-  const { data: replies1 } = await supabase
+  const { data: replies } = await supabase
     .from('post_comments')
     .select('*')
     .in('parent_id', topLevelIds)
     .order('created_at', { ascending: true })
-  if (replies1?.length) {
-    allComments.push(...replies1)
-    replyIds.push(...replies1.map((c) => c.id))
-  }
-
-  if (replyIds.length > 0) {
-    const { data: replies2 } = await supabase
-      .from('post_comments')
-      .select('*')
-      .in('parent_id', replyIds)
-      .order('created_at', { ascending: true })
-    if (replies2?.length) {
-      allComments.push(...replies2)
-    }
+  if (replies?.length) {
+    allComments.push(...replies)
   }
 
   // Fetch author display names and comment likes in parallel
@@ -270,24 +257,16 @@ export async function getCommentsForPost(postId: string, options?: { page?: numb
     replies: [],
   })
 
-  // Build tree
+  // Build 1-level tree: top-level items with flat replies array
   const topLevel: CommentWithAuthor[] = []
   const repliesMap = new Map<string, CommentWithAuthor[]>()
 
   for (const item of allComments) {
     const enriched = enrich(item)
-    if (item.parent_id) {
-      let topParentId = item.parent_id
-      const visited = new Set<string>()
-      while (topParentId && !visited.has(topParentId)) {
-        visited.add(topParentId)
-        const parent = allComments.find((c) => c.id === topParentId)
-        if (!parent || !parent.parent_id) break
-        topParentId = parent.parent_id
-      }
-      if (!repliesMap.has(topParentId)) repliesMap.set(topParentId, [])
-      repliesMap.get(topParentId)!.push(enriched)
-    } else {
+    if (item.parent_id && topLevelIds.includes(item.parent_id)) {
+      if (!repliesMap.has(item.parent_id)) repliesMap.set(item.parent_id, [])
+      repliesMap.get(item.parent_id)!.push(enriched)
+    } else if (!item.parent_id) {
       topLevel.push(enriched)
     }
   }
@@ -330,30 +309,17 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
   if (error) return { data: [], total: 0, fullTotal: 0, error: error.message }
   if (!topLevel?.length) return { data: [], total: total ?? 0, error: null }
 
-  // Fetch all replies for these top-level messages
+  // Fetch direct replies (1 level) for these top-level messages
   const topLevelIds = topLevel.map((m) => m.id)
   const allMessages = [...topLevel]
-  const replyIds: string[] = []
 
-  const { data: replies1 } = await supabase
+  const { data: replies } = await supabase
     .from('guestbook_messages')
     .select('*')
     .in('parent_id', topLevelIds)
     .order('created_at', { ascending: true })
-  if (replies1?.length) {
-    allMessages.push(...replies1)
-    replyIds.push(...replies1.map((m) => m.id))
-  }
-
-  if (replyIds.length > 0) {
-    const { data: replies2 } = await supabase
-      .from('guestbook_messages')
-      .select('*')
-      .in('parent_id', replyIds)
-      .order('created_at', { ascending: true })
-    if (replies2?.length) {
-      allMessages.push(...replies2)
-    }
+  if (replies?.length) {
+    allMessages.push(...replies)
   }
 
   // Fetch author display names
@@ -387,24 +353,16 @@ export async function getGuestbookMessages(toAuthorId: string, options?: { page?
     replies: [],
   })
 
-  // Build tree
+  // Build 1-level tree
   const result: GuestbookMessageWithAuthor[] = []
   const repliesMap = new Map<string, GuestbookMessageWithAuthor[]>()
 
   for (const item of allMessages) {
     const enriched = enrich(item)
-    if (item.parent_id) {
-      let topParentId = item.parent_id
-      const visited = new Set<string>()
-      while (topParentId && !visited.has(topParentId)) {
-        visited.add(topParentId)
-        const parent = allMessages.find((m) => m.id === topParentId)
-        if (!parent || !parent.parent_id) break
-        topParentId = parent.parent_id
-      }
-      if (!repliesMap.has(topParentId)) repliesMap.set(topParentId, [])
-      repliesMap.get(topParentId)!.push(enriched)
-    } else {
+    if (item.parent_id && topLevelIds.includes(item.parent_id)) {
+      if (!repliesMap.has(item.parent_id)) repliesMap.set(item.parent_id, [])
+      repliesMap.get(item.parent_id)!.push(enriched)
+    } else if (!item.parent_id) {
       result.push(enriched)
     }
   }
