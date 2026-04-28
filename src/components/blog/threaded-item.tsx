@@ -208,50 +208,70 @@ function ReplyList<T extends ThreadedItem>({
   renderActions?: (item: T) => ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(replies.length > 1)
+  const hiddenCount = replies.length - 1
 
   if (replies.length === 0) return null
 
   return (
     <>
-      {collapsed ? (
-        <button
-          onClick={() => setCollapsed(false)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors py-1"
-        >
-          <ChevronDown className="h-3.5 w-3.5" />
-          展开 {replies.length} 条回复
-        </button>
-      ) : (
-        <div className="space-y-2 pb-2">
-          {replies.length > 1 && (
+      <div className="space-y-2 pb-2">
+        {/* Always show the first reply */}
+        <ReplyItem
+          key={replies[0].id}
+          reply={replies[0]}
+          parentAuthorName={parentAuthorName}
+          currentUserId={currentUserId}
+          identifier={identifier}
+          replyTarget={replyTarget}
+          onReply={onReply}
+          onCancelReply={onCancelReply}
+          onSubmitReply={onSubmitReply}
+          onDelete={onDelete}
+          deleteTitle={deleteTitle}
+          deleteDescription={deleteDescription}
+          canDelete={canDelete}
+          renderActions={renderActions}
+        />
+        {hiddenCount > 0 && (
+          collapsed ? (
             <button
-              onClick={() => setCollapsed(true)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pb-1"
+              onClick={() => setCollapsed(false)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors py-1"
             >
-              <ChevronUp className="h-3.5 w-3.5" />
-              收起回复
+              <ChevronDown className="h-3.5 w-3.5" />
+              展开 {hiddenCount} 条回复
             </button>
-          )}
-          {replies.map((reply) => (
-            <ReplyItem
-              key={reply.id}
-              reply={reply}
-              parentAuthorName={parentAuthorName}
-              currentUserId={currentUserId}
-              identifier={identifier}
-              replyTarget={replyTarget}
-              onReply={onReply}
-              onCancelReply={onCancelReply}
-              onSubmitReply={onSubmitReply}
-              onDelete={onDelete}
-              deleteTitle={deleteTitle}
-              deleteDescription={deleteDescription}
-              canDelete={canDelete}
-              renderActions={renderActions}
-            />
-          ))}
-        </div>
-      )}
+          ) : (
+            <>
+              {replies.slice(1).map((reply) => (
+                <ReplyItem
+                  key={reply.id}
+                  reply={reply}
+                  parentAuthorName={parentAuthorName}
+                  currentUserId={currentUserId}
+                  identifier={identifier}
+                  replyTarget={replyTarget}
+                  onReply={onReply}
+                  onCancelReply={onCancelReply}
+                  onSubmitReply={onSubmitReply}
+                  onDelete={onDelete}
+                  deleteTitle={deleteTitle}
+                  deleteDescription={deleteDescription}
+                  canDelete={canDelete}
+                  renderActions={renderActions}
+                />
+              ))}
+              <button
+                onClick={() => setCollapsed(true)}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pb-1"
+              >
+                <ChevronUp className="h-3.5 w-3.5" />
+                收起回复
+              </button>
+            </>
+          )
+        )}
+      </div>
     </>
   )
 }
