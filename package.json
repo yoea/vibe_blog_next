@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
-    "release": "standard-version && tag_msg=$(git log -1 --format=\"%B\") && git tag -f -a v$(node -p \"require('./package.json').version\") -m \"$tag_msg\" HEAD",
+    "release": "standard-version && node scripts/postrelease.js",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch"
