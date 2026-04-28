@@ -18,6 +18,22 @@ export default function AboutPage() {
           <p className="text-sm text-muted-foreground leading-relaxed">
             「字里行间」是一个基于 Supabase 构建的博客平台。不止是博客，更是交流的空间。
           </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            在这里，你可以撰写技术文章、分享生活感悟，与志同道合的朋友在评论区交流互动。
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold">功能特性</h2>
+          <ul className="text-sm text-muted-foreground leading-relaxed space-y-1 list-disc list-inside">
+            <li>Markdown 写作，支持代码高亮、表格、任务列表</li>
+            <li>文章标签分类，快速定位感兴趣的内容</li>
+            <li>评论与回复，支持多级嵌套</li>
+            <li>留言板，与作者和读者直接交流</li>
+            <li>深色/浅色主题自由切换</li>
+            <li>RSS 订阅，不错过任何更新</li>
+            <li>响应式设计，桌面和移动端皆可流畅浏览</li>
+          </ul>
         </section>
 
         <section className="space-y-2">

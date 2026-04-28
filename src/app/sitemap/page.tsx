@@ -34,6 +34,7 @@ const categories = [
   {
     title: '关于',
     items: [
+      { href: '/about', title: '关于本站', icon: Heart },
       { href: '/privacy', title: '隐私政策', icon: Shield },
       { href: '/legal', title: '法律信息', icon: Scale },
     ],
