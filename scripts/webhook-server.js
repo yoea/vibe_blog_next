@@ -30,10 +30,11 @@ const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
 let currentDeploy = null // 追踪当前部署进程
 
 function pullOnly() {
+  console.log(`[${new Date().toISOString()}] 执行 git pull 拉取最新代码...`)
   const proc = spawn('git', ['pull'], { cwd: DEPLOY_DIR, stdio: 'inherit' })
   proc.on('exit', (code) => {
     if (code === 0) {
-      console.log(`[${new Date().toISOString()}] 代码已更新至最新`)
+      console.log(`[${new Date().toISOString()}] git pull 完成，代码已更新至最新`)
     } else {
       console.error(`[${new Date().toISOString()}] git pull 失败 (exit ${code})`)
     }
