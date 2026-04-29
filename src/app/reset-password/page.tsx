@@ -24,11 +24,21 @@ export default function ResetPasswordPage() {
     const checkSession = async () => {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
-      // Only allow access if session was established via password recovery flow
-      const isRecovery = (session as any)?.amr?.some((a: { method: string }) => a.method === 'recovery')
-      setValidLink(!!isRecovery)
-      if (isRecovery && session?.user?.email) {
-        setUserEmail(session.user.email)
+      if (!session) {
+        setValidLink(false)
+        return
+      }
+      // amr 声明在 JWT access_token 内，需要解码才能读取
+      try {
+        const payload = JSON.parse(atob(session.access_token.split('.')[1]))
+        const isRecovery = Array.isArray(payload.amr) &&
+          payload.amr.some((a: { method: string }) => a.method === 'recovery')
+        setValidLink(isRecovery)
+        if (isRecovery && session.user?.email) {
+          setUserEmail(session.user.email)
+        }
+      } catch {
+        setValidLink(false)
       }
     }
     checkSession()
