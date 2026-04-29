@@ -37,8 +37,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       password: formData.get('password') as string,
     })
     if (error) {
-      setError(error.message)
-      toast.error(error.message)
+      const message = error.message === 'Invalid login credentials'
+        ? '用户名或密码错误'
+        : error.message
+      setError(message)
+      toast.error(message)
     } else {
       // login_success cookie 由 LoginToast 统一处理提示
       document.cookie = 'login_success=1; max-age=10; path=/'
