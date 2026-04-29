@@ -55,6 +55,9 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showCurrentPw, setShowCurrentPw] = useState(false)
   const [showNewPw, setShowNewPw] = useState(false)
+  const [stickyHeader, setStickyHeader] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('header_sticky') === 'true'
+  )
   const { mode, setMode } = useTheme()
   const router = useRouter()
 
@@ -207,6 +210,27 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                 </button>
               )
             })}
+          </div>
+          <Separator className="my-4" />
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium">固定导航栏</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">滚动页面时导航栏始终显示在顶部</p>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={stickyHeader}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setStickyHeader(checked)
+                  localStorage.setItem('header_sticky', String(checked))
+                  window.dispatchEvent(new Event('header-sticky-changed'))
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <span className="text-xs text-muted-foreground">{stickyHeader ? '已开启' : '已关闭'}</span>
+            </label>
           </div>
         </CardContent>
       </Card>
