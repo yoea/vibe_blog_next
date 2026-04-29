@@ -27,22 +27,18 @@ export default function GlobalError({
   }, [error])
 
   return (
-    <html>
-      <body className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-center space-y-4 px-4">
-          <h1 className="text-5xl font-bold text-gray-900 dark:text-gray-100">500</h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-sm">{message}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            错误代码：{error.digest ?? '未知'}
-          </p>
-          <button
-            onClick={() => reset()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            重试
-          </button>
-        </div>
-      </body>
-    </html>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+      <h1 className="text-5xl font-bold text-muted-foreground">500</h1>
+      <p className="text-foreground max-w-sm">{message}</p>
+      <p className="text-xs text-muted-foreground">
+        错误代码：{error.digest ?? '未知'}
+      </p>
+      <button
+        onClick={() => reset()}
+        className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+      >
+        重试
+      </button>
+    </div>
   )
 }
