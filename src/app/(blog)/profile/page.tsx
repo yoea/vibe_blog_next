@@ -62,6 +62,7 @@ export default async function ProfilePage() {
   const githubUsername = githubIdentity
     ? (githubIdentity.identity_data?.user_name || githubIdentity.identity_data?.preferred_username || null)
     : null
+  const isGitHubUser = user.app_metadata?.provider === 'github' || !!githubIdentity
 
   return (
     <div className="space-y-8">
@@ -77,6 +78,7 @@ export default async function ProfilePage() {
           emailVerified={!!user.email_confirmed_at}
           createdAt={createdAt}
           isAdmin={isAdmin}
+          isGitHubUser={isGitHubUser}
           isGitHubConnected={isGitHubConnected}
           githubUsername={githubUsername}
           githubIdentity={githubIdentity}

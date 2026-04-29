@@ -30,12 +30,13 @@ interface Props {
   emailVerified: boolean
   createdAt: string | null
   isAdmin: boolean
+  isGitHubUser: boolean
   isGitHubConnected: boolean
   githubUsername: string | null
   githubIdentity: UserIdentity | null
 }
 
-export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin, isGitHubConnected, githubUsername, githubIdentity }: Props) {
+export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin, isGitHubUser, isGitHubConnected, githubUsername, githubIdentity }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(displayName)
   const [saving, setSaving] = useState(false)
@@ -197,10 +198,10 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
                 加入 {createdAt ? formatDaysAgo(createdAt) : '-'}
               </span>
             </div>
-            {/* GitHub 绑定状态 */}
-            <div className="flex items-center gap-2">
-              <GitHubIcon className="h-4 w-4 shrink-0" />
-              {isGitHubConnected ? (
+            {/* GitHub 绑定状态（仅 GitHub 登录用户显示） */}
+            {isGitHubUser && (
+              <div className="flex items-center gap-2">
+                <GitHubIcon className="h-4 w-4 shrink-0" />
                 <span className="inline-flex items-center gap-1.5 text-xs">
                   <a
                     href={`https://github.com/${githubUsername}`}
@@ -219,16 +220,8 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
                     <Unlink className="h-3 w-3" />
                   </button>
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleLinkGitHub}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  绑定 GitHub 账号
-                </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
