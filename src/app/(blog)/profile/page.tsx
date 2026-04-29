@@ -7,7 +7,7 @@ import { TagManager } from '@/components/tags/tag-manager'
 import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import { LINK_REF_PROFILE } from '@/lib/constants'
 import { isSuperAdmin } from '@/lib/utils/admin'
-import { Plus, Tags } from 'lucide-react'
+import { Plus, Tags, FileText, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
@@ -88,7 +88,10 @@ export default async function ProfilePage() {
       {/* Module 2: My Articles */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">我的文章</h2>
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            <h2 className="text-xl font-bold">我的文章</h2>
+          </div>
           <Link href="/posts/new">
             <Button size="sm">
               <Plus className="h-4 w-4" />
@@ -125,6 +128,7 @@ export default async function ProfilePage() {
           initialMessages={guestbookMessages}
           initialTotal={guestbookTotal}
           title="他人给我的留言"
+          icon={<MessageSquare className="h-5 w-5" />}
         />
       </section>
     </div>

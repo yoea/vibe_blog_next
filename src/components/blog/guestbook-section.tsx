@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { createGuestbookMessage, deleteGuestbookMessage, getMoreGuestbookMessages } from '@/lib/actions/guestbook-actions'
 import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
@@ -14,12 +14,14 @@ export function GuestbookSection({
   initialMessages,
   initialTotal,
   title = '留言板',
+  icon,
 }: {
   toAuthorId: string
   currentUserId: string | null
   initialMessages: GuestbookMessageWithAuthor[]
   initialTotal: number
   title?: string
+  icon?: ReactNode
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -65,7 +67,10 @@ export function GuestbookSection({
 
   return (
     <div id="guestbook" className="space-y-4">
-      <h2 className="text-xl font-bold">{title}</h2>
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="text-xl font-bold">{title}</h2>
+      </div>
 
       <CommentForm
         postId={toAuthorId}
