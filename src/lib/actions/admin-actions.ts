@@ -87,3 +87,27 @@ export async function updateAIConfig(baseUrl: string, apiKey: string, model: str
   revalidatePath('/settings')
   return {}
 }
+
+export async function updateICPConfig(number: string, visible: boolean): Promise<ActionResult> {
+  if (!await isSuperAdmin()) return { error: '无权限' }
+
+  const supabase = await createClient()
+
+  const updates = [
+    { key: 'icp_number', value: number },
+    { key: 'icp_visible', value: String(visible) },
+  ]
+
+  for (const { key, value } of updates) {
+    const { error } = await supabase
+      .from('site_config')
+      .update({ value, updated_at: new Date().toISOString() })
+      .eq('key', key)
+
+    if (error) return { error: `更新 ${key} 失败: ${error.message}` }
+  }
+
+  revalidatePath('/settings')
+  revalidatePath('/')
+  return {}
+}

@@ -68,12 +68,14 @@ export default async function RootLayout({
   const initialDark = resolved === 'dark'
 
   const supabase = await createClient()
-  const { data: siteConfig } = await supabase
+  const { data: configRows } = await supabase
     .from('site_config')
-    .select('value')
-    .eq('key', 'maintenance_mode')
-    .maybeSingle()
-  const isMaintenance = siteConfig?.value === 'true'
+    .select('key, value')
+    .in('key', ['maintenance_mode', 'icp_number', 'icp_visible'])
+
+  const config = Object.fromEntries((configRows ?? []).map((r) => [r.key, r.value]))
+  const isMaintenance = config.maintenance_mode === 'true'
+  const icpNumber = config.icp_visible === 'true' ? (config.icp_number || '') : ''
 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} antialiased${initialDark ? ' dark' : ''}`} suppressHydrationWarning>
@@ -85,7 +87,7 @@ export default async function RootLayout({
           <LoginToast />
           <DeployNotifier />
           <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col">{children}</main>
-          <Footer isMaintenance={isMaintenance} />
+          <Footer isMaintenance={isMaintenance} icpNumber={icpNumber} />
           <Toaster position="top-center" richColors closeButton />
         </ThemeProvider>
       </body>

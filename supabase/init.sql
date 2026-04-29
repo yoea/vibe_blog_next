@@ -466,7 +466,9 @@ insert into site_config (key, value, description) values
   ('maintenance_mode', 'false', '维护模式开关'),
   ('ai_base_url', 'https://api.openai.com', 'AI API 基础地址'),
   ('ai_api_key', '', 'AI API 密钥'),
-  ('ai_model', 'gpt-4o-mini', 'AI 模型名称')
+  ('ai_model', 'gpt-4o-mini', 'AI 模型名称'),
+  ('icp_number', '', 'ICP备案号'),
+  ('icp_visible', 'false', '是否显示ICP备案号')
 on conflict (key) do nothing;
 
 do $$ begin

@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
-import { toggleMaintenanceMode, updateAIConfig } from '@/lib/actions/admin-actions'
+import { toggleMaintenanceMode, updateAIConfig, updateICPConfig } from '@/lib/actions/admin-actions'
 
 interface Props {
   user: User
@@ -32,9 +32,11 @@ interface Props {
   aiBaseUrl?: string
   aiApiKey?: string
   aiModel?: string
+  icpNumber?: string
+  icpVisible?: boolean
 }
 
-export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initialAiBaseUrl, aiApiKey: initialAiApiKey, aiModel: initialAiModel }: Props) {
+export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initialAiBaseUrl, aiApiKey: initialAiApiKey, aiModel: initialAiModel, icpNumber: initialIcpNumber, icpVisible: initialIcpVisible }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -45,6 +47,9 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const [aiApiKey, setAiApiKey] = useState(initialAiApiKey ?? '')
   const [aiModel, setAiModel] = useState(initialAiModel ?? '')
   const [showAiKey, setShowAiKey] = useState(false)
+  const [icpNumber, setIcpNumber] = useState(initialIcpNumber ?? '')
+  const [icpVisible, setIcpVisible] = useState(initialIcpVisible ?? false)
+  const [icpSaving, setIcpSaving] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -92,6 +97,18 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
       toast.error(error)
     } else {
       toast.success('AI 配置已保存')
+      router.refresh()
+    }
+  }
+
+  const handleSaveICP = async () => {
+    setIcpSaving(true)
+    const { error } = await updateICPConfig(icpNumber, icpVisible)
+    setIcpSaving(false)
+    if (error) {
+      toast.error(error)
+    } else {
+      toast.success('备案信息已保存')
       router.refresh()
     }
   }
@@ -282,6 +299,31 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                 {aiSaving ? '保存中...' : '保存 AI 配置'}
               </Button>
               <p className="text-xs text-muted-foreground">配置文章摘要生成、标签推荐等服务使用的 AI 服务，修改后立即生效。</p>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">ICP 备案信息</h4>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={icpVisible}
+                    onChange={(e) => setIcpVisible(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm">在页脚显示备案号</span>
+                </label>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="icp-number">备案号</Label>
+                <Input id="icp-number" value={icpNumber} onChange={(e) => setIcpNumber(e.target.value)} placeholder="浙ICP备XXXXXXXX号-X" />
+              </div>
+              <Button variant="outline" onClick={handleSaveICP} disabled={icpSaving} className="w-full sm:w-auto">
+                {icpSaving ? '保存中...' : '保存备案信息'}
+              </Button>
+              <p className="text-xs text-muted-foreground">备案号将显示在网站页脚，链接指向工信部备案管理系统。</p>
             </div>
           </CardContent>
         </Card>
