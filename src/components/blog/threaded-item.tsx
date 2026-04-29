@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { CommentForm } from './comment-form'
 import Link from 'next/link'
 import { MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { toast } from 'sonner'
 import { getUserColor } from '@/lib/utils/colors'
 import { formatTimeAgo } from '@/lib/utils/time'
 import { Avatar } from '@/components/ui/avatar'
@@ -44,7 +45,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
   onReply?: (id: string) => void
   onCancelReply?: () => void
   onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<boolean> | boolean
   deleteTitle?: string
   deleteDescription?: string
   canDelete?: boolean
@@ -52,6 +53,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
   renderActions?: (item: T) => ReactNode
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const isReplyActive = replyTarget === item.id
   const isGuest = !item.author_id
@@ -59,6 +61,17 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
     ? (item.author?.display_name ?? '匿名游客')
     : (item.author?.display_name ?? item.author_email?.split('@')[0] ?? '匿名用户')
   const avatarUrl = !isGuest ? (item.author as any)?.avatar_url ?? null : null
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true)
+    const ok = await onDelete(item.id)
+    setDeleting(false)
+    if (ok) {
+      setShowConfirm(false)
+    } else {
+      toast.error('删除失败，请重试')
+    }
+  }
 
   return (
     <>
@@ -158,18 +171,18 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
         </div>
       )}
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <Dialog open={showConfirm} onOpenChange={(open) => { if (!deleting) setShowConfirm(open) }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{deleteTitle}</DialogTitle>
             <DialogDescription>{deleteDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+            <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={deleting}>
               取消
             </Button>
-            <Button variant="destructive" onClick={() => { onDelete(item.id); setShowConfirm(false) }}>
-              删除
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+              {deleting ? '删除中...' : '确认删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -201,7 +214,7 @@ function ReplyList<T extends ThreadedItem>({
   onReply?: (id: string) => void
   onCancelReply?: () => void
   onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<boolean> | boolean
   deleteTitle?: string
   deleteDescription?: string
   canDelete?: boolean
@@ -299,13 +312,14 @@ function ReplyItem<T extends ThreadedItem>({
   onReply?: (id: string) => void
   onCancelReply?: () => void
   onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<boolean> | boolean
   deleteTitle?: string
   deleteDescription?: string
   canDelete?: boolean
   renderActions?: (item: T) => ReactNode
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const isReplyActive = replyTarget === reply.id
   const isGuest = !reply.author_id
@@ -313,6 +327,17 @@ function ReplyItem<T extends ThreadedItem>({
     ? (reply.author?.display_name ?? '匿名游客')
     : (reply.author?.display_name ?? reply.author_email?.split('@')[0] ?? '匿名用户')
   const avatarUrl = !isGuest ? (reply.author as any)?.avatar_url ?? null : null
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true)
+    const ok = await onDelete(reply.id)
+    setDeleting(false)
+    if (ok) {
+      setShowConfirm(false)
+    } else {
+      toast.error('删除失败，请重试')
+    }
+  }
 
   return (
     <>
@@ -392,18 +417,18 @@ function ReplyItem<T extends ThreadedItem>({
         </div>
       </div>
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <Dialog open={showConfirm} onOpenChange={(open) => { if (!deleting) setShowConfirm(open) }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{deleteTitle}</DialogTitle>
             <DialogDescription>{deleteDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+            <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={deleting}>
               取消
             </Button>
-            <Button variant="destructive" onClick={() => { onDelete(reply.id); setShowConfirm(false) }}>
-              删除
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+              {deleting ? '删除中...' : '确认删除'}
             </Button>
           </DialogFooter>
         </DialogContent>

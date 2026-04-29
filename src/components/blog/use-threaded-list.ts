@@ -69,7 +69,7 @@ export function useThreadedList<T extends ThreadedItem>({
     return { success: false, error: result.error }
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: string): Promise<boolean> {
     const result = await onDeleteItem(id)
     if (!result.error) {
       setItems((prev) => {
@@ -83,7 +83,9 @@ export function useThreadedList<T extends ThreadedItem>({
       })
       setTotal((c) => c - 1)
       if (onCountChange) onCountChange(-1)
+      return true
     }
+    return false
   }
 
   async function handleLoadMore() {

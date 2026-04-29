@@ -113,17 +113,20 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
   if (message.author_id !== user.id && message.to_author_id !== user.id) return { error: '无权限删除' }
 
   // Also delete child replies (1-level nesting)
-  await supabase
+  const { error: childError } = await supabase
     .from('guestbook_messages')
     .delete()
     .eq('parent_id', messageId)
 
-  const { error } = await supabase
+  if (childError) return { error: `删除回复失败: ${childError.message}` }
+
+  const { error, count } = await supabase
     .from('guestbook_messages')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', messageId)
 
   if (error) return { error: error.message }
+  if (count === 0) return { error: '删除失败，留言可能已被删除或无权限' }
   revalidatePath(`/author/${toAuthorId}`)
   return {}
 }
