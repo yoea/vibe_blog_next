@@ -1,4 +1,5 @@
-const { execSync } = require('child_process')
+// 发版后脚本
+// 从 CHANGELOG.md 提取当前版本的 release notes，更新为 git 附注标签
 const fs = require('fs')
 const path = require('path')
 const os = require('os')

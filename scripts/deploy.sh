@@ -1,4 +1,6 @@
 #!/bin/bash
+# 生产环境部署脚本
+# 停服 → 安装依赖 → 构建 → 启动新版本 → 健康检查
 set -euo pipefail
 
 PROJECT_DIR="/home/ewing/craft/vibe_blog_next"

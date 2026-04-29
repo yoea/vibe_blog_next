@@ -1,4 +1,5 @@
-module.exports = {
+// PM2 进程配置
+// 定义主应用 (vibe_blog_next) 和 webhook 接收器两个进程
   apps: [
     {
       name: 'vibe_blog_next',

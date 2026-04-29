@@ -1,4 +1,5 @@
-const http = require('http')
+// Webhook 接收服务器
+// 监听 GitHub/Gitee 推送事件，tag 推送触发自动部署，分支推送仅拉取代码
 const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
