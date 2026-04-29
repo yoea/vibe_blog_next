@@ -393,7 +393,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
           </DialogHeader>
           <div className="space-y-2 py-2">
             <Label htmlFor="delete-confirm-email">
-              请在下方输入 <span className="font-medium">{user.email}</span> 以确认注销
+              请在下方输入 <span className="font-medium select-all">{user.email}</span> 以确认注销
             </Label>
             <Input
               id="delete-confirm-email"
