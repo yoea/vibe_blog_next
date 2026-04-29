@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.5](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.2.4...v0.2.5) (2026-04-29)
+
+
+### 其他变更
+
+* **release:** 0.2.4 ([ab05d30](https://git.ewing.top/yoea/vibe_blog_next/commit/ab05d30e99faa60f547e7a6014be8d9039dec43f))
+
+
+### 文档
+
+* 添加远程仓库链接 ([aae9289](https://git.ewing.top/yoea/vibe_blog_next/commit/aae9289d9800085f77d6365526aa95f801aad75f))
+
+
+### 重构
+
+* 管理员身份改用数据库user_settings.is_admin判断 ([1974ba0](https://git.ewing.top/yoea/vibe_blog_next/commit/1974ba0bbde0424cfbf4bf339fd76e3772778ab4))
+* site_config表改为key-value配置模式 ([2a165c8](https://git.ewing.top/yoea/vibe_blog_next/commit/2a165c83ab6ca7b8bd235a3fb6793454792d3852))
+
+
+### Bug 修复
+
+* 部署计时从构建开始算起，中途进入也能看到已耗时 ([b4c27d1](https://git.ewing.top/yoea/vibe_blog_next/commit/b4c27d109c321bb07a56862fef52d27194dc9673))
+* 部署检测间隔改为2秒，检测到完成时停止计时 ([565583b](https://git.ewing.top/yoea/vibe_blog_next/commit/565583be1f96fd5e6f65bb554728030070f7fbf0))
+* 解析OAuth回调hash错误并弹出提示 ([4b430da](https://git.ewing.top/yoea/vibe_blog_next/commit/4b430da49e6e5c3ce36c8417f5014479023d754d))
+* 修复 ecosystem.config.js 语法错误 ([e4eafff](https://git.ewing.top/yoea/vibe_blog_next/commit/e4eafffee561e25ab6ace83da276c203dc637866))
+* 修复 webhook-server.js 缺少 http 模块导入 ([d97e131](https://git.ewing.top/yoea/vibe_blog_next/commit/d97e131c1980c5d6ce1c2dcf1466d970653c18a3))
+* 移除个人中心重置密码入口，仅保留设置页 ([89e5967](https://git.ewing.top/yoea/vibe_blog_next/commit/89e59673f0aa6b778cbadb7595a9a9246135f024))
+* 移除设置页GitHub绑定，个人中心改为小号绑定入口 ([d6006a0](https://git.ewing.top/yoea/vibe_blog_next/commit/d6006a07c148fcc67b25bf68d864b8f4e0974a39))
+* 允许加载 GitHub 头像图片 ([d332e39](https://git.ewing.top/yoea/vibe_blog_next/commit/d332e390737115a546721597fd2148579f6ea177))
+* 重置密码页面解码JWT验证recovery身份 ([03acd59](https://git.ewing.top/yoea/vibe_blog_next/commit/03acd5913937d37ce3e2b9d79fcf64e579526b71))
+* 重做密码重置流程，用cookie标记替代JWT AMR检测 ([ac52bf1](https://git.ewing.top/yoea/vibe_blog_next/commit/ac52bf115b7ee6eee3c3ad75d4031db8261447ee))
+* GitHub OAuth 登录成功后显示提示 ([fd8efef](https://git.ewing.top/yoea/vibe_blog_next/commit/fd8efefc8a02da6a9a95854305e0d967b73591e1))
+* GitHub绑定已占用账号时检测用户切换并提示错误 ([a76dfec](https://git.ewing.top/yoea/vibe_blog_next/commit/a76dfec9313e99feaf44ba85f5a782d4070fdcaa))
+* site_config写入改用RLS策略，不依赖service role ([f4a48bd](https://git.ewing.top/yoea/vibe_blog_next/commit/f4a48bd10caf186c5d9f41fa31aeabe55a62d6ed))
+* webhook 日志时间改为本地时间 (UTC+8) ([d4a0507](https://git.ewing.top/yoea/vibe_blog_next/commit/d4a0507ab73d1da5ea3fed6aa1b1dc1367bee043))
+* webhook PM2日志使用本地时间格式(UTC+8) ([a2a4c6a](https://git.ewing.top/yoea/vibe_blog_next/commit/a2a4c6ad21ed7018ef68dc1ea5296efc26c00c39))
+
+
+### 新功能
+
+* 部署成功弹窗显示版本号及GitHub链接 ([f2e1daf](https://git.ewing.top/yoea/vibe_blog_next/commit/f2e1daf98fe9851af82abe39bc90e2554f9e12c6))
+* 部署页面渐变背景与计时器，完成后弹出版本通知 ([440068f](https://git.ewing.top/yoea/vibe_blog_next/commit/440068fcbce29943abada6a854e3847e7bcb1ae3))
+* 修改密码与GitHub绑定交互重构 ([6c4a65f](https://git.ewing.top/yoea/vibe_blog_next/commit/6c4a65fa5eab4b360057dbf98c4c15db9a264c5a))
+* toast 通知添加关闭按钮 ([0eb3c2e](https://git.ewing.top/yoea/vibe_blog_next/commit/0eb3c2e5efeb72c60f7b3ff11f8f09c567b7925e))
+
 ### [0.2.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.2.2...v0.2.4) (2026-04-29)
 
 
