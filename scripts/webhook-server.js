@@ -38,7 +38,7 @@ function localTime() {
 
 function pullOnly() {
   console.log(`[${localTime()}] 执行 git pull 拉取最新代码...`)
-  const proc = spawn('git', ['pull'], { cwd: DEPLOY_DIR, stdio: 'inherit' })
+  const proc = spawn('bash', ['-c', 'git fetch origin && git reset --hard origin/main'], { cwd: DEPLOY_DIR, stdio: 'inherit' })
   proc.on('exit', (code) => {
     if (code === 0) {
       console.log(`[${localTime()}] git pull 完成，代码已更新至最新`)
@@ -65,7 +65,7 @@ function runDeploy() {
     currentDeploy = null
   }
 
-  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git pull && bash scripts/deploy.sh`], {
+  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git fetch origin && git reset --hard origin/main && bash scripts/deploy.sh`], {
     detached: true,   // 创建新进程组，便于整树清理
     stdio: ['ignore', 'pipe', 'pipe'],
     timeout: 600000,
