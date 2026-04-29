@@ -44,17 +44,18 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
   const avatarRef = useRef<AvatarUploaderHandle>(null)
   const router = useRouter()
 
-  // 检测 OAuth 回调结果
+  // 检测 OAuth 回调结果（query 参数或 hash）
   useEffect(() => {
-    const hash = window.location.hash
     const cookies = document.cookie.split(';')
     const hasLinkCookie = cookies.some(c => c.trim().startsWith('linking_user_id='))
-    const hasError = hash.includes('error=')
 
-    if (hasError) {
-      const params = new URLSearchParams(hash.slice(1))
-      const errorCode = params.get('error_code')
-      const errorDesc = params.get('error_description')
+    // Supabase linkIdentity 错误可能在 query 或 hash 中
+    const searchParams = new URLSearchParams(window.location.search)
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const errorCode = searchParams.get('error_code') || hashParams.get('error_code')
+    const errorDesc = searchParams.get('error_description') || hashParams.get('error_description')
+
+    if (errorCode || errorDesc) {
       if (errorCode === 'identity_already_exists') {
         toast.error(
           '绑定失败：该 GitHub 账号已绑定到另一个用户。请先登录原账号解除绑定，或使用其他 GitHub 账号。',
@@ -63,8 +64,8 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
       } else if (errorDesc) {
         toast.error(decodeURIComponent(errorDesc.replace(/\+/g, ' ')), { duration: 8000 })
       }
-      // 清除 hash
-      history.replaceState(null, '', window.location.pathname + window.location.search)
+      // 清除 URL 中的错误参数
+      history.replaceState(null, '', window.location.pathname)
     } else if (hasLinkCookie) {
       // 无错误 + 有 linking_user_id cookie → 绑定成功
       document.cookie = 'linking_user_id=; max-age=0; path=/'
