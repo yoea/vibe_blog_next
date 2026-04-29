@@ -132,15 +132,18 @@ export async function deleteComment(commentId: string, postId: string): Promise<
   }
 
   // Also delete child replies (1-level nesting)
-  await supabase.from('post_comments')
+  const { error: childError } = await supabase.from('post_comments')
     .delete()
     .eq('parent_id', commentId)
 
-  const { error } = await supabase.from('post_comments')
-    .delete()
+  if (childError) return { error: `删除回复失败: ${childError.message}` }
+
+  const { error, count } = await supabase.from('post_comments')
+    .delete({ count: 'exact' })
     .eq('id', commentId)
 
   if (error) return { error: error.message }
+  if (count === 0) return { error: '删除失败，评论可能已被删除或无权限' }
   const slug = await getPostSlug(supabase, postId)
   if (slug) revalidatePath(`/posts/${slug}`)
   return {}
