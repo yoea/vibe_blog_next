@@ -3,21 +3,12 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, Settings, Mail, Calendar, Edit3, Check, KeyRound, Camera, Trash2, LinkIcon } from 'lucide-react'
+import { Shield, Settings, Mail, Calendar, Edit3, Check, Camera, Trash2, LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { AvatarUploader } from '@/components/settings/avatar-uploader'
 import type { AvatarUploaderHandle } from '@/components/settings/avatar-uploader'
 import { updateUserSettings } from '@/lib/actions/settings-actions'
-import { resetPasswordForEmail } from '@/lib/actions/auth-actions'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { toast } from 'sonner'
 import { GitHubIcon } from '@/components/icons/github-icon'
@@ -37,8 +28,6 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(displayName)
   const [saving, setSaving] = useState(false)
-  const [showResetConfirm, setShowResetConfirm] = useState(false)
-  const [resetting, setResetting] = useState(false)
   const avatarRef = useRef<AvatarUploaderHandle>(null)
   const router = useRouter()
 
@@ -56,20 +45,6 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
       setEditing(false)
       toast.success('昵称已更新')
       router.refresh()
-    }
-  }
-
-  const handleResetPassword = async () => {
-    setResetting(true)
-    const toastId = toast.loading('发送密码重置邮件中...')
-    const res = await resetPasswordForEmail()
-    setResetting(false)
-    toast.dismiss(toastId)
-    if (res.error) {
-      toast.error(res.error)
-    } else {
-      setShowResetConfirm(false)
-      toast.success('密码重置邮件已发送，请检查邮箱')
     }
   }
 
@@ -178,15 +153,8 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
           <p className="text-xs text-muted-foreground text-center">支持 JPG、PNG，最大 20MB</p>
         </div>
 
-        {/* Row 2, Col 2: Reset password + GitHub status */}
+        {/* Row 2, Col 2: GitHub status */}
         <div className="mt-4 sm:mt-0 flex flex-col gap-3">
-          <div>
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowResetConfirm(true)}>
-              <KeyRound className="h-3.5 w-3.5" />
-              重置密码
-            </Button>
-            <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱</p>
-          </div>
           <div className="flex items-center gap-2">
             <GitHubIcon className="h-4 w-4" />
             {isGitHubConnected ? (
@@ -214,31 +182,6 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
           </div>
         </div>
       </div>
-
-      <Dialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>重置密码</DialogTitle>
-            <DialogDescription>将向以下账户发送密码重置邮件，确认继续？</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-2 text-sm">
-            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-              <span className="text-muted-foreground">昵称</span>
-              <span className="font-medium">{displayName || email?.split('@')[0] || '-'}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-              <span className="text-muted-foreground">邮箱</span>
-              <span className="font-mono text-xs">{email ?? '-'}</span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowResetConfirm(false)} disabled={resetting}>取消</Button>
-            <Button onClick={handleResetPassword} disabled={resetting}>
-              {resetting ? '发送中...' : '确认发送'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
