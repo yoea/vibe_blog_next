@@ -11,6 +11,7 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
   const [user, setUser] = useState<{ email: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMac, setIsMac] = useState(false)
+  const [sticky, setSticky] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
   const menuOpenRef = useRef(menuOpen)
   menuOpenRef.current = menuOpen
@@ -45,6 +46,21 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
 
   const ThemeIcon = mode === 'system' ? SunMoon : mode === 'dark' ? Moon : Sun
   const themeLabel = mode === 'system' ? '跟随系统' : mode === 'dark' ? '深色模式' : '浅色模式'
+
+  // 读取 sticky 偏好
+  useEffect(() => {
+    setSticky(localStorage.getItem('header_sticky') === 'true')
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'header_sticky') setSticky(e.newValue === 'true')
+    }
+    const onCustom = () => setSticky(localStorage.getItem('header_sticky') === 'true')
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('header-sticky-changed', onCustom)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('header-sticky-changed', onCustom)
+    }
+  }, [])
 
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0)
@@ -90,7 +106,7 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
   )
 
   return (
-    <header ref={headerRef} className="border-b bg-background relative">
+    <header ref={headerRef} className={`border-b bg-background relative${sticky ? ' sticky top-0 z-50' : ''}`}>
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
