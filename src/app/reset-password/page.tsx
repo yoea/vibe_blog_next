@@ -22,24 +22,30 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      // 检查 callback 设置的 recovery_session cookie
+      const hasRecoveryCookie = document.cookie.includes('recovery_session=')
+      // 检查 code 交换失败的标记
+      const hasErrorCookie = document.cookie.includes('recovery_error=')
+      if (hasErrorCookie) {
+        document.cookie = 'recovery_error=; max-age=0; path=/'
         setValidLink(false)
         return
       }
-      // amr 声明在 JWT access_token 内，需要解码才能读取
-      try {
-        const payload = JSON.parse(atob(session.access_token.split('.')[1]))
-        const isRecovery = Array.isArray(payload.amr) &&
-          payload.amr.some((a: { method: string }) => a.method === 'recovery')
-        setValidLink(isRecovery)
-        if (isRecovery && session.user?.email) {
-          setUserEmail(session.user.email)
-        }
-      } catch {
+      if (!hasRecoveryCookie) {
         setValidLink(false)
+        return
       }
+      // 清除标记 cookie
+      document.cookie = 'recovery_session=; max-age=0; path=/'
+      // 验证 session 是否有效
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user?.email) {
+        setValidLink(false)
+        return
+      }
+      setValidLink(true)
+      setUserEmail(session.user.email)
     }
     checkSession()
   }, [])

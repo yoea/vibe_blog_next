@@ -25,9 +25,23 @@ export async function GET(request: NextRequest) {
 
   if (tokenHash && type === 'recovery') {
     await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    cookiesToSet.push({ name: 'recovery_session', value: '1', options: { maxAge: 300, path: '/' } })
   } else if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) {
+      // code 交换失败（过期、无效等），重定向到 reset-password 显示错误
+      if (type === 'recovery') {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+        const redirectResponse = NextResponse.redirect(`${siteUrl}/reset-password`)
+        redirectResponse.cookies.set('recovery_error', '1', { maxAge: 10, path: '/' })
+        return redirectResponse
+      }
+    }
     if (!error) {
+      // recovery 流程标记 cookie
+      if (type === 'recovery') {
+        cookiesToSet.push({ name: 'recovery_session', value: '1', options: { maxAge: 300, path: '/' } })
+      }
       // 检测 linkIdentity 导致的用户切换（GitHub 已绑定其他账号）
       if (linkingUserId) {
         const { data: { user: newUser } } = await supabase.auth.getUser()
