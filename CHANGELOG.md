@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.2.2...v0.2.4) (2026-04-29)
+
+
+### Bug 修复
+
+* 部署脚本 npm ci 前自动清理 node_modules ([ef74e42](https://git.ewing.top/yoea/vibe_blog_next/commit/ef74e42f5c92224ac2af40e1e59f0e685c926c8c))
+
+
+### 文档
+
+* 添加部署架构说明到 CLAUDE.md ([bd5ca9d](https://git.ewing.top/yoea/vibe_blog_next/commit/bd5ca9d60e2be11967ec3b9bbdc0dd0cce81e3c8))
+
+
+### 其他变更
+
+* 添加脚本顶部注释，忽略 .claude/ 目录 ([4d6c703](https://git.ewing.top/yoea/vibe_blog_next/commit/4d6c703abcddef6f9ca759fb02f28b1b1ee1de75))
+
+
+### 新功能
+
+* 集成 GitHub OAuth 登录功能 ([de4f59b](https://git.ewing.top/yoea/vibe_blog_next/commit/de4f59bd4b33999fe30062e994a44424ac200df5))
+
+### [0.2.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.2.2...v0.2.3) (2026-04-29)
+
+
+### Bug 修复
+
+* 部署脚本 npm ci 前自动清理 node_modules ([ef74e42](https://git.ewing.top/yoea/vibe_blog_next/commit/ef74e42f5c92224ac2af40e1e59f0e685c926c8c))
+
+
+### 文档
+
+* 添加部署架构说明到 CLAUDE.md ([bd5ca9d](https://git.ewing.top/yoea/vibe_blog_next/commit/bd5ca9d60e2be11967ec3b9bbdc0dd0cce81e3c8))
+
+
+### 其他变更
+
+* 添加脚本顶部注释，忽略 .claude/ 目录 ([4d6c703](https://git.ewing.top/yoea/vibe_blog_next/commit/4d6c703abcddef6f9ca759fb02f28b1b1ee1de75))
+
+
+### 新功能
+
+* 集成 GitHub OAuth 登录功能 ([de4f59b](https://git.ewing.top/yoea/vibe_blog_next/commit/de4f59bd4b33999fe30062e994a44424ac200df5))
+
 ### [0.2.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.2.1...v0.2.2) (2026-04-28)
 
 
