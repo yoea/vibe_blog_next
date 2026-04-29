@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Wrench } from 'lucide-react'
 
-export function Footer({ isMaintenance }: { isMaintenance?: boolean }) {
+export function Footer({ isMaintenance, icpNumber }: { isMaintenance?: boolean; icpNumber?: string }) {
   return (
     <footer className="border-t bg-background mt-auto">
       <div className="max-w-4xl mx-auto px-4 py-3">
@@ -16,6 +16,14 @@ export function Footer({ isMaintenance }: { isMaintenance?: boolean }) {
             )}
             </p>
           <nav className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground">
+            {icpNumber && (
+              <>
+                <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors whitespace-nowrap">
+                  {icpNumber}
+                </a>
+                <span className="text-muted-foreground select-none">|</span>
+              </>
+            )}
             <Link href="/about" className="hover:text-foreground transition-colors">关于</Link>
             <span className="text-muted-foreground select-none">|</span>
             <Link href="/privacy" className="hover:text-foreground transition-colors">隐私政策</Link>
