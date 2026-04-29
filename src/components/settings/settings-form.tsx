@@ -257,7 +257,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
             <Separator className="my-4" />
 
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">AI 摘要配置</h4>
+              <h4 className="text-sm font-medium">AI大模型配置</h4>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="ai-base-url">API 地址</Label>
@@ -281,7 +281,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
               <Button variant="outline" onClick={handleSaveAIConfig} disabled={aiSaving} className="w-full sm:w-auto">
                 {aiSaving ? '保存中...' : '保存 AI 配置'}
               </Button>
-              <p className="text-xs text-muted-foreground">配置文章摘要生成使用的 AI 服务，修改后立即生效。</p>
+              <p className="text-xs text-muted-foreground">配置文章摘要生成、标签推荐等服务使用的 AI 服务，修改后立即生效。</p>
             </div>
           </CardContent>
         </Card>
