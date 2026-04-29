@@ -51,6 +51,7 @@ export NEXT_PUBLIC_BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 export NEXT_PUBLIC_BUILD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 export NEXT_PUBLIC_BUILD_COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "0")
 export NEXT_PUBLIC_BUILD_CONTRIBUTORS=$(git log --format='%an' 2>/dev/null | sort -u | tr '\n' ',' | sed 's/,$//' || echo "")
+export NEXT_PUBLIC_BUILD_VERSION=$(node -e "console.log(require('./package.json').version)" 2>/dev/null || echo "0.0.0")
 # 清理旧构建缓存，防止构建产物残留问题
 rm -rf .next
 

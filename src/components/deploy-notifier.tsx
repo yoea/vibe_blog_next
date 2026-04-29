@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { BadgeCheck, GitCommitHorizontal, Clock, Calendar } from 'lucide-react'
+import { BadgeCheck, GitCommitHorizontal, Clock, Calendar, ExternalLink } from 'lucide-react'
 
 interface DeployInfo {
   duration: number
@@ -44,6 +44,7 @@ export function DeployNotifier() {
 
   if (!deployInfo) return null
 
+  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
   const buildCommit = process.env.NEXT_PUBLIC_BUILD_COMMIT
   const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME
   const formattedBuildTime = buildTime
@@ -63,6 +64,22 @@ export function DeployNotifier() {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
+          {buildVersion && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <ExternalLink className="h-4 w-4" />
+                版本
+              </span>
+              <a
+                href={`https://github.com/yoea/vibe_blog_next/releases/tag/v${buildVersion}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                v{buildVersion}
+              </a>
+            </div>
+          )}
           {buildCommit && (
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
