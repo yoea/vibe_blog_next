@@ -36,7 +36,7 @@ export default async function ProfilePage() {
   // Fetch user settings
   const { data: userSettings } = await supabase
     .from('user_settings')
-    .select('display_name, avatar_url')
+    .select('display_name, avatar_url, github_id')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -52,6 +52,9 @@ export default async function ProfilePage() {
 
   const isAdmin = await isSuperAdmin()
 
+  // 检查 GitHub 绑定状态
+  const isGitHubConnected = user.identities?.some(i => i.provider === 'github') || !!userSettings?.github_id
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">个人中心</h1>
@@ -66,6 +69,7 @@ export default async function ProfilePage() {
           emailVerified={!!user.email_confirmed_at}
           createdAt={createdAt}
           isAdmin={isAdmin}
+          isGitHubConnected={isGitHubConnected}
         />
       </section>
 

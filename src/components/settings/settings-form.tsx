@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { resetPasswordForEmail, deleteAccount } from '@/lib/actions/auth-actions'
+import { unlinkGitHubIdentity } from '@/lib/actions/oauth-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -19,17 +20,22 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { Sun, Moon, SunMoon, Heart, Wrench } from 'lucide-react'
+import { GitHubIcon } from '@/components/icons/github-icon'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
 import { toggleMaintenanceMode } from '@/lib/actions/admin-actions'
+
+import type { UserIdentity } from '@supabase/supabase-js'
 
 interface Props {
   user: User
   isAdmin?: boolean
   maintenanceMode?: boolean
+  isGitHubConnected?: boolean
+  githubIdentity?: UserIdentity | null
 }
 
-export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
+export function SettingsForm({ user, isAdmin, maintenanceMode, isGitHubConnected, githubIdentity }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -109,6 +115,67 @@ export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
             <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">退出登录</Button>
             <p className="text-xs text-muted-foreground mt-1">退出登录后，你将返回主页</p>
             </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>账号绑定</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <div className="flex items-center gap-2">
+              <GitHubIcon className="h-4 w-4" />
+              <span className="text-sm">GitHub</span>
+            </div>
+            {isGitHubConnected ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const supabase = createClient()
+                  if (githubIdentity) {
+                    const { error } = await supabase.auth.unlinkIdentity(githubIdentity)
+                    if (error) {
+                      toast.error(error.message)
+                      return
+                    }
+                  }
+                  const res = await unlinkGitHubIdentity()
+                  if (res.error) {
+                    toast.error(res.error)
+                  } else {
+                    toast.success('已解绑 GitHub')
+                    router.refresh()
+                  }
+                }}
+              >
+                解绑
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const supabase = createClient()
+                  const { error } = await supabase.auth.linkIdentity({
+                    provider: 'github',
+                    options: {
+                      redirectTo: `${window.location.origin}/api/auth/callback?redirect_to=/settings`,
+                    },
+                  })
+                  if (error) toast.error(error.message)
+                }}
+              >
+                绑定
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            {isGitHubConnected
+              ? '已通过 GitHub 账号登录'
+              : '绑定后可使用 GitHub 快速登录'}
+          </p>
         </CardContent>
       </Card>
 
