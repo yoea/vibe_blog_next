@@ -70,6 +70,12 @@ wait $MAINT_PID 2>/dev/null || true
 trap - EXIT
 
 echo "启动新版本..."
+# 从 .env.local 读取运行时环境变量注入 PM2（standalone 模式不加载 .env.local）
+if [ -f .env.local ]; then
+  set -a
+  source .env.local
+  set +a
+fi
 pm2 start scripts/ecosystem.config.js --only vibe_blog_next
 
 # 保存 PM2 状态（防重启丢失）

@@ -262,7 +262,12 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
   if (tag.created_by !== user.id && !isAdmin) return { error: '只能删除自己创建的标签' }
 
   // Use admin client to bypass RLS and delete all post_tags + tag
-  const admin = createAdminClient()
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return { error: '管理员客户端初始化失败，请检查 SUPABASE_SERVICE_ROLE_KEY 配置' }
+  }
   const { error: ptError } = await admin.from('post_tags').delete().eq('tag_id', tagId)
   if (ptError) return { error: `删除文章标签关联失败: ${ptError.message}` }
 
@@ -270,6 +275,7 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
   if (tagError) return { error: `删除标签失败: ${tagError.message}` }
 
   revalidatePath('/tags')
+  revalidatePath('/profile')
   revalidatePath('/')
   return {}
 }
