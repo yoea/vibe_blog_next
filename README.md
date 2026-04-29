@@ -1,4 +1,4 @@
-# Blog
+# 字里行间-博文
 
 基于 Next.js 16 + Supabase 的个人博客系统。
 
