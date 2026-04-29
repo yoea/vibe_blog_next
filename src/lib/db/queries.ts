@@ -477,10 +477,33 @@ export async function getAllUsers(page = 1, limit = 20) {
     }
   }
 
+  // Fetch emails for users with empty display_name using service role
+  const emptyNameUserIds = (settings ?? [])
+    .filter((s) => !s.display_name)
+    .map((s) => s.user_id)
+  const emailMap = new Map<string, string>()
+  if (emptyNameUserIds.length > 0) {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (serviceKey) {
+      const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+      const admin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      )
+      for (const uid of emptyNameUserIds) {
+        const { data: { user } } = await admin.auth.admin.getUserById(uid)
+        if (user?.email) {
+          emailMap.set(uid, user.email.split('@')[0])
+        }
+      }
+    }
+  }
+
   return {
     data: (settings ?? []).map((s) => ({
       id: s.user_id,
-      displayName: s.display_name ?? '',
+      displayName: s.display_name || emailMap.get(s.user_id) || s.user_id.slice(0, 8),
       avatarUrl: s.avatar_url ?? null,
       githubId: s.github_id ?? null,
       githubUsername: s.github_username ?? null,
