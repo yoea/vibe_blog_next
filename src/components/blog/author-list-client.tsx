@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { getUserColor } from '@/lib/utils/colors'
 import { Avatar } from '@/components/ui/avatar'
@@ -48,6 +49,7 @@ export function AuthorListClient({
   currentUserId?: string
   adminUserIds?: string[]
 }) {
+  const router = useRouter()
   const [authors, setAuthors] = useState(initialAuthors)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -108,13 +110,15 @@ export function AuthorListClient({
         {activeAuthors.map((user) => {
           const days = formatDaysAgo(user.createdAt)
           const hasPosts = user.postCount > 0
+          const isProtected = isAdmin && (user.id === currentUserId || adminUserIds?.includes(user.id))
 
           return (
-            <div key={user.id} className="relative rounded-lg border bg-card hover:shadow-md transition-shadow">
-              <Link
-                href={`/author/${user.id}`}
-                className={`block p-4 ${isAdmin ? 'pr-10' : ''}`}
-              >
+            <div
+              key={user.id}
+              className="flex items-center rounded-lg border bg-card hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => router.push(`/author/${user.id}`)}
+            >
+              <div className="flex-1 p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -132,6 +136,26 @@ export function AuthorListClient({
                         >
                           {user.displayName}
                         </span>
+                        {user.githubUsername && (
+                          <span
+                            role="link"
+                            tabIndex={0}
+                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            title="访问作者的 GitHub 主页"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer')
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation()
+                                window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer')
+                              }
+                            }}
+                          >
+                            <GitHubIcon className="h-3.5 w-3.5" />
+                          </span>
+                        )}
                       </div>
                       <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
                     </div>
@@ -145,33 +169,22 @@ export function AuthorListClient({
                     </span>
                   </div>
                 </div>
-              </Link>
-              {user.githubUsername && (
-                <a
-                  href={`https://github.com/${user.githubUsername}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="absolute top-[18px] left-[60px] text-muted-foreground hover:text-foreground transition-colors z-10"
-                  title="访问作者的 GitHub 主页"
+              </div>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isProtected}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!isProtected) setConfirmDeleteId(user.id)
+                  }}
+                  className={`mr-2 h-6 w-6 ${isProtected ? 'text-muted-foreground/40' : 'text-muted-foreground hover:text-destructive'}`}
+                  title={isProtected ? undefined : '删除用户'}
                 >
-                  <GitHubIcon className="h-3.5 w-3.5" />
-                </a>
+                  {isProtected ? <Shield className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5" />}
+                </Button>
               )}
-              {isAdmin && (() => {
-                const isProtected = user.id === currentUserId || adminUserIds?.includes(user.id)
-                return (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isProtected}
-                    onClick={isProtected ? undefined : () => setConfirmDeleteId(user.id)}
-                    className={`absolute top-1/2 -translate-y-1/2 right-2 h-6 w-6 ${isProtected ? 'text-muted-foreground/40' : 'text-muted-foreground hover:text-destructive'}`}
-                    title={isProtected ? undefined : '删除用户'}
-                  >
-                    {isProtected ? <Shield className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5" />}
-                  </Button>
-                )
-              })()}
             </div>
           )
         })}
