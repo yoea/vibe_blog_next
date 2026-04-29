@@ -224,20 +224,6 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
         </Card>
       )}
 
-      {/* 关于 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>关于</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">
-            <Link href="/about" className="hover:text-foreground transition-colors">
-              查看站点信息及构建详情 →
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* 支持 */}
       <Card>
         <CardHeader>
@@ -260,53 +246,30 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
           <CardHeader>
             <CardTitle>站点管理</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Button variant="outline" onClick={handleMaintenanceToggle} disabled={maintenanceLoading} className="w-full sm:w-auto">
-              <Wrench className="h-4 w-4 mr-1.5" />
-              {maintenanceLoading ? '处理中...' : maintenanceMode ? '关闭维护模式' : '开启维护模式'}
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2">
-              {maintenanceMode
-                ? '维护模式已开启，所有访客将被重定向到维护页面'
-                : '开启后所有访客将看到站点维护页面，管理员可通过 /maintenance 访问管理'}
-            </p>
-
-            <Separator className="my-4" />
-
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">AI大模型配置</h4>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="ai-base-url">API 地址</Label>
-                  <Input id="ai-base-url" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)} placeholder="https://api.openai.com" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="ai-model">模型名称</Label>
-                  <Input id="ai-model" value={aiModel} onChange={(e) => setAiModel(e.target.value)} placeholder="gpt-4o-mini" />
-                </div>
+          <CardContent className="space-y-6">
+            {/* 维护模式 */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h4 className="text-sm font-medium">维护模式</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {maintenanceMode
+                    ? '已开启，访客将看到维护页面'
+                    : '开启后访客将看到维护页面，管理员可正常访问'}
+                </p>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="ai-api-key">API 密钥</Label>
-                <div className="relative">
-                  <Input id="ai-api-key" type={showAiKey ? 'text' : 'password'} value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} placeholder="sk-..." />
-                  <button type="button" onClick={() => setShowAiKey(!showAiKey)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                    {showAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <Button variant="outline" onClick={handleSaveAIConfig} disabled={aiSaving} className="w-full sm:w-auto">
-                {aiSaving ? '保存中...' : '保存 AI 配置'}
+              <Button variant={maintenanceMode ? 'destructive' : 'outline'} size="sm" onClick={handleMaintenanceToggle} disabled={maintenanceLoading} className="shrink-0">
+                <Wrench className="h-3.5 w-3.5 mr-1.5" />
+                {maintenanceLoading ? '处理中...' : maintenanceMode ? '关闭' : '开启'}
               </Button>
-              <p className="text-xs text-muted-foreground">配置文章摘要生成、标签推荐等服务使用的 AI 服务，修改后立即生效。</p>
             </div>
 
-            <Separator className="my-4" />
+            <Separator />
 
+            {/* ICP 备案 */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">ICP 备案信息</h4>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">ICP 备案</h4>
+                <label className="flex items-center gap-2 cursor-pointer shrink-0">
                   <input
                     type="checkbox"
                     checked={icpVisible}
@@ -324,17 +287,51 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                     }}
                     className="h-4 w-4 rounded border-gray-300"
                   />
-                  <span className="text-sm">在页脚显示备案号</span>
+                  <span className="text-xs text-muted-foreground">页脚显示</span>
                 </label>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="icp-number">备案号</Label>
-                <Input id="icp-number" value={icpNumber} onChange={(e) => setIcpNumber(e.target.value)} placeholder="浙ICP备XXXXXXXX号-X" />
+              <div className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="icp-number">备案号</Label>
+                  <Input id="icp-number" value={icpNumber} onChange={(e) => setIcpNumber(e.target.value)} placeholder="浙ICP备XXXXXXXX号-X" />
+                </div>
+                <Button variant="outline" size="sm" onClick={handleSaveICP} disabled={icpSaving} className="shrink-0 mb-px">
+                  {icpSaving ? '保存中...' : '保存'}
+                </Button>
               </div>
-              <Button variant="outline" onClick={handleSaveICP} disabled={icpSaving} className="w-full sm:w-auto">
-                {icpSaving ? '保存中...' : '保存备案信息'}
-              </Button>
-              <p className="text-xs text-muted-foreground">备案号将显示在网站页脚，链接指向工信部备案管理系统。</p>
+            </div>
+
+            <Separator />
+
+            {/* AI 大模型 */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">AI 大模型</h4>
+              <p className="text-xs text-muted-foreground -mt-1">用于文章摘要生成、标签推荐等 AI 功能</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ai-base-url">API 地址</Label>
+                  <Input id="ai-base-url" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)} placeholder="https://api.openai.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ai-model">模型名称</Label>
+                  <Input id="ai-model" value={aiModel} onChange={(e) => setAiModel(e.target.value)} placeholder="gpt-4o-mini" />
+                </div>
+              </div>
+              <div className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="ai-api-key">API 密钥</Label>
+                  <div className="relative">
+                    <Input id="ai-api-key" type={showAiKey ? 'text' : 'password'} value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} placeholder="sk-..." />
+                    <button type="button" onClick={() => setShowAiKey(!showAiKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                      {showAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleSaveAIConfig} disabled={aiSaving} className="shrink-0 mb-px">
+                  {aiSaving ? '保存中...' : '保存'}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
