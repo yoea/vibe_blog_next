@@ -141,43 +141,42 @@ function CompactPostRow({ post, linkRef, onDelete }: { post: PostData; linkRef?:
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
-        <div className="flex-1 min-w-0 flex items-center gap-2">
-          {pinned && (
-            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
-              <Pin className="h-3 w-3 rotate-45" />
-              置顶
+      <div className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2 min-w-0">
+            {pinned && (
+              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-950">
+                <Pin className="h-3 w-3 rotate-45" />
+                置顶
+              </span>
+            )}
+            <Link
+              href={`/posts/${post.slug}${linkRef ? `?ref=${encodeURIComponent(linkRef)}` : ''}`}
+              className="min-w-0 flex-1 text-sm font-medium hover:text-primary transition-colors truncate"
+            >
+              {post.title}
+            </Link>
+            <span className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1 py-0.5 rounded ${
+              post.published
+                ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950'
+                : 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950'
+            }`}>
+              {post.published ? <Globe className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />}
+              {post.published ? '公开' : '私密'}
             </span>
-          )}
-          <Link
-            href={`/posts/${post.slug}${linkRef ? `?ref=${encodeURIComponent(linkRef)}` : ''}`}
-            className="truncate text-sm font-medium hover:text-primary transition-colors"
-          >
-            {post.title}
-          </Link>
-          <span className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-medium px-1 py-0.5 rounded ${
-            post.published
-              ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950'
-              : 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950'
-          }`}>
-            {post.published ? <Globe className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />}
-            {post.published ? '公开' : '私密'}
-          </span>
+          </div>
           {post.tags && post.tags.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1 shrink-0">
-              {post.tags.slice(0, 3).map((tag) => (
+            <div className="flex flex-wrap items-center gap-1">
+              {post.tags.map((tag) => (
                 <Link
                   key={tag.slug}
                   href={`/tags/${encodeURIComponent(tag.slug)}`}
-                  className="text-[10px] px-1 py-0.5 rounded hover:opacity-80 transition-opacity"
+                  className="text-[10px] px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity whitespace-nowrap"
                   style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
                 >
                   {tag.name}
                 </Link>
               ))}
-              {post.tags.length > 3 && (
-                <span className="text-[10px] text-muted-foreground">...</span>
-              )}
             </div>
           )}
         </div>
