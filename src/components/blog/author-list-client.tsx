@@ -133,16 +133,16 @@ export function AuthorListClient({
                           {user.displayName}
                         </span>
                         {user.githubUsername && (
-                          <a
-                            href={`https://github.com/${user.githubUsername}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
+                          <span
+                            role="link"
+                            tabIndex={0}
+                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer') }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer') } }}
+                            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                             title="GitHub 主页"
                           >
                             <GitHubIcon className="h-3.5 w-3.5" />
-                          </a>
+                          </span>
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
