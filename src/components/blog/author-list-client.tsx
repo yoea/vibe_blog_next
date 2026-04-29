@@ -110,10 +110,10 @@ export function AuthorListClient({
           const hasPosts = user.postCount > 0
 
           return (
-            <div key={user.id} className="relative">
+            <div key={user.id} className="relative rounded-lg border bg-card hover:shadow-md transition-shadow">
               <Link
                 href={`/author/${user.id}`}
-                className={`block rounded-lg border bg-card p-4 hover:shadow-md transition-shadow ${isAdmin ? 'pr-10' : ''}`}
+                className={`block p-4 ${isAdmin ? 'pr-10' : ''}`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
@@ -132,18 +132,6 @@ export function AuthorListClient({
                         >
                           {user.displayName}
                         </span>
-                        {user.githubUsername && (
-                          <span
-                            role="link"
-                            tabIndex={0}
-                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer') }}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); window.open(`https://github.com/${user.githubUsername}`, '_blank', 'noopener,noreferrer') } }}
-                            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                            title="GitHub 主页"
-                          >
-                            <GitHubIcon className="h-3.5 w-3.5" />
-                          </span>
-                        )}
                       </div>
                       <div className="text-[10px] text-muted-foreground leading-tight">{user.id.slice(0, 8)}</div>
                     </div>
@@ -158,6 +146,17 @@ export function AuthorListClient({
                   </div>
                 </div>
               </Link>
+              {user.githubUsername && (
+                <a
+                  href={`https://github.com/${user.githubUsername}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute top-[18px] left-[60px] text-muted-foreground hover:text-foreground transition-colors z-10"
+                  title="访问作者的 GitHub 主页"
+                >
+                  <GitHubIcon className="h-3.5 w-3.5" />
+                </a>
+              )}
               {isAdmin && (() => {
                 const isProtected = user.id === currentUserId || adminUserIds?.includes(user.id)
                 return (
