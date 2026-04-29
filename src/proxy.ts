@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
   // ============================================
 
   // 允许访问的路径列表（维护模式下仍可访问）
-  const maintenanceAllowlist = ['/about', '/privacy', '/legal', '/maintenance']
+  const maintenanceAllowlist = ['/about', '/privacy', '/legal', '/maintenance', '/login', '/register', '/api/auth']
   const pathname = request.nextUrl.pathname
   const isAllowed = maintenanceAllowlist.some(p => pathname === p || pathname.startsWith(p + '/'))
 
