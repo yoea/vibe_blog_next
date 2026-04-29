@@ -46,7 +46,7 @@
 
   body {
     font-family: var(--font-sans);
-    background: var(--background);
+    background: linear-gradient(160deg, var(--background) 0%, var(--accent) 50%, var(--background) 100%);
     color: var(--foreground);
     min-height: 100dvh;
     display: flex;
@@ -148,6 +148,22 @@
     50% { opacity: 0.3; transform: scale(0.7); }
   }
 
+  /* Timer */
+  .timer {
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+  .timer-label {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+  }
+
   /* Progress bar */
   .progress {
     margin-top: 1.5rem;
@@ -226,6 +242,11 @@
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
+
+      <div class="timer">
+        <div class="timer-label">已等待</div>
+        <div id="timerDisplay">00:00</div>
+      </div>
     </div>
   </main>
 
@@ -237,13 +258,30 @@
 
   <script>
     const statusText = document.getElementById('statusText')
+    const timerDisplay = document.getElementById('timerDisplay')
+    const startTime = Date.now()
 
+    // 计时器
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const min = String(Math.floor(elapsed / 60)).padStart(2, '0')
+      const sec = String(elapsed % 60).padStart(2, '0')
+      timerDisplay.textContent = min + ':' + sec
+    }
+    setInterval(updateTimer, 1000)
+
+    // 轮询主站
     async function check() {
       try {
         const res = await fetch('/', { cache: 'no-store' })
         if (res.ok) {
+          const duration = Math.round((Date.now() - startTime) / 1000)
+          localStorage.setItem('deploy_info', JSON.stringify({
+            duration: duration,
+            timestamp: Date.now()
+          }))
           statusText.textContent = '部署完成，正在跳转...'
-          location.reload()
+          setTimeout(function() { location.reload() }, 1000)
         }
       } catch {}
       setTimeout(check, 5000)
