@@ -87,7 +87,7 @@ export function Avatar({ avatarUrl, displayName, userId, size = 'md', className,
   )
 
   return (
-    <>
+    <div suppressHydrationWarning>
       {avatarContent}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="sm:max-w-lg p-2">
@@ -101,6 +101,6 @@ export function Avatar({ avatarUrl, displayName, userId, size = 'md', className,
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   )
 }
