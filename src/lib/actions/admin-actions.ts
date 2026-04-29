@@ -63,3 +63,27 @@ export async function toggleMaintenanceMode(): Promise<ActionResult> {
   revalidatePath('/')
   return {}
 }
+
+export async function updateAIConfig(baseUrl: string, apiKey: string, model: string): Promise<ActionResult> {
+  if (!await isSuperAdmin()) return { error: '无权限' }
+
+  const supabase = await createClient()
+
+  const updates = [
+    { key: 'ai_base_url', value: baseUrl },
+    { key: 'ai_api_key', value: apiKey },
+    { key: 'ai_model', value: model },
+  ]
+
+  for (const { key, value } of updates) {
+    const { error } = await supabase
+      .from('site_config')
+      .update({ value, updated_at: new Date().toISOString() })
+      .eq('key', key)
+
+    if (error) return { error: `更新 ${key} 失败: ${error.message}` }
+  }
+
+  revalidatePath('/settings')
+  return {}
+}

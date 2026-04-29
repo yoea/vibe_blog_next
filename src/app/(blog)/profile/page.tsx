@@ -1,12 +1,13 @@
-import { getPostsByAuthor, getGuestbookMessages } from '@/lib/db/queries'
+import { getPostsByAuthor, getGuestbookMessages, getTagsByUser } from '@/lib/db/queries'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileInfoCard } from '@/components/profile/profile-info-card'
 import { MyPostRowList } from '@/components/profile/my-post-row'
 import { GuestbookSection } from '@/components/blog/guestbook-section'
+import { TagManager } from '@/components/tags/tag-manager'
 import { loadMoreMyPosts } from '@/lib/actions/post-actions'
 import { LINK_REF_PROFILE } from '@/lib/constants'
 import { isSuperAdmin } from '@/lib/utils/admin'
-import { Plus } from 'lucide-react'
+import { Plus, Tags } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
@@ -49,6 +50,9 @@ export default async function ProfilePage() {
 
   // Fetch guestbook messages left for this user
   const { data: guestbookMessages, total: guestbookTotal } = await getGuestbookMessages(user.id, { page: 1, pageSize: 10 })
+
+  // Fetch user's own tags
+  const userTags = await getTagsByUser(user.id)
 
   const isAdmin = await isSuperAdmin()
 
@@ -102,7 +106,16 @@ export default async function ProfilePage() {
         )}
       </section>
 
-      {/* Module 3: Guestbook Messages */}
+      {/* Module 3: My Tags */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Tags className="h-5 w-5" />
+          <h2 className="text-xl font-bold">我的标签</h2>
+        </div>
+        <TagManager initialTags={userTags} currentUserId={user.id} isAdmin={isAdmin} />
+      </section>
+
+      {/* Module 4: Guestbook Messages */}
       <section>
         <GuestbookSection
           toAuthorId={user.id}

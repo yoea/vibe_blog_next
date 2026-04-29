@@ -29,9 +29,13 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
   const [error, setError] = useState('')
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [summaryCooldown, setSummaryCooldown] = useState(false)
-  const [isAutoGenerating, setIsAutoGenerating] = useState(false)
+  const [tagGenerating, setTagGenerating] = useState(false)
+  const [tagCooldown, setTagCooldown] = useState(false)
+  const [aiAlternative, setAiAlternative] = useState<string[]>([])
+
   const [modelName, setModelName] = useState('')
   const lastSummaryTime = useRef(0)
+  const lastTagTime = useRef(0)
   const router = useRouter()
   const isEditing = !!initialData
 
@@ -137,21 +141,91 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
     }
   }, [canGenerateSummary, content, title])
 
+  // Helper: add a tag if not duplicate and under limit
+  const addTag = useCallback((name: string) => {
+    setTags((prev) => {
+      if (prev.length >= 7 || prev.includes(name)) return prev
+      return [...prev, name.slice(0, 20)]
+    })
+  }, [])
+
+  const handleGenerateTags = useCallback(async () => {
+    if (contentLength < SUMMARY_MIN_CONTENT_LENGTH) {
+      toast.warning(`正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`)
+      return
+    }
+
+    const now = Date.now()
+    if (now - lastTagTime.current < SUMMARY_COOLDOWN_MS) return
+    lastTagTime.current = now
+    setTagGenerating(true)
+    setTagCooldown(true)
+
+    try {
+      const existingNames = (suggestedTags ?? []).map((t) => t.name)
+      const res = await fetch('/api/generate-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, existingTags: existingNames }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error ?? '生成标签失败')
+        return
+      }
+
+      const highFreqNames = new Set((suggestedTags ?? []).map((t) => t.name))
+      const allAiTags: string[] = [...(data.recommended ?? []), ...(data.alternative ?? [])]
+
+      // Phase 1: auto-add tags matching existing high-frequency tags
+      const autoAdded = new Set<string>()
+      setTags((prev) => {
+        let next = [...prev]
+        for (const tag of allAiTags) {
+          if (next.length >= 7) break
+          if (highFreqNames.has(tag) && !next.includes(tag)) {
+            next.push(tag)
+            autoAdded.add(tag)
+          }
+        }
+        // Phase 2: fill remaining with recommended tags
+        for (const tag of data.recommended ?? []) {
+          if (next.length >= 7) break
+          if (!next.includes(tag) && !autoAdded.has(tag)) {
+            next.push(tag)
+            autoAdded.add(tag)
+          }
+        }
+        return next
+      })
+
+      // Build alternative list: all AI tags minus ones already added
+      const allAddedNow = new Set(autoAdded)
+      setTags((prev) => {
+        // prev already updated; use it to filter alternatives
+        return prev
+      })
+      // Collect alternatives: tags not auto-added and not in current tags
+      const alternatives = [...(data.recommended ?? []), ...(data.alternative ?? [])].filter(
+        (t) => !allAddedNow.has(t)
+      )
+      setAiAlternative(alternatives)
+
+      if (allAddedNow.size > 0) {
+        toast.success(`已添加 ${allAddedNow.size} 个标签`)
+      }
+    } catch {
+      toast.error('网络异常，请稍后重试')
+    } finally {
+      setTagGenerating(false)
+      setTimeout(() => setTagCooldown(false), SUMMARY_COOLDOWN_MS)
+    }
+  }, [contentLength, title, content, suggestedTags])
+
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
     if (!title.trim()) { toast.error('请输入文章标题'); return }
     if (!content.trim()) { toast.error('请输入正文内容'); return }
-
-    // Auto-generate excerpt if empty and content is sufficient
-    if (!excerpt.trim() && content.trim().length >= SUMMARY_MIN_CONTENT_LENGTH) {
-      setIsAutoGenerating(true)
-      toast.info('正在生成摘要...')
-      const summary = await handleGenerateSummary()
-      setIsAutoGenerating(false)
-      if (summary) {
-        toast.success('摘要已自动生成')
-      }
-    }
 
     const formData = new FormData(e.currentTarget)
     formData.set('title', title)
@@ -245,9 +319,36 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
         </div>
 
         <div className="space-y-2 shrink-0">
-          <label className="block text-sm font-medium">标签</label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium">标签</label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGenerateTags}
+                disabled={tagGenerating || tagCooldown || contentLength < SUMMARY_MIN_CONTENT_LENGTH}
+                className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-all ${
+                  tagGenerating
+                    ? 'bg-blue-50 text-blue-500 border-blue-200 dark:bg-blue-950 dark:border-blue-800 cursor-wait'
+                    : contentLength >= SUMMARY_MIN_CONTENT_LENGTH && !tagCooldown
+                      ? 'text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary cursor-pointer'
+                      : 'text-muted-foreground/50 cursor-not-allowed'
+                }`}
+                title={tagCooldown ? '冷却中，请稍后再试' : contentLength < SUMMARY_MIN_CONTENT_LENGTH ? '正文内容不足 100 字' : 'AI 推荐标签'}
+              >
+                {tagGenerating ? (
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                )}
+                {tagGenerating ? '生成中...' : 'AI 推荐标签'}
+              </button>
+            </div>
+          </div>
           <p className="text-xs text-muted-foreground">
             按 Enter 添加标签，最多 7 个
+            {modelName && (
+              <span className="ml-2 text-muted-foreground/70">由 <code className="font-mono">{modelName}</code> 驱动</span>
+            )}
             {suggestedTags && suggestedTags.length > 0 && (
               <span className="ml-2">
                 常用标签：
@@ -255,11 +356,7 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                   <button
                     key={tag.slug}
                     type="button"
-                    onClick={() => {
-                      if (tags.length < 7 && !tags.includes(tag.name)) {
-                        setTags([...tags, tag.name])
-                      }
-                    }}
+                    onClick={() => addTag(tag.name)}
                     disabled={tags.length >= 7}
                     className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
@@ -303,6 +400,25 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
               />
             )}
           </div>
+          {aiAlternative.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-muted-foreground shrink-0">备选：</span>
+              {aiAlternative.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => {
+                    addTag(tag)
+                    setAiAlternative((prev) => prev.filter((t) => t !== tag))
+                  }}
+                  disabled={tags.includes(tag) || tags.length >= 7}
+                  className="text-xs px-2 py-0.5 rounded border border-dashed text-muted-foreground hover:text-foreground hover:border-solid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <Separator />
@@ -314,7 +430,7 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
             <span className={`text-xs font-medium ${tab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <SubmitButton isEditing={isEditing || !!postId} isAutoGenerating={isAutoGenerating} />
+            <SubmitButton isEditing={isEditing || !!postId} />
             <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
             <label className="flex items-center gap-2 cursor-pointer">
               <span className="text-xs font-medium text-muted-foreground select-none">
@@ -414,13 +530,11 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
   )
 }
 
-function SubmitButton({ isEditing, isAutoGenerating }: { isEditing: boolean; isAutoGenerating: boolean }) {
+function SubmitButton({ isEditing }: { isEditing: boolean }) {
   const { pending } = useFormStatus()
-  const disabled = pending || isAutoGenerating
-  let label = pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')
-  if (isAutoGenerating) label = '生成摘要中...'
+  const label = pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')
   return (
-    <Button type="submit" disabled={disabled} size="sm">
+    <Button type="submit" disabled={pending} size="sm">
       {label}
     </Button>
   )

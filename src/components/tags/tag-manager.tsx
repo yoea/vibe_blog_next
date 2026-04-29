@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createTag, deleteTag } from '@/lib/actions/post-actions'
@@ -14,8 +14,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, ArrowUpDown, Hash, Calendar, User, TrendingUp } from 'lucide-react'
 import type { TagWithCreator } from '@/lib/db/queries'
+
+type SortKey = 'created_at' | 'post_count' | 'created_by' | 'name'
+
+const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ElementType }[] = [
+  { key: 'created_at', label: '创建时间', icon: Calendar },
+  { key: 'post_count', label: '引用次数', icon: TrendingUp },
+  { key: 'created_by', label: '创建人', icon: User },
+  { key: 'name', label: '名称', icon: Hash },
+]
 
 interface Props {
   initialTags: TagWithCreator[]
@@ -29,12 +38,30 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
   const [newTagName, setNewTagName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<TagWithCreator | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [sortBy, setSortBy] = useState<SortKey>('created_at')
   const router = useRouter()
 
-  // Sync state when tags are refreshed from server
   useEffect(() => {
     setTags(initialTags)
   }, [initialTags])
+
+  const sortedTags = useMemo(() => {
+    const copy = [...tags]
+    switch (sortBy) {
+      case 'created_at':
+        return copy.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      case 'post_count':
+        return copy.sort((a, b) => b.post_count - a.post_count)
+      case 'created_by':
+        return copy.sort((a, b) => (a.author_name ?? '').localeCompare(b.author_name ?? ''))
+      case 'name':
+        return copy.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+      default:
+        return copy
+    }
+  }, [tags, sortBy])
+
+  const totalPosts = useMemo(() => tags.reduce((sum, t) => sum + t.post_count, 0), [tags])
 
   const handleCreate = () => {
     const name = newTagName.trim()
@@ -89,17 +116,42 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
 
   return (
     <div className="space-y-4">
-      {currentUserId && (
-        <div className="flex justify-end">
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4" />
-            新建标签
-          </Button>
+      {/* Stats + controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span>{tags.length} 个标签</span>
+          <span className="text-border">|</span>
+          <span>共引用 {totalPosts} 次</span>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 border rounded-md p-0.5">
+            {SORT_OPTIONS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setSortBy(key)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                  sortBy === key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
+          </div>
+          {currentUserId && (
+            <Button size="sm" onClick={() => setShowCreate(true)}>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">新建标签</span>
+            </Button>
+          )}
+        </div>
+      </div>
 
+      {/* Tag list */}
       <div className="flex flex-wrap gap-3">
-        {tags.map((tag) => {
+        {sortedTags.map((tag) => {
           const isOwner = tag.created_by !== null && currentUserId === tag.created_by
           const canDelete = isOwner || isAdmin
           const creatorLabel = tag.author_name ?? tag.author_email ?? ''

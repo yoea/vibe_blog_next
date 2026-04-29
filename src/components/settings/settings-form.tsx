@@ -23,20 +23,28 @@ import { toast } from 'sonner'
 import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
-import { toggleMaintenanceMode } from '@/lib/actions/admin-actions'
+import { toggleMaintenanceMode, updateAIConfig } from '@/lib/actions/admin-actions'
 
 interface Props {
   user: User
   isAdmin?: boolean
   maintenanceMode?: boolean
+  aiBaseUrl?: string
+  aiApiKey?: string
+  aiModel?: string
 }
 
-export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
+export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initialAiBaseUrl, aiApiKey: initialAiApiKey, aiModel: initialAiModel }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [changingPassword, setChangingPassword] = useState(false)
   const [maintenanceLoading, setMaintenanceLoading] = useState(false)
+  const [aiSaving, setAiSaving] = useState(false)
+  const [aiBaseUrl, setAiBaseUrl] = useState(initialAiBaseUrl ?? '')
+  const [aiApiKey, setAiApiKey] = useState(initialAiApiKey ?? '')
+  const [aiModel, setAiModel] = useState(initialAiModel ?? '')
+  const [showAiKey, setShowAiKey] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -72,6 +80,18 @@ export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
       toast.error(error)
     } else {
       toast.success(maintenanceMode ? '维护模式已关闭' : '维护模式已开启')
+      router.refresh()
+    }
+  }
+
+  const handleSaveAIConfig = async () => {
+    setAiSaving(true)
+    const { error } = await updateAIConfig(aiBaseUrl, aiApiKey, aiModel)
+    setAiSaving(false)
+    if (error) {
+      toast.error(error)
+    } else {
+      toast.success('AI 配置已保存')
       router.refresh()
     }
   }
@@ -233,6 +253,36 @@ export function SettingsForm({ user, isAdmin, maintenanceMode }: Props) {
                 ? '维护模式已开启，所有访客将被重定向到维护页面'
                 : '开启后所有访客将看到站点维护页面，管理员可通过 /maintenance 访问管理'}
             </p>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">AI 摘要配置</h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ai-base-url">API 地址</Label>
+                  <Input id="ai-base-url" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)} placeholder="https://api.openai.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ai-model">模型名称</Label>
+                  <Input id="ai-model" value={aiModel} onChange={(e) => setAiModel(e.target.value)} placeholder="gpt-4o-mini" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ai-api-key">API 密钥</Label>
+                <div className="relative">
+                  <Input id="ai-api-key" type={showAiKey ? 'text' : 'password'} value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} placeholder="sk-..." />
+                  <button type="button" onClick={() => setShowAiKey(!showAiKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <Button variant="outline" onClick={handleSaveAIConfig} disabled={aiSaving} className="w-full sm:w-auto">
+                {aiSaving ? '保存中...' : '保存 AI 配置'}
+              </Button>
+              <p className="text-xs text-muted-foreground">配置文章摘要生成使用的 AI 服务，修改后立即生效。</p>
+            </div>
           </CardContent>
         </Card>
       )}

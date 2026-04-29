@@ -165,7 +165,7 @@ function CompactPostRow({ post, linkRef, onDelete }: { post: PostData; linkRef?:
           </span>
           {post.tags && post.tags.length > 0 && (
             <div className="hidden sm:flex items-center gap-1 shrink-0">
-              {post.tags.map((tag) => (
+              {post.tags.slice(0, 3).map((tag) => (
                 <Link
                   key={tag.slug}
                   href={`/tags/${encodeURIComponent(tag.slug)}`}
@@ -175,6 +175,9 @@ function CompactPostRow({ post, linkRef, onDelete }: { post: PostData; linkRef?:
                   {tag.name}
                 </Link>
               ))}
+              {post.tags.length > 3 && (
+                <span className="text-[10px] text-muted-foreground">...</span>
+              )}
             </div>
           )}
         </div>

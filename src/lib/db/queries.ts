@@ -721,3 +721,44 @@ export async function getAllTagsWithCounts(): Promise<TagWithCreator[]> {
     }
   })
 }
+
+export async function getTagsByUser(userId: string): Promise<TagWithCreator[]> {
+  const supabase = await createClient()
+  const { data: tags } = await supabase
+    .from('tags')
+    .select('id, name, slug, color, created_at, created_by')
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false })
+  if (!tags?.length) return []
+
+  const tagIds = tags.map((t) => t.id)
+  const { data: postTags } = await supabase
+    .from('post_tags')
+    .select('tag_id')
+    .in('tag_id', tagIds)
+
+  const countMap = new Map<string, number>()
+  for (const pt of postTags ?? []) {
+    countMap.set(pt.tag_id, (countMap.get(pt.tag_id) ?? 0) + 1)
+  }
+
+  const { data: userSetting } = await supabase
+    .from('user_settings')
+    .select('display_name')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  const authorName = userSetting?.display_name ?? null
+
+  return tags.map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    color: t.color ?? '#3B82F6',
+    created_at: t.created_at,
+    created_by: t.created_by,
+    author_name: authorName,
+    author_email: null,
+    post_count: countMap.get(t.id) ?? 0,
+  }))
+}

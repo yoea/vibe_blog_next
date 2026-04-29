@@ -15,13 +15,20 @@ export default async function SettingsPage() {
   const isAdmin = await isSuperAdmin()
 
   let maintenanceMode = false
+  let aiBaseUrl = ''
+  let aiApiKey = ''
+  let aiModel = ''
   if (isAdmin) {
     const { data } = await supabase
       .from('site_config')
-      .select('value')
-      .eq('key', 'maintenance_mode')
-      .maybeSingle()
-    maintenanceMode = data?.value === 'true'
+      .select('key, value')
+      .in('key', ['maintenance_mode', 'ai_base_url', 'ai_api_key', 'ai_model'])
+
+    const config = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]))
+    maintenanceMode = config.maintenance_mode === 'true'
+    aiBaseUrl = config.ai_base_url ?? ''
+    aiApiKey = config.ai_api_key ?? ''
+    aiModel = config.ai_model ?? ''
   }
 
   return (
@@ -31,6 +38,9 @@ export default async function SettingsPage() {
         user={user}
         isAdmin={isAdmin}
         maintenanceMode={maintenanceMode}
+        aiBaseUrl={aiBaseUrl}
+        aiApiKey={aiApiKey}
+        aiModel={aiModel}
       />
     </div>
   )
