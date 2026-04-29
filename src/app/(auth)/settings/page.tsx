@@ -18,10 +18,10 @@ export default async function SettingsPage() {
   if (isAdmin) {
     const { data } = await supabase
       .from('site_config')
-      .select('maintenance_mode')
-      .eq('id', 1)
+      .select('value')
+      .eq('key', 'maintenance_mode')
       .maybeSingle()
-    maintenanceMode = data?.maintenance_mode ?? false
+    maintenanceMode = data?.value === 'true'
   }
 
   return (

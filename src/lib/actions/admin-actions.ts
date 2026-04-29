@@ -54,16 +54,16 @@ export async function toggleMaintenanceMode(): Promise<ActionResult> {
   // 读取当前状态并取反
   const { data: config } = await admin
     .from('site_config')
-    .select('maintenance_mode')
-    .eq('id', 1)
+    .select('value')
+    .eq('key', 'maintenance_mode')
     .single()
 
-  const newMode = !config?.maintenance_mode
+  const newValue = config?.value === 'true' ? 'false' : 'true'
 
   const { error } = await admin
     .from('site_config')
-    .update({ maintenance_mode: newMode, updated_at: new Date().toISOString() })
-    .eq('id', 1)
+    .update({ value: newValue, updated_at: new Date().toISOString() })
+    .eq('key', 'maintenance_mode')
 
   if (error) return { error: error.message }
 

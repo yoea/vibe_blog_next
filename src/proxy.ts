@@ -16,11 +16,11 @@ export async function proxy(request: NextRequest) {
       const supabase = await createMiddlewareClient(request)
       const { data } = await supabase
         .from('site_config')
-        .select('maintenance_mode')
-        .eq('id', 1)
+        .select('value')
+        .eq('key', 'maintenance_mode')
         .maybeSingle()
 
-      if (data?.maintenance_mode) {
+      if (data?.value === 'true') {
         return NextResponse.rewrite(new URL('/maintenance', request.url))
       }
     } catch {

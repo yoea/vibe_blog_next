@@ -436,12 +436,13 @@ create policy "avatars_owner_delete"
   );
 
 -- ============================================
--- Site Config（全局设置，单行）
+-- Site Config（全局配置，key-value 模式）
 -- ============================================
 
 create table if not exists site_config (
-  id int primary key default 1 check (id = 1),
-  maintenance_mode boolean not null default false,
+  key text primary key,
+  value text not null,
+  description text,
   updated_at timestamptz default now(),
   updated_by uuid references auth.users(id) on delete set null
 );
@@ -452,7 +453,10 @@ create policy "site_config_select"
   on site_config for select
   using (true);
 
-insert into site_config (id) values (1) on conflict (id) do nothing;
+-- 初始配置项
+insert into site_config (key, value, description) values
+  ('maintenance_mode', 'false', '维护模式开关')
+on conflict (key) do nothing;
 
 create trigger update_site_config_updated_at
   before update on site_config

@@ -70,10 +70,10 @@ export default async function RootLayout({
   const supabase = await createClient()
   const { data: siteConfig } = await supabase
     .from('site_config')
-    .select('maintenance_mode')
-    .eq('id', 1)
+    .select('value')
+    .eq('key', 'maintenance_mode')
     .maybeSingle()
-  const isMaintenance = siteConfig?.maintenance_mode ?? false
+  const isMaintenance = siteConfig?.value === 'true'
 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} antialiased${initialDark ? ' dark' : ''}`} suppressHydrationWarning>
