@@ -70,6 +70,7 @@ create table if not exists user_settings (
   display_name varchar(100),
   avatar_url text,
   github_id text,
+  is_admin boolean default false,
   is_deleted boolean default false,
   deleted_at timestamptz,
   created_at timestamptz default now(),

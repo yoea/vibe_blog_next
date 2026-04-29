@@ -1,44 +1,31 @@
 import { createClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 
-const SUPER_ADMIN_EMAILS = () =>
-  (process.env.SUPER_ADMIN_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-
 export async function isSuperAdmin(user?: User | null): Promise<boolean> {
-  const emails = SUPER_ADMIN_EMAILS()
-  if (emails.length === 0) return false
-
   if (!user) {
     const supabase = await createClient()
     const { data } = await supabase.auth.getUser()
     user = data.user
   }
 
-  if (!user?.email) return false
-  return emails.includes(user.email.toLowerCase())
+  if (!user) return false
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('user_settings')
+    .select('is_admin')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  return data?.is_admin ?? false
 }
 
 export async function getSuperAdminUserIds(): Promise<string[]> {
-  const emails = SUPER_ADMIN_EMAILS()
-  if (emails.length === 0) return []
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('user_settings')
+    .select('user_id')
+    .eq('is_admin', true)
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) return []
-
-  const { createClient } = await import('@supabase/supabase-js')
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    serviceKey,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
-
-  const { data: users, error } = await admin.auth.admin.listUsers()
-  if (error || !users?.users) return []
-
-  return users.users
-    .filter((u) => u.email && emails.includes(u.email.toLowerCase()))
-    .map((u) => u.id)
+  return data?.map((r) => r.user_id) ?? []
 }

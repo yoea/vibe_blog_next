@@ -95,4 +95,3 @@ npx tsc --noEmit   # TypeScript 类型检查
 | `OPENAI_API_KEY` | 否 | 服务端 (摘要生成) |
 | `OPENAI_BASE_URL` | 否 | 服务端 |
 | `OPENAI_MODEL` | 否 | 服务端 (默认: gpt-4o-mini) |
-| `SUPER_ADMIN_EMAILS` | 否 | 服务端 (超级管理员，多个用逗号分隔) |
