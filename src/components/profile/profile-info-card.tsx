@@ -19,6 +19,7 @@ import { updateUserSettings } from '@/lib/actions/settings-actions'
 import { resetPasswordForEmail } from '@/lib/actions/auth-actions'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { toast } from 'sonner'
+import { GitHubIcon } from '@/components/icons/github-icon'
 
 interface Props {
   userId: string
@@ -28,9 +29,10 @@ interface Props {
   emailVerified: boolean
   createdAt: string | null
   isAdmin: boolean
+  isGitHubConnected: boolean
 }
 
-export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin }: Props) {
+export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin, isGitHubConnected }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(displayName)
   const [saving, setSaving] = useState(false)
@@ -175,13 +177,26 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
           <p className="text-xs text-muted-foreground text-center">支持 JPG、PNG，最大 20MB</p>
         </div>
 
-        {/* Row 2, Col 2: Reset password */}
-        <div className="mt-4 sm:mt-0">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowResetConfirm(true)}>
-            <KeyRound className="h-3.5 w-3.5" />
-            重置密码
-          </Button>
-          <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱</p>
+        {/* Row 2, Col 2: Reset password + GitHub status */}
+        <div className="mt-4 sm:mt-0 flex flex-col gap-3">
+          <div>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowResetConfirm(true)}>
+              <KeyRound className="h-3.5 w-3.5" />
+              重置密码
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">重置方式将发送至注册邮箱</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <GitHubIcon className="h-4 w-4" />
+            {isGitHubConnected ? (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600">
+                <Check className="h-3.5 w-3.5" />
+                已绑定 GitHub
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">未绑定 GitHub</span>
+            )}
+          </div>
         </div>
       </div>
 

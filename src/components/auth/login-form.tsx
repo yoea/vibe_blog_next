@@ -4,6 +4,7 @@ import { useFormStatus } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
+import { GitHubIcon } from '@/components/icons/github-icon'
 
 export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [error, setError] = useState('')
@@ -57,6 +58,39 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <SubmitButton />
+
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">或</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={async () => {
+          const supabase = createClient()
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
+          const callbackUrl = `${siteUrl}/api/auth/callback`
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+              redirectTo: redirectTo
+                ? `${callbackUrl}?redirect_to=${encodeURIComponent(redirectTo)}`
+                : callbackUrl,
+            },
+          })
+          if (error) {
+            toast.error(error.message)
+          }
+        }}
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#24292f] text-white rounded-md text-sm font-medium hover:bg-[#24292f]/90 transition-colors cursor-pointer"
+      >
+        <GitHubIcon className="h-4 w-4" />
+        使用 GitHub 登录
+      </button>
     </form>
   )
 }

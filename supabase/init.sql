@@ -69,11 +69,16 @@ create table if not exists user_settings (
   user_id uuid references auth.users(id) on delete cascade unique not null,
   display_name varchar(100),
   avatar_url text,
+  github_id text,
   is_deleted boolean default false,
   deleted_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- GitHub ID 唯一索引（允许多个 NULL）
+create unique index if not exists idx_user_settings_github_id
+  on user_settings(github_id) where github_id is not null;
 
 -- ============================================
 -- Auto-save drafts (one draft per post)
@@ -367,8 +372,27 @@ create trigger update_post_drafts_updated_at
 create function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.user_settings (user_id, display_name)
-  values (new.id, split_part(new.email, '@', 1));
+  insert into public.user_settings (user_id, display_name, avatar_url, github_id)
+  values (
+    new.id,
+    coalesce(
+      new.raw_user_meta_data ->> 'full_name',
+      new.raw_user_meta_data ->> 'name',
+      new.raw_user_meta_data ->> 'preferred_username',
+      split_part(new.email, '@', 1)
+    ),
+    coalesce(
+      new.raw_user_meta_data ->> 'avatar_url',
+      new.raw_user_meta_data ->> 'picture'
+    ),
+    case
+      when new.raw_user_meta_data ->> 'provider' = 'github'
+        or new.raw_user_meta_data ->> 'iss' like '%github%'
+      then new.raw_user_meta_data ->> 'sub'
+      else null
+    end
+  )
+  on conflict (user_id) do nothing;
   return new;
 end;
 $$ language plpgsql security definer;
