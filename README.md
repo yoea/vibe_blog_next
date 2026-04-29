@@ -2,6 +2,11 @@
 
 基于 Next.js 16 + Supabase 的个人博客系统。
 
+## 仓库地址
+
+- **GitHub**: https://github.com/yoea/vibe_blog_next
+- **Gitee**: https://git.ewing.top/yoea/vibe_blog_next
+
 ## 功能特性
 
 - 用户注册/登录/密码重置
