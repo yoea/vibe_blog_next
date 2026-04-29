@@ -30,6 +30,8 @@ const SECRET = process.env.WEBHOOK_SECRET || null
 
 const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
 let currentDeploy = null // 追踪当前部署进程
+let deployTimer = null   // 防抖计时器（合并 GitHub/Gitee 双重 tag 推送）
+const DEBOUNCE_MS = 5000 // 防抖等待时间：5 秒
 
 // 获取本地时间字符串 (UTC+8)
 function localTime() {
@@ -128,7 +130,6 @@ const server = http.createServer((req, res) => {
       }
     } catch { /* 非 JSON 体，跳过 */ }
 
-    const cancelledPrevious = !!currentDeploy
     const isTagPush = ref.startsWith('refs/tags/')
 
     res.writeHead(202, { 'Content-Type': 'application/json' })
@@ -137,7 +138,7 @@ const server = http.createServer((req, res) => {
       timestamp: new Date().toISOString(),
       deploy: {
         triggered: isTagPush,
-        cancelled_previous: isTagPush ? cancelledPrevious : false,
+        debounced: isTagPush,
         ...eventInfo,
       },
     }))
@@ -149,7 +150,17 @@ const server = http.createServer((req, res) => {
       return
     }
 
-    runDeploy()
+    // Tag 推送：防抖合并（GitHub/Gitee 双重 webhook）
+    if (deployTimer) {
+      console.log(`[${localTime()}] 重置部署防抖计时器（${DEBOUNCE_MS / 1000}s）`)
+      clearTimeout(deployTimer)
+    }
+    deployTimer = setTimeout(() => {
+      deployTimer = null
+      console.log(`[${localTime()}] 防抖结束，开始部署...`)
+      runDeploy()
+    }, DEBOUNCE_MS)
+    console.log(`[${localTime()}] Tag 推送已接收，${DEBOUNCE_MS / 1000}s 后开始部署（等待防抖）`)
   })
 })
 
@@ -158,12 +169,11 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`Webhook 接收器运行在 http://0.0.0.0:${PORT}（${status}）`)
 })
 
-// PM2 停止时清理部署进程组
-process.on('SIGINT', () => {
+// PM2 停止时清理部署进程组和防抖计时器
+function cleanup() {
+  if (deployTimer) { clearTimeout(deployTimer); deployTimer = null }
   if (currentDeploy) { try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {} }
   process.exit(0)
-})
-process.on('SIGTERM', () => {
-  if (currentDeploy) { try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {} }
-  process.exit(0)
-})
+}
+process.on('SIGINT', cleanup)
+process.on('SIGTERM', cleanup)
