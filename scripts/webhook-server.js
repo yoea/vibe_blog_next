@@ -31,14 +31,19 @@ const SECRET = process.env.WEBHOOK_SECRET || null
 const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
 let currentDeploy = null // 追踪当前部署进程
 
+// 获取本地时间字符串 (UTC+8)
+function localTime() {
+  return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
+}
+
 function pullOnly() {
-  console.log(`[${new Date().toISOString()}] 执行 git pull 拉取最新代码...`)
+  console.log(`[${localTime()}] 执行 git pull 拉取最新代码...`)
   const proc = spawn('git', ['pull'], { cwd: DEPLOY_DIR, stdio: 'inherit' })
   proc.on('exit', (code) => {
     if (code === 0) {
-      console.log(`[${new Date().toISOString()}] git pull 完成，代码已更新至最新`)
+      console.log(`[${localTime()}] git pull 完成，代码已更新至最新`)
     } else {
-      console.error(`[${new Date().toISOString()}] git pull 失败 (exit ${code})`)
+      console.error(`[${localTime()}] git pull 失败 (exit ${code})`)
     }
   })
 }
@@ -55,7 +60,7 @@ function restartSelf() {
 function runDeploy() {
   // 如果已有部署在跑，杀掉整个进程组（包括所有子进程）
   if (currentDeploy) {
-    console.log(`[${new Date().toISOString()}] 终止上一次部署...`)
+    console.log(`[${localTime()}] 终止上一次部署...`)
     try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {}
     currentDeploy = null
   }
@@ -71,12 +76,12 @@ function runDeploy() {
   proc.on('exit', (code, signal) => {
     currentDeploy = null
     if (code === 0) {
-      console.log(`[${new Date().toISOString()}] 部署成功，重启 webhook 进程加载最新代码...`)
+      console.log(`[${localTime()}] 部署成功，重启 webhook 进程加载最新代码...`)
       restartSelf()
     } else if (signal === 'SIGTERM') {
-      console.log(`[${new Date().toISOString()}] 部署被终止（新请求覆盖）`)
+      console.log(`[${localTime()}] 部署被终止（新请求覆盖）`)
     } else {
-      console.error(`[${new Date().toISOString()}] 部署失败 (exit ${code})`)
+      console.error(`[${localTime()}] 部署失败 (exit ${code})`)
     }
   })
 
@@ -105,7 +110,7 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    console.log(`[${new Date().toISOString()}] 收到 webhook 请求`)
+    console.log(`[${localTime()}] 收到 webhook 请求`)
 
     // 解析推送事件信息（GitHub / Gitee 格式兼容）
     let eventInfo = {}
@@ -139,7 +144,7 @@ const server = http.createServer((req, res) => {
 
     // 分支推送只拉取代码，不发版不部署
     if (!isTagPush) {
-      console.log(`[${new Date().toISOString()}] 分支推送，仅拉取代码（ref=${ref}）`)
+      console.log(`[${localTime()}] 分支推送，仅拉取代码（ref=${ref}）`)
       pullOnly()
       return
     }
