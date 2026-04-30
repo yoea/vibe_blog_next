@@ -56,7 +56,10 @@ TAR_LISTING=$(tar tzf "$ARTIFACT_PATH" 2>/dev/null) || {
   exit 1
 }
 if ! echo "$TAR_LISTING" | grep -q "server.js"; then
-  echo "❌ 构建产物缺少 server.js"
+  ENTRY_COUNT=$(echo "$TAR_LISTING" | wc -l)
+  echo "❌ 构建产物缺少 server.js (共 ${ENTRY_COUNT} 个条目)"
+  echo "  前 10 个条目:"
+  echo "$TAR_LISTING" | head -10 | sed 's/^/    /'
   exit 1
 fi
 echo "✓ 构建产物校验通过"

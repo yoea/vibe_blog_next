@@ -153,6 +153,21 @@ try {
 
 const size = statSync(artifactPath).size
 const sizeMB = (size / 1024 / 1024).toFixed(1)
+if (size < 1048576) {
+  console.error(`❌ 打包产物过小 (${size} bytes)，可能打包异常`)
+  try { unlinkSync(artifactPath) } catch {}
+  process.exit(1)
+}
+
+// 验证 tarball 内容
+const tarListing = runSilent(`tar tzf "${ARTIFACT_NAME}"`)
+if (!tarListing.split('\n').some(l => l.endsWith('/server.js') || l === 'server.js')) {
+  console.error('❌ 打包产物中缺少 server.js，tar 内容:')
+  console.error(tarListing.split('\n').slice(0, 20).join('\n'))
+  try { unlinkSync(artifactPath) } catch {}
+  process.exit(1)
+}
+
 console.log(`  ✓ 打包完成: ${ARTIFACT_NAME} (${sizeMB} MB)`)
 
 // =========================
@@ -161,8 +176,16 @@ console.log(`  ✓ 打包完成: ${ARTIFACT_NAME} (${sizeMB} MB)`)
 console.log('上传到服务器...')
 try {
   run(`scp ${sshOpts} "${ARTIFACT_NAME}" ${sshTarget}:/tmp/`)
+
+  // 校验远端文件大小，检测传输损坏
+  const remoteSize = runSilent(`ssh ${sshOpts} ${sshTarget} "stat -c%s /tmp/${ARTIFACT_NAME} 2>/dev/null || stat -f%z /tmp/${ARTIFACT_NAME} 2>/dev/null"`)
+  if (String(remoteSize) !== String(size)) {
+    console.error(`❌ 传输校验失败: 本地 ${size} bytes, 远端 ${remoteSize} bytes`)
+    try { unlinkSync(artifactPath) } catch {}
+    process.exit(1)
+  }
   console.log('  ✓ 上传完成')
-} catch {
+} catch (e) {
   console.error('❌ 上传失败')
   try { unlinkSync(artifactPath) } catch {}
   process.exit(1)
