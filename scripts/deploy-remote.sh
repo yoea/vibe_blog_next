@@ -12,8 +12,8 @@ LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
 APP_PORT=$(grep -oP 'PORT:\s*\K\d+' "$PROJECT_DIR/scripts/ecosystem.config.js" || echo "8083")
 HEALTH_URL="http://127.0.0.1:${APP_PORT}"
-HEALTH_RETRIES=3
-HEALTH_DELAY=5
+HEALTH_RETRIES=6
+HEALTH_DELAY=10
 
 # 清理函数
 MAINT_PID=""
