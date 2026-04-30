@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { createGuestbookMessage, deleteGuestbookMessage, getMoreGuestbookMessages } from '@/lib/actions/guestbook-actions'
 import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
@@ -33,16 +34,6 @@ export function GuestbookSection({
   const searchParams = useSearchParams()
   const [highlightId, setHighlightId] = useState<string | null>(searchParams.get('hl'))
 
-  useEffect(() => {
-    if (!highlightId) return
-    const el = document.getElementById(`guestbook-msg-${highlightId}`)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-    const timer = setTimeout(() => setHighlightId(null), 2000)
-    return () => clearTimeout(timer)
-  }, [highlightId])
-
   const {
     items: messages,
     total,
@@ -70,6 +61,19 @@ export function GuestbookSection({
     },
     loadedAllText: '已加载全部留言',
   })
+
+  useEffect(() => {
+    if (!highlightId) return
+    const el = document.getElementById(`guestbook-msg-${highlightId}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const timer = setTimeout(() => setHighlightId(null), 2500)
+      return () => clearTimeout(timer)
+    } else {
+      toast.error('该留言已删除')
+      setHighlightId(null)
+    }
+  }, [highlightId, messages.length])
 
   useEffect(() => {
     const onHashChange = () => {
@@ -111,7 +115,7 @@ export function GuestbookSection({
             <div
               key={message.id}
               id={`guestbook-msg-${message.id}`}
-              className={`border-b border-gray-100 last:border-0 transition-colors duration-300 ${highlightId === message.id ? 'bg-yellow-100 dark:bg-yellow-900/30 rounded-md -mx-2 px-2' : ''}`}
+              className={`border-b border-gray-100 last:border-0 transition-all duration-500 ${highlightId === message.id ? 'highlight-flash -mx-3 px-3 rounded-lg' : ''}`}
             >
               <ThreadedItemRenderer
                 item={message}
