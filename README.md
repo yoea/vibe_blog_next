@@ -71,7 +71,7 @@ npm run dev
 
 ```
 用户 → nginx (443) → PM2 (8083) → .next/standalone/server.js
-本地构建 → scp 上传 → ssh 触发 deploy-remote.sh → PM2 重启
+本地构建 → scp 上传 → ssh 触发 deploy-remote.sh → PM2 重建（delete + start）
 Git Push → Webhook (8084) → 仅拉取代码（不构建不部署）
 ```
 
