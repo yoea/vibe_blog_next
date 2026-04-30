@@ -16,6 +16,7 @@ export function GuestbookSection({
   title = '留言板',
   icon,
   showForm = true,
+  messagesPublic = true,
 }: {
   toAuthorId: string
   currentUserId: string | null
@@ -24,6 +25,8 @@ export function GuestbookSection({
   title?: string
   icon?: ReactNode
   showForm?: boolean
+  /** true=所有人可见(默认)；false=仅留言者本人和作者可见 */
+  messagesPublic?: boolean
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -68,6 +71,11 @@ export function GuestbookSection({
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
+  const isOwner = currentUserId === toAuthorId
+  const visibleMessages = messagesPublic
+    ? messages
+    : messages.filter((m) => isOwner || currentUserId === m.author_id)
+
   return (
     <div id="guestbook" className="space-y-4">
       <div className="flex items-center gap-2">
@@ -84,9 +92,9 @@ export function GuestbookSection({
         />
       )}
 
-      {messages.length > 0 && (
+      {visibleMessages.length > 0 && (
         <div className="space-y-3">
-          {messages.map((message) => (
+          {visibleMessages.map((message) => (
             <div key={message.id} className="border-b border-gray-100 last:border-0">
               <ThreadedItemRenderer
                 item={message}

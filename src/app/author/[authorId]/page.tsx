@@ -130,6 +130,7 @@ export default async function AuthorPage({ params }: PageProps) {
         currentUserId={currentUser?.id ?? null}
         initialMessages={guestbookMessages ?? []}
         initialTotal={guestbookTopLevel ?? 0}
+        messagesPublic={false}
       />
     </div>
   )
