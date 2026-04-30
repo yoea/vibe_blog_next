@@ -138,9 +138,15 @@ export function NotificationBell({ initialUnreadCount }: Props) {
               <div className="py-8 text-center text-sm text-muted-foreground">暂无通知</div>
             ) : (
               notifications.map(n => (
-                <div
+                <Link
                   key={n.id}
-                  className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : 'opacity-60'}`}
+                  href={getNotificationLink(n)}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('[data-action]')) return
+                    handleView(n.id, !n.is_read)
+                    setOpen(false)
+                  }}
+                  className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : 'opacity-60'}`}
                 >
                   <Avatar
                     avatarUrl={n.actor_avatar_url}
@@ -161,23 +167,24 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                       <span className="text-[11px] text-muted-foreground/60" suppressHydrationWarning>{formatTimeAgo(n.created_at)}</span>
                       <div className="flex-1" />
                       <button
-                        onClick={() => handleDismiss(n.id, !n.is_read)}
+                        data-action
+                        onClick={(e) => { e.stopPropagation(); handleDismiss(n.id, !n.is_read) }}
                         className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         title="忽略"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
-                      <Link
-                        href={getNotificationLink(n)}
-                        onClick={() => { handleView(n.id, !n.is_read); setOpen(false) }}
-                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      <span
+                        data-action
+                        onClick={(e) => { e.stopPropagation(); handleView(n.id, !n.is_read); setOpen(false) }}
+                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                         title="去查看"
                       >
                         <Eye className="h-3.5 w-3.5" />
-                      </Link>
+                      </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
             )}
 
