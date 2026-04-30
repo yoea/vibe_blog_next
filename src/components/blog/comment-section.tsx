@@ -66,7 +66,7 @@ export function CommentSection({
   }, [focusSignal])
 
   return (
-    <div className="space-y-4">
+    <div id="comments" className="space-y-4">
       <CommentForm
         postId={postId}
         onSubmit={handleSubmit}

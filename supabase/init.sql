@@ -503,3 +503,51 @@ do $$ begin
     for each row execute function update_updated_at_column();
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================
+-- Notifications（消息通知）
+-- ============================================
+
+create table if not exists notifications (
+  id uuid default gen_random_uuid() primary key,
+  recipient_id uuid references auth.users(id) on delete cascade not null,
+  type text not null check (type in ('post_like', 'post_comment', 'guestbook_message')),
+  actor_id uuid references auth.users(id) on delete set null,
+  actor_name text,
+  actor_avatar_url text,
+  post_id uuid references posts(id) on delete cascade,
+  post_slug text,
+  post_title text,
+  guestbook_author_id uuid references auth.users(id) on delete cascade,
+  is_read boolean not null default false,
+  is_dismissed boolean not null default false,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_notifications_recipient
+  on notifications(recipient_id, is_dismissed, created_at desc);
+create index if not exists idx_notifications_unread
+  on notifications(recipient_id)
+  where not is_read and not is_dismissed;
+
+alter table notifications enable row level security;
+
+do $$ begin
+  create policy "notifications_select_own" on notifications for select using (auth.uid() = recipient_id);
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "notifications_update_own" on notifications for update using (auth.uid() = recipient_id);
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "notifications_delete_own" on notifications for delete using (auth.uid() = recipient_id);
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "notifications_insert_authenticated" on notifications for insert with check (auth.uid() is not null);
+exception when duplicate_object then null;
+end $$;

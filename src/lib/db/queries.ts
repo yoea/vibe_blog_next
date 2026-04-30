@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor, Tag } from '@/lib/db/types'
+import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor, Tag, Notification } from '@/lib/db/types'
 import { headers } from 'next/headers'
 
 // ── Helper: attach tags to an array of posts ──
@@ -785,4 +785,43 @@ export async function getTagsByUser(userId: string): Promise<TagWithCreator[]> {
     author_email: null,
     post_count: countMap.get(t.id) ?? 0,
   }))
+}
+
+export async function getNotificationsForUser(userId: string, options?: { page?: number; pageSize?: number }) {
+  const supabase = await createClient()
+  const { page = 1, pageSize = 20 } = options ?? {}
+
+  const { count: total } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', userId)
+    .eq('is_dismissed', false)
+
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('recipient_id', userId)
+    .eq('is_dismissed', false)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) return { data: [], total: 0, error: error.message }
+  return { data: (data ?? []) as Notification[], total: total ?? 0, error: null }
+}
+
+export async function getUnreadNotificationCount(userId: string) {
+  const supabase = await createClient()
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', userId)
+    .eq('is_read', false)
+    .eq('is_dismissed', false)
+
+  if (error) return { count: 0, error: error.message }
+  return { count: count ?? 0, error: null }
 }

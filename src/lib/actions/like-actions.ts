@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
+import { insertNotification } from '@/lib/actions/notification-actions'
 import type { ActionResult } from '@/lib/db/types'
 
 function getClientIp(): string {
@@ -21,7 +22,7 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
 
   const { data: post } = await supabase
     .from('posts')
-    .select('slug')
+    .select('slug, title, author_id')
     .eq('id', postId)
     .single()
 
@@ -40,6 +41,25 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
     } else {
       const { error } = await supabase.from('post_likes').insert({ post_id: postId, user_id: user.id })
       if (error) return { error: error.message }
+
+      // 插入通知（跳过自己给自己点赞）
+      if (post && post.author_id !== user.id) {
+        const { data: settings } = await supabase
+          .from('user_settings')
+          .select('display_name, avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        insertNotification({
+          recipientId: post.author_id,
+          type: 'post_like',
+          actorId: user.id,
+          actorName: settings?.display_name ?? user.email ?? '匿名用户',
+          actorAvatarUrl: settings?.avatar_url,
+          postId,
+          postSlug: post.slug,
+          postTitle: post.title,
+        })
+      }
     }
   } else {
     // Unauthenticated: track by IP
@@ -62,6 +82,18 @@ export async function toggleLike(postId: string, clientIp?: string): Promise<Act
     } else {
       const { error } = await supabase.from('post_likes').insert({ post_id: postId, ip })
       if (error) return { error: error.message }
+
+      // 匿名点赞也插入通知
+      if (post) {
+        insertNotification({
+          recipientId: post.author_id,
+          type: 'post_like',
+          actorName: '匿名用户',
+          postId,
+          postSlug: post.slug,
+          postTitle: post.title,
+        })
+      }
     }
   }
 

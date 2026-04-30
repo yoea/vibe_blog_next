@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Shield, Settings, Mail, Calendar, Edit3, Check, Camera, Trash2, Unlink } from 'lucide-react'
+import { Shield, Mail, Calendar, Edit3, Check, Camera, Trash2, Unlink } from 'lucide-react'
 import type { UserIdentity } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +20,7 @@ import { updateUserSettings } from '@/lib/actions/settings-actions'
 import { formatDaysAgo } from '@/lib/utils/time'
 import { toast } from 'sonner'
 import { GitHubIcon } from '@/components/icons/github-icon'
+import { NotificationBell } from '@/components/profile/notification-bell'
 
 interface Props {
   userId: string
@@ -34,9 +34,10 @@ interface Props {
   isGitHubConnected: boolean
   githubUsername: string | null
   githubIdentity: UserIdentity | null
+  initialUnreadCount: number
 }
 
-export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin, isGitHubUser, isGitHubConnected, githubUsername, githubIdentity }: Props) {
+export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVerified, createdAt, isAdmin, isGitHubUser, isGitHubConnected, githubUsername, githubIdentity, initialUnreadCount }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(displayName)
   const [saving, setSaving] = useState(false)
@@ -173,12 +174,7 @@ export function ProfileInfoCard({ userId, displayName, avatarUrl, email, emailVe
                 </div>
               )}
             </div>
-            <Link href="/settings" className="shrink-0">
-              <Button variant="ghost" size="sm" className="text-xs gap-1">
-                <Settings className="h-3.5 w-3.5" />
-                设置
-              </Button>
-            </Link>
+            <NotificationBell initialUnreadCount={initialUnreadCount} />
           </div>
 
           {/* Detail rows */}

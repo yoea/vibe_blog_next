@@ -86,3 +86,21 @@ export interface PostEditorData extends Post {
   draft_excerpt?: string | null
   draft_updated_at?: string | null
 }
+
+export type NotificationType = 'post_like' | 'post_comment' | 'guestbook_message'
+
+export interface Notification {
+  id: string
+  recipient_id: string
+  type: NotificationType
+  actor_id: string | null
+  actor_name: string | null
+  actor_avatar_url: string | null
+  post_id: string | null
+  post_slug: string | null
+  post_title: string | null
+  guestbook_author_id: string | null
+  is_read: boolean
+  is_dismissed: boolean
+  created_at: string
+}

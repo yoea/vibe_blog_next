@@ -56,6 +56,14 @@ export default async function ProfilePage() {
 
   const isAdmin = await isSuperAdmin()
 
+  // Fetch unread notification count
+  const { count: unreadCount } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', user.id)
+    .eq('is_read', false)
+    .eq('is_dismissed', false)
+
   // 检查 GitHub 绑定状态
   const githubIdentity = user.identities?.find(i => i.provider === 'github') ?? null
   const isGitHubConnected = !!githubIdentity || !!userSettings?.github_id
@@ -82,6 +90,7 @@ export default async function ProfilePage() {
           isGitHubConnected={isGitHubConnected}
           githubUsername={githubUsername}
           githubIdentity={githubIdentity}
+          initialUnreadCount={unreadCount ?? 0}
         />
       </section>
 

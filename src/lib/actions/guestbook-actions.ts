@@ -5,6 +5,7 @@ import { getGuestbookMessages } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
+import { insertNotification } from '@/lib/actions/notification-actions'
 import type { ActionResult } from '@/lib/db/types'
 
 export async function createGuestbookMessage(
@@ -68,6 +69,29 @@ export async function createGuestbookMessage(
   if (error) return { error: error.message }
 
   revalidatePath(`/author/${toAuthorId}`)
+
+  // 插入通知（跳过自己给自己留言）
+  if (!user || toAuthorId !== user.id) {
+    let actorName: string | null = guestName ?? '匿名游客'
+    let actorAvatarUrl: string | null = null
+    if (user) {
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('display_name, avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      actorName = settings?.display_name ?? user.email ?? '匿名用户'
+      actorAvatarUrl = settings?.avatar_url ?? null
+    }
+    insertNotification({
+      recipientId: toAuthorId,
+      type: 'guestbook_message',
+      actorId: user?.id ?? null,
+      actorName,
+      actorAvatarUrl,
+      guestbookAuthorId: toAuthorId,
+    })
+  }
 
   if (user) {
     const { data: settings } = await supabase

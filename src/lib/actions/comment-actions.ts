@@ -5,6 +5,7 @@ import { getCommentsForPost } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { checkIpRateLimit } from '@/lib/utils/rate-limit'
+import { insertNotification } from '@/lib/actions/notification-actions'
 import type { ActionResult } from '@/lib/db/types'
 
 async function getPostSlug(supabase: any, postId: string): Promise<string | null> {
@@ -70,6 +71,37 @@ export async function createComment(
     .single()
 
   if (error) return { error: error.message }
+
+  // 插入通知
+  const { data: post } = await supabase
+    .from('posts')
+    .select('author_id, title, slug')
+    .eq('id', postId)
+    .single()
+
+  if (post && (!user || post.author_id !== user.id)) {
+    let actorName: string | null = guestName ?? '匿名游客'
+    let actorAvatarUrl: string | null = null
+    if (user) {
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('display_name, avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      actorName = settings?.display_name ?? user.email ?? '匿名用户'
+      actorAvatarUrl = settings?.avatar_url ?? null
+    }
+    insertNotification({
+      recipientId: post.author_id,
+      type: 'post_comment',
+      actorId: user?.id ?? null,
+      actorName,
+      actorAvatarUrl,
+      postId,
+      postSlug: post.slug,
+      postTitle: post.title,
+    })
+  }
 
   if (user) {
     const { data: settings } = await supabase
