@@ -108,6 +108,7 @@ if [ -f .env.local ]; then
 fi
 if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
   pm2 delete "$PM2_NAME" 2>/dev/null || true
+  echo "删除旧的 $PM2_NAME 服务"
 fi
 pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
 pm2 save
@@ -124,7 +125,7 @@ echo "✓ webhook 服务已重建"
 # =========================
 # 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
-echo "正在访问 /api/healthz 进行网站健康检查..."
+echo "访问 $HEALTH_URL 进行健康检查..."
 sleep "$HEALTH_DELAY"
 
 HEALTH_OK=false
