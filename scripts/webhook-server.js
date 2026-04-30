@@ -8,6 +8,7 @@ const path = require('path')
 const { spawn } = require('child_process')
 
 const PORT = parseInt(process.env.WEBHOOK_PORT || '8084', 10)
+const MAX_BODY = 1024 * 1024 // 1 MB
 
 function loadEnvFile() {
   try {
@@ -28,7 +29,7 @@ function loadEnvFile() {
 loadEnvFile()
 
 const SECRET = process.env.WEBHOOK_SECRET || null
-const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
+const DEPLOY_DIR = process.env.SERVER_DIR || '/home/ewing/craft/vibe_blog_next'
 
 // 获取本地时间字符串 (UTC+8)
 function localTime() {
@@ -38,6 +39,9 @@ function localTime() {
 function pullOnly() {
   console.log(`[${localTime()}] 执行 git pull 拉取最新代码...`)
   const proc = spawn('bash', ['-c', 'git fetch origin && git reset --hard origin/main'], { cwd: DEPLOY_DIR, stdio: 'inherit' })
+  proc.on('error', (err) => {
+    console.error(`[${localTime()}] git pull spawn 失败: ${err.message}`)
+  })
   proc.on('exit', (code) => {
     if (code === 0) {
       console.log(`[${localTime()}] git pull 完成，代码已更新至最新`)
@@ -54,8 +58,23 @@ const server = http.createServer((req, res) => {
   }
 
   let body = ''
-  req.on('data', (chunk) => { body += chunk })
+  let size = 0
+  let destroyed = false
+  req.on('data', (chunk) => {
+    size += chunk.length
+    if (size > MAX_BODY) {
+      destroyed = true
+      req.destroy()
+      return
+    }
+    body += chunk
+  })
   req.on('end', () => {
+    if (destroyed) {
+      res.writeHead(413)
+      return res.end('Payload Too Large')
+    }
+
     if (SECRET) {
       const sig = req.headers['x-hub-signature-256']
       if (!sig) {
@@ -63,7 +82,9 @@ const server = http.createServer((req, res) => {
         return res.end('Forbidden: missing signature')
       }
       const expected = 'sha256=' + crypto.createHmac('sha256', SECRET).update(body).digest('hex')
-      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+      const sigBuf = Buffer.from(sig)
+      const expectedBuf = Buffer.from(expected)
+      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
         res.writeHead(403)
         return res.end('Forbidden: invalid signature')
       }

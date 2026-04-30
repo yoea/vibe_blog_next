@@ -16,10 +16,12 @@ HEALTH_DELAY=5
 
 # 清理函数
 MAINT_PID=""
+DEPLOY_TMP=""
 cleanup() {
   [ -n "$MAINT_PID" ] && kill "$MAINT_PID" 2>/dev/null || true
-  rm -rf /tmp/deploy-vibe-*
+  [ -n "$DEPLOY_TMP" ] && rm -rf "$DEPLOY_TMP"
   rm -f "$ARTIFACT_PATH"
+  rm -f "$LOCK_FILE"
 }
 
 # =========================
@@ -48,12 +50,11 @@ if [ "$FILE_SIZE" -lt 1048576 ]; then
   exit 1
 fi
 
-if ! tar tzf "$ARTIFACT_PATH" >/dev/null 2>&1; then
+TAR_LISTING=$(tar tzf "$ARTIFACT_PATH" 2>/dev/null) || {
   echo "❌ 构建产物损坏，无法解压"
   exit 1
-fi
-
-if ! tar tzf "$ARTIFACT_PATH" | grep "server.js" >/dev/null; then
+}
+if ! echo "$TAR_LISTING" | grep -q "server.js"; then
   echo "❌ 构建产物缺少 server.js"
   exit 1
 fi
@@ -73,18 +74,18 @@ fi
 echo "✓ 解压完成"
 
 # =========================
-# 4. 启动维护页
+# 4. 停止当前应用
+# =========================
+pm2 stop "$PM2_NAME" 2>/dev/null || true
+echo "✓ 已停止当前应用"
+
+# =========================
+# 5. 启动维护页
 # =========================
 cd "$PROJECT_DIR"
 node scripts/maintenance-server.js &
 MAINT_PID=$!
 echo "✓ 维护页已启动 (PID: $MAINT_PID)"
-
-# =========================
-# 5. 停止当前应用
-# =========================
-pm2 stop "$PM2_NAME" 2>/dev/null || true
-echo "✓ 已停止当前应用"
 
 # =========================
 # 6. 原子替换
@@ -126,7 +127,14 @@ for i in $(seq 1 $HEALTH_RETRIES); do
 done
 
 if [ "$HEALTH_OK" = false ]; then
-  echo "❌ 健康检查失败"
+  echo "❌ 健康检查失败，回滚到旧版本..."
+  if [ -d "$PROJECT_DIR/.next/standalone.old" ]; then
+    rm -rf "$PROJECT_DIR/.next/standalone"
+    mv "$PROJECT_DIR/.next/standalone.old" "$PROJECT_DIR/.next/standalone"
+    pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
+    pm2 save
+    echo "  ✓ 已回滚到旧版本"
+  fi
   pm2 logs "$PM2_NAME" --lines 20
   exit 1
 fi
