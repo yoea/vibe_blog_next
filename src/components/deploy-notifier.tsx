@@ -8,48 +8,40 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { BadgeCheck, GitCommitHorizontal, Clock, Calendar, ExternalLink } from 'lucide-react'
+import { BadgeCheck, GitCommitHorizontal, Calendar, ExternalLink } from 'lucide-react'
 
-interface DeployInfo {
-  duration: number
-  timestamp: number
+const STORAGE_KEY = 'last_known_commit'
+
+interface Props {
+  enabled: boolean
 }
 
-function formatDuration(seconds: number): string {
-  const min = Math.floor(seconds / 60)
-  const sec = seconds % 60
-  if (min === 0) return `${sec} 秒`
-  return `${min} 分 ${sec} 秒`
-}
-
-export function DeployNotifier() {
+export function DeployNotifier({ enabled }: Props) {
   const [open, setOpen] = useState(false)
-  const [deployInfo, setDeployInfo] = useState<DeployInfo | null>(null)
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('deploy_info')
-      if (!raw) return
-      const info: DeployInfo = JSON.parse(raw)
-      // 仅 5 分钟内的部署信息有效
-      if (Date.now() - info.timestamp > 5 * 60 * 1000) {
-        localStorage.removeItem('deploy_info')
-        return
-      }
-      setDeployInfo(info)
-      setOpen(true)
-      localStorage.removeItem('deploy_info')
-    } catch {}
-  }, [])
-
-  if (!deployInfo) return null
-
-  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
   const buildCommit = process.env.NEXT_PUBLIC_BUILD_COMMIT
+  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
   const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME
   const formattedBuildTime = buildTime
     ? new Date(buildTime).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
     : null
+
+  useEffect(() => {
+    if (!enabled || !buildCommit) return
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored === null) {
+        // First visit — store current commit, don't show dialog
+        localStorage.setItem(STORAGE_KEY, buildCommit)
+        return
+      }
+      if (stored !== buildCommit) {
+        // Version changed — show dialog and update stored commit
+        setOpen(true)
+        localStorage.setItem(STORAGE_KEY, buildCommit)
+      }
+    } catch {}
+  }, [enabled, buildCommit])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -98,13 +90,6 @@ export function DeployNotifier() {
               <span className="text-xs">{formattedBuildTime}</span>
             </div>
           )}
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              部署耗时
-            </span>
-            <span className="font-mono text-xs">{formatDuration(deployInfo.duration)}</span>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

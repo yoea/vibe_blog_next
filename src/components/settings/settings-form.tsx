@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
-import { toggleMaintenanceMode, updateAIConfig, updateICPConfig } from '@/lib/actions/admin-actions'
+import { toggleMaintenanceMode, updateAIConfig, updateICPConfig, toggleDeployNotify } from '@/lib/actions/admin-actions'
 
 interface Props {
   user: User
@@ -34,9 +34,10 @@ interface Props {
   aiModel?: string
   icpNumber?: string
   icpVisible?: boolean
+  showDeployNotify?: boolean
 }
 
-export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initialAiBaseUrl, aiApiKey: initialAiApiKey, aiModel: initialAiModel, icpNumber: initialIcpNumber, icpVisible: initialIcpVisible }: Props) {
+export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initialAiBaseUrl, aiApiKey: initialAiApiKey, aiModel: initialAiModel, icpNumber: initialIcpNumber, icpVisible: initialIcpVisible, showDeployNotify: initialShowDeployNotify }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -51,6 +52,8 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const [icpNumber, setIcpNumber] = useState(initialIcpNumber ?? '')
   const [icpVisible, setIcpVisible] = useState(initialIcpVisible ?? false)
   const [icpSaving, setIcpSaving] = useState(false)
+  const [showDeployNotify, setShowDeployNotify] = useState(initialShowDeployNotify ?? false)
+  const [deployNotifyLoading, setDeployNotifyLoading] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -286,6 +289,43 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                 <Wrench className="h-3.5 w-3.5 mr-1.5" />
                 {maintenanceLoading ? '处理中...' : maintenanceMode ? '关闭' : '开启'}
               </Button>
+            </div>
+
+            <Separator />
+
+            {/* 部署通知 */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h4 className="text-sm font-medium">部署通知弹窗</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {showDeployNotify
+                    ? '已开启，站点更新后用户首次访问将看到部署成功弹窗'
+                    : '开启后，站点更新后用户首次访问将看到版本、构建时间等部署信息'}
+                </p>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={showDeployNotify}
+                  onChange={async (e) => {
+                    const checked = e.target.checked
+                    setShowDeployNotify(checked)
+                    setDeployNotifyLoading(true)
+                    const { error } = await toggleDeployNotify()
+                    setDeployNotifyLoading(false)
+                    if (error) {
+                      setShowDeployNotify(!checked)
+                      toast.error(error)
+                    } else {
+                      toast.success(checked ? '部署通知已开启' : '部署通知已关闭')
+                      router.refresh()
+                    }
+                  }}
+                  disabled={deployNotifyLoading}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="text-xs text-muted-foreground">{showDeployNotify ? '已开启' : '已关闭'}</span>
+              </label>
             </div>
 
             <Separator />

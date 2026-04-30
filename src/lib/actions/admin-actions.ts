@@ -88,6 +88,30 @@ export async function updateAIConfig(baseUrl: string, apiKey: string, model: str
   return {}
 }
 
+export async function toggleDeployNotify(): Promise<ActionResult> {
+  if (!await isSuperAdmin()) return { error: '无权限' }
+
+  const supabase = await createClient()
+
+  const { data: config } = await supabase
+    .from('site_config')
+    .select('value')
+    .eq('key', 'show_deploy_notify')
+    .single()
+
+  const newValue = config?.value === 'true' ? 'false' : 'true'
+
+  const { error } = await supabase
+    .from('site_config')
+    .update({ value: newValue, updated_at: new Date().toISOString() })
+    .eq('key', 'show_deploy_notify')
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/settings')
+  return {}
+}
+
 export async function updateICPConfig(number: string, visible: boolean): Promise<ActionResult> {
   if (!await isSuperAdmin()) return { error: '无权限' }
 

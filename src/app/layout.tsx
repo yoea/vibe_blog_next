@@ -71,7 +71,7 @@ export default async function RootLayout({
   const { data: configRows } = await supabase
     .from('site_config')
     .select('key, value')
-    .in('key', ['maintenance_mode', 'icp_number', 'icp_visible'])
+    .in('key', ['maintenance_mode', 'icp_number', 'icp_visible', 'show_deploy_notify'])
 
   const config = Object.fromEntries((configRows ?? []).map((r) => [r.key, r.value]))
   const isMaintenance = config.maintenance_mode === 'true'
@@ -85,7 +85,7 @@ export default async function RootLayout({
           <CommandPalette />
           <Header siteTitle={siteTitle} isMaintenance={isMaintenance} />
           <LoginToast />
-          <DeployNotifier />
+          <DeployNotifier enabled={config.show_deploy_notify === 'true'} />
           <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col">{children}</main>
           <Footer isMaintenance={isMaintenance} icpNumber={icpNumber} />
           <Toaster position="top-center" richColors closeButton />

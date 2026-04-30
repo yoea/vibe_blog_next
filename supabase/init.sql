@@ -493,7 +493,8 @@ insert into site_config (key, value, description) values
   ('ai_api_key', '', 'AI API 密钥'),
   ('ai_model', 'gpt-4o-mini', 'AI 模型名称'),
   ('icp_number', '', 'ICP备案号'),
-  ('icp_visible', 'false', '是否显示ICP备案号')
+  ('icp_visible', 'false', '是否显示ICP备案号'),
+  ('show_deploy_notify', 'false', '每次更新后显示部署信息弹窗')
 on conflict (key) do nothing;
 
 do $$ begin

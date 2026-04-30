@@ -20,11 +20,12 @@ export default async function SettingsPage() {
   let aiModel = ''
   let icpNumber = ''
   let icpVisible = false
+  let showDeployNotify = false
   if (isAdmin) {
     const { data } = await supabase
       .from('site_config')
       .select('key, value')
-      .in('key', ['maintenance_mode', 'ai_base_url', 'ai_api_key', 'ai_model', 'icp_number', 'icp_visible'])
+      .in('key', ['maintenance_mode', 'ai_base_url', 'ai_api_key', 'ai_model', 'icp_number', 'icp_visible', 'show_deploy_notify'])
 
     const config = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]))
     maintenanceMode = config.maintenance_mode === 'true'
@@ -33,6 +34,7 @@ export default async function SettingsPage() {
     aiModel = config.ai_model ?? ''
     icpNumber = config.icp_number ?? ''
     icpVisible = config.icp_visible === 'true'
+    showDeployNotify = config.show_deploy_notify === 'true'
   }
 
   return (
@@ -47,6 +49,7 @@ export default async function SettingsPage() {
         aiModel={aiModel}
         icpNumber={icpNumber}
         icpVisible={icpVisible}
+        showDeployNotify={showDeployNotify}
       />
     </div>
   )
