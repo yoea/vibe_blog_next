@@ -108,15 +108,16 @@ if [ -f .env.local ]; then
 fi
 if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
   pm2 delete "$PM2_NAME" 2>/dev/null || true
-  echo "删除旧的 $PM2_NAME 服务"
+  echo "删除并重建旧的 $PM2_NAME 服务"
 fi
 pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
 pm2 save
-echo "✓ 新版本已启动"
+echo "✓ $PM2_NAME 服务重建成功，新版本已启动"
 
 # 重建 webhook 服务（确保脚本变更加载）
 if pm2 describe webhook >/dev/null 2>&1; then
   pm2 delete webhook 2>/dev/null || true
+  echo "删除并重建旧的 webhook 服务"
 fi
 pm2 start scripts/ecosystem.config.js --only webhook
 pm2 save
