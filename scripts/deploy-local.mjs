@@ -141,6 +141,7 @@ if (!skipBuild) {
   process.env.NEXT_PUBLIC_BUILD_COMMIT_COUNT = buildCommitCount
   process.env.NEXT_PUBLIC_BUILD_CONTRIBUTORS = buildContributors
   process.env.NEXT_PUBLIC_BUILD_VERSION = buildVersion
+  process.env.NEXT_PUBLIC_BUILD_HOST = process.env.COMPUTERNAME || 'unknown'
 
   // 清理旧构建
   if (existsSync('.next')) rmSync('.next', { recursive: true, force: true })

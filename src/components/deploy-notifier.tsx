@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { BadgeCheck, GitCommitHorizontal, Calendar, ExternalLink } from 'lucide-react'
+import { BadgeCheck, GitCommitHorizontal, Calendar, ExternalLink, Hash, Users, Server } from 'lucide-react'
 
 const STORAGE_KEY = 'last_known_commit'
 
@@ -22,6 +22,9 @@ export function DeployNotifier({ enabled }: Props) {
   const buildCommit = process.env.NEXT_PUBLIC_BUILD_COMMIT
   const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
   const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME
+  const buildCommitCount = process.env.NEXT_PUBLIC_BUILD_COMMIT_COUNT
+  const buildContributors = process.env.NEXT_PUBLIC_BUILD_CONTRIBUTORS
+  const buildHost = process.env.NEXT_PUBLIC_BUILD_HOST
   const formattedBuildTime = buildTime
     ? new Date(buildTime).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
     : null
@@ -88,6 +91,33 @@ export function DeployNotifier({ enabled }: Props) {
                 构建时间
               </span>
               <span className="text-xs">{formattedBuildTime}</span>
+            </div>
+          )}
+          {buildCommitCount && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Hash className="h-4 w-4" />
+                提交次数
+              </span>
+              <span className="font-mono text-xs">{buildCommitCount}</span>
+            </div>
+          )}
+          {buildContributors && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                贡献者
+              </span>
+              <span className="text-xs">{buildContributors}</span>
+            </div>
+          )}
+          {buildHost && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Server className="h-4 w-4" />
+                构建主机
+              </span>
+              <span className="font-mono text-xs">{buildHost}</span>
             </div>
           )}
         </div>
