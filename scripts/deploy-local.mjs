@@ -231,10 +231,35 @@ console.log('上传到服务器...')
 try {
   run(`scp ${sshOpts} "${ARTIFACT_NAME}" ${sshTarget}:/tmp/`)
 
-  // 校验远端文件大小，检测传输损坏
-  const remoteSize = runSilent(`ssh ${sshOpts} ${sshTarget} "stat -c%s /tmp/${ARTIFACT_NAME} 2>/dev/null || stat -f%z /tmp/${ARTIFACT_NAME} 2>/dev/null"`)
-  if (String(remoteSize) !== String(size)) {
-    console.error(`❌ 传输校验失败: 本地 ${size} bytes, 远端 ${remoteSize} bytes`)
+  // 校验远端文件完整性（sync + 大小比对 + tar 可解压检测，重试最多 3 次）
+  let verifyOk = false
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    // sync 强制文件系统刷盘
+    runSilent(`ssh ${sshOpts} ${sshTarget} "sync"`)
+    if (attempt > 1) {
+      console.log(`  ⏳ 第 ${attempt} 次重试校验...`)
+      execSync('sleep 2', { stdio: 'ignore' })
+    }
+
+    const remoteSize = runSilent(`ssh ${sshOpts} ${sshTarget} "stat -c%s /tmp/${ARTIFACT_NAME} 2>/dev/null || stat -f%z /tmp/${ARTIFACT_NAME} 2>/dev/null"`)
+    if (String(remoteSize) !== String(size)) {
+      console.error(`  ⚠ 传输校验失败: 本地 ${size} bytes, 远端 ${remoteSize} bytes`)
+      continue
+    }
+
+    // 检测远端 tar 是否可正常列出内容
+    try {
+      runSilent(`ssh ${sshOpts} ${sshTarget} "tar tzf /tmp/${ARTIFACT_NAME} >/dev/null 2>&1 && echo ok"`)
+      verifyOk = true
+      break
+    } catch {
+      console.error('  ⚠ 远端 tar 解压校验失败')
+      continue
+    }
+  }
+
+  if (!verifyOk) {
+    console.error('❌ 传输校验失败（3 次重试后），部署包可能不完整')
     try { unlinkSync(artifactPath) } catch {}
     process.exit(1)
   }
