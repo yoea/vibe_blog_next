@@ -9,3 +9,9 @@ public/
 
 # 构建产物（已有 .gitignore 排除，双重保险）
 .next/
+node_modules/
+dist/
+build/
+*.log
+*.lock
+.git/

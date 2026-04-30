@@ -64,12 +64,11 @@ npx tsc --noEmit   # TypeScript 类型检查
 - **双远程推送**: `git push` 同时推送到 GitHub 和 Gitee，两个远程都会触发 webhook
 - **自动部署**: 本地构建 + 上传方式（`npm run deploy:local`），详见 `doc/deploy.md`
 - **deploy-local.mjs 流程**: 本地 `next build` → 组装 standalone → tar 打包 → scp 上传 → ssh 触发 `deploy-remote.sh`
-- **deploy-remote.sh 流程**: flock 加锁 → 校验产物 → 启动维护页 → 停 PM2 → 原子替换文件 → 启动 → 健康检查 → 清理
+- **deploy-remote.sh 流程**: flock 加锁 → 校验产物 → 原子替换文件 → pm2 重启 → 健康检查 → 清理
 - **代码同步**: webhook-server.js 监听分支推送，自动 `git pull` 保持服务端代码同步（不触发构建）
 - **PM2 双进程** (`ecosystem.config.js`):
   - `vibe_blog_next` — Next.js standalone server（端口 8083），max 512MB 自动重启
   - `webhook` — webhook 接收服务（端口 8084），分支推送自动拉取代码
-- **维护模式**: 部署期间 `maintenance-server.js` 接管端口 8083 显示维护页
 - **crontab @reboot**: 配置了 `pm2 resurrect` 开机自启
 
 ### 数据库 (supabase/init.sql)
