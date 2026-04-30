@@ -124,19 +124,14 @@ echo "  端口检查: $(ss -tlnp 2>/dev/null | grep ":${APP_PORT} " || netstat -
 
 HEALTH_OK=false
 for i in $(seq 1 $HEALTH_RETRIES); do
-  CURL_ERR=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$HEALTH_URL" 2>&1) && CODE="$CURL_ERR" || CODE="000"
+  CODE="000"
+  CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$HEALTH_URL" || true)
   if [ "$CODE" = "200" ]; then
     echo "  ✓ 服务正常 (HTTP $CODE)"
     HEALTH_OK=true
     break
   fi
-  # 首次失败时输出 curl 详细错误便于排查
-  if [ "$i" -eq 1 ]; then
-    CURL_VERBOSE=$(curl -s -o /dev/null --connect-timeout 5 --max-time 10 "$HEALTH_URL" 2>&1) || true
-    echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: HTTP $CODE | $CURL_VERBOSE"
-  else
-    echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: HTTP $CODE"
-  fi
+  echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: HTTP $CODE"
   [ "$i" -lt "$HEALTH_RETRIES" ] && sleep "$HEALTH_DELAY"
 done
 
