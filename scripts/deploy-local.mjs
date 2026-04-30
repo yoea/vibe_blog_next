@@ -100,6 +100,7 @@ if (!skipBuild) {
   run('npx next build', {
     env: {
       ...process.env,
+      NODE_ENV: 'production',
       NODE_OPTIONS: '--max-old-space-size=768',
     },
   })
@@ -123,6 +124,12 @@ if (!skipBuild) {
   writeFileSync(join(standaloneDir, '.deploy-meta'), meta)
 
   console.log('  ✓ 构建完成')
+
+  if (!existsSync('.next/standalone/server.js')) {
+    console.error('❌ next build 完成但 .next/standalone/server.js 不存在')
+    console.error('   请检查 NODE_ENV 是否为 production，或 next.config.ts 中 output: standalone 是否生效')
+    process.exit(1)
+  }
 } else {
   console.log('跳过构建 (--skip-build)')
   if (!existsSync('.next/standalone/server.js')) {
