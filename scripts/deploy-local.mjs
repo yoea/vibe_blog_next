@@ -34,7 +34,7 @@ function run(cmd, opts = {}) {
 }
 
 function runSilent(cmd) {
-  return execSync(cmd, { encoding: 'utf-8' }).trim()
+  return execSync(cmd, { encoding: 'utf-8' }).trim().replaceAll('\r', '')
 }
 
 console.log('=== 本地部署 ===')
