@@ -115,7 +115,7 @@ export function NotificationBell({ initialUnreadCount }: Props) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[420px] max-h-[80vh] flex flex-col">
+        <DialogContent className="sm:max-w-[420px] max-h-[85vh] sm:max-h-[70vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between pr-10">
               <span>通知</span>
@@ -131,77 +131,94 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto -mx-6 px-6 space-y-1">
+          {initialLoaded && total > 0 && (
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground -mt-2">
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-500 font-medium">
+                  未读 {unreadCount}
+                </span>
+              )}
+              <span>共 {total} 条</span>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-y-auto -mx-6 px-6 space-y-1 scrollbar-thin">
             {!initialLoaded || loading && notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
             ) : notifications.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">暂无通知</div>
             ) : (
-              notifications.map(n => (
-                <Link
-                  key={n.id}
-                  href={getNotificationLink(n)}
-                  onClick={(e) => {
-                    if ((e.target as HTMLElement).closest('[data-action]')) return
-                    handleView(n.id, !n.is_read)
-                    setOpen(false)
-                  }}
-                  className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : 'opacity-60'}`}
-                >
-                  <Avatar
-                    avatarUrl={n.actor_avatar_url}
-                    displayName={n.actor_name ?? '匿名用户'}
-                    userId={n.actor_id ?? 'guest'}
-                    size="xs"
-                    className="mt-0.5 shrink-0"
-                  />
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="text-sm">
-                      <span className="font-medium">{n.actor_name ?? '匿名用户'}</span>
-                      <span className="text-muted-foreground ml-1">{getNotificationText(n.type, n.post_title)}</span>
+              <>
+                {notifications.map(n => (
+                  <Link
+                    key={n.id}
+                    href={getNotificationLink(n)}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('[data-action]')) return
+                      handleView(n.id, !n.is_read)
+                      setOpen(false)
+                    }}
+                    className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : 'opacity-60'}`}
+                  >
+                    <Avatar
+                      avatarUrl={n.actor_avatar_url}
+                      displayName={n.actor_name ?? '匿名用户'}
+                      userId={n.actor_id ?? 'guest'}
+                      size="xs"
+                      className="mt-0.5 shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="text-sm">
+                        <span className="font-medium">{n.actor_name ?? '匿名用户'}</span>
+                        <span className="text-muted-foreground ml-1">{getNotificationText(n.type, n.post_title)}</span>
+                      </div>
+                      {n.post_title && (
+                        <p className="text-xs text-muted-foreground truncate">{n.post_title}</p>
+                      )}
+                      {n.type === 'guestbook_message' && n.guestbook_message_content && (
+                        <p className="text-xs text-muted-foreground truncate">{n.guestbook_message_content}</p>
+                      )}
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span className="text-[11px] text-muted-foreground/60" suppressHydrationWarning>{formatTimeAgo(n.created_at)}</span>
+                        <div className="flex-1" />
+                        <button
+                          data-action
+                          onClick={(e) => { e.stopPropagation(); handleDismiss(n.id, !n.is_read) }}
+                          className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="忽略"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                        <span
+                          data-action
+                          onClick={(e) => { e.stopPropagation(); handleView(n.id, !n.is_read); setOpen(false) }}
+                          className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                          title="去查看"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
                     </div>
-                    {n.post_title && (
-                      <p className="text-xs text-muted-foreground truncate">{n.post_title}</p>
-                    )}
-                    {n.type === 'guestbook_message' && n.guestbook_message_content && (
-                      <p className="text-xs text-muted-foreground truncate">{n.guestbook_message_content}</p>
-                    )}
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <span className="text-[11px] text-muted-foreground/60" suppressHydrationWarning>{formatTimeAgo(n.created_at)}</span>
-                      <div className="flex-1" />
-                      <button
-                        data-action
-                        onClick={(e) => { e.stopPropagation(); handleDismiss(n.id, !n.is_read) }}
-                        className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="忽略"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                      <span
-                        data-action
-                        onClick={(e) => { e.stopPropagation(); handleView(n.id, !n.is_read); setOpen(false) }}
-                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                        title="去查看"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            )}
+                  </Link>
+                ))}
 
-            {hasMore && (
-              <div className="flex justify-center py-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => loadNotifications(page + 1)}
-                  disabled={loading}
-                >
-                  {loading ? '加载中...' : '加载更多'}
-                </Button>
-              </div>
+                {hasMore ? (
+                  <div className="flex justify-center py-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => loadNotifications(page + 1)}
+                      disabled={loading}
+                    >
+                      {loading ? '加载中...' : '加载更多'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="py-3 text-center text-[11px] text-muted-foreground/50">
+                    已显示全部 {total} 条通知
+                  </div>
+                )}
+              </>
             )}
           </div>
         </DialogContent>

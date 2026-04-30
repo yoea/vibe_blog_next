@@ -53,7 +53,7 @@ export async function getNotifications(page: number): Promise<ActionResult & { d
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
 
-  const result = await getNotificationsForUser(user.id, { page, pageSize: 20 })
+  const result = await getNotificationsForUser(user.id, { page, pageSize: 5 })
   if (result.error) return { error: result.error }
   return { data: result.data, total: result.total }
 }
