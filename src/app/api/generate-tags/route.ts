@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 
 async function getAIConfig() {
   const supabase = await createClient()
@@ -80,16 +81,21 @@ ${tagList}
 
     const data = await response.json()
     const raw = data.choices?.[0]?.message?.content?.trim() ?? ''
+    logger.debug('AI 返回原始内容:', raw)
 
     // Parse JSON response (strip markdown code block if present)
     const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+    logger.debug('解析 JSON:', jsonStr)
+
     let recommended: string[] = []
     let alternative: string[] = []
     try {
       const parsed = JSON.parse(jsonStr)
       recommended = (parsed.recommended ?? []).map((t: string) => t.trim()).filter(Boolean).slice(0, 4)
       alternative = (parsed.alternative ?? []).map((t: string) => t.trim()).filter(Boolean).slice(0, 6)
-    } catch {
+      logger.debug('解析结果:', { recommended, alternative })
+    } catch (e) {
+      logger.error('JSON 解析失败:', e, '原始内容:', jsonStr)
       return NextResponse.json(
         { error: 'AI 返回格式异常，请重试' },
         { status: 502 }
