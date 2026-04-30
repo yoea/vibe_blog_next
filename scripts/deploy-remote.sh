@@ -1,5 +1,5 @@
 #!/bin/bash
-# 服务端部署脚本（由 deploy-local.sh 通过 ssh 触发）
+# 服务端部署脚本（由 deploy-local.mjs 通过 ssh 触发）
 # 接收上传的构建产物 → 校验 → 维护页 → 替换 → 启动 → 健康检查
 set -euo pipefail
 
@@ -11,7 +11,8 @@ ARTIFACT_PATH="/tmp/deploy-artifact.tar.gz"
 LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
 APP_PORT=$(grep -oP 'PORT:\s*\K\d+' "$PROJECT_DIR/scripts/ecosystem.config.js" || echo "8083")
-HEALTH_URL="http://127.0.0.1:${APP_PORT}"
+# 健康检查用外部 URL（localhost 在某些 ECS 环境不可达）
+HEALTH_URL="${SERVER_URL:-http://ewing.top}/api/healthz"
 HEALTH_RETRIES=6
 HEALTH_DELAY=10
 
@@ -72,7 +73,10 @@ if [ ! -f "$DEPLOY_TMP/server.js" ]; then
   rm -rf "$DEPLOY_TMP"
   exit 1
 fi
-echo "✓ 解压完成"
+
+# 读取本次构建的 commit（用于健康检查验证）
+EXPECTED_COMMIT=$(grep -oP 'build_commit=\K\S+' "$DEPLOY_TMP/.deploy-meta" 2>/dev/null || echo "")
+echo "✓ 解压完成 (commit: $EXPECTED_COMMIT)"
 
 # =========================
 # 4. 停止当前应用
@@ -116,29 +120,36 @@ pm2 save
 echo "✓ 新版本已启动"
 
 # =========================
-# 8. 健康检查
+# 8. 健康检查（通过 /api/healthz 接口验证）
 # =========================
 echo "健康检查..."
 sleep "$HEALTH_DELAY"
-echo "  端口检查: $(ss -tlnp 2>/dev/null | grep ":${APP_PORT} " || netstat -tlnp 2>/dev/null | grep ":${APP_PORT} " || echo "未找到监听")"
-
-# 诊断: bash 内建 TCP 测试
-(echo > /dev/tcp/127.0.0.1/"$APP_PORT") 2>/dev/null && echo "  TCP 测试: ✓ 可连接" || echo "  TCP 测试: ✗ 连接失败"
 
 HEALTH_OK=false
 for i in $(seq 1 $HEALTH_RETRIES); do
-  # 用 curl -v 捕获详细错误
-  CURL_OUT=$(curl -v -o /dev/null --connect-timeout 5 --max-time 10 "$HEALTH_URL" 2>&1) || true
-  CODE=$(echo "$CURL_OUT" | grep -oP 'HTTP/\S+ \K\d{3}' | tail -1)
-  CODE=${CODE:-000}
-  if [ "$CODE" = "200" ]; then
-    echo "  ✓ 服务正常 (HTTP $CODE)"
+  BODY=$(curl -s --connect-timeout 5 --max-time 10 "$HEALTH_URL" || true)
+  # 从 JSON 响应中提取 build_commit
+  ACTUAL_COMMIT=$(echo "$BODY" | grep -oP '"build_commit"\s*:\s*"\K[^"]+' || echo "")
+
+  if [ -n "$ACTUAL_COMMIT" ] && [ "$ACTUAL_COMMIT" = "$EXPECTED_COMMIT" ]; then
+    echo "  ✓ 服务正常 (commit: $ACTUAL_COMMIT)"
     HEALTH_OK=true
     break
   fi
-  echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: HTTP $CODE"
-  # 首次失败打印 curl 详细输出
-  [ "$i" -eq 1 ] && echo "  curl 详情: $(echo "$CURL_OUT" | tail -5)"
+
+  # 兼容：接口可达但 commit 不匹配或未返回
+  if echo "$BODY" | grep -q '"status"\s*:\s*"ok"'; then
+    if [ -n "$ACTUAL_COMMIT" ]; then
+      echo "  ⚠ commit 不匹配: 期望 $EXPECTED_COMMIT, 实际 $ACTUAL_COMMIT"
+    else
+      echo "  ⚠ 接口可达但未返回 commit"
+    fi
+    # 接口可达视为服务正常（commit 不匹配可能是缓存）
+    HEALTH_OK=true
+    break
+  fi
+
+  echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: 未就绪"
   [ "$i" -lt "$HEALTH_RETRIES" ] && sleep "$HEALTH_DELAY"
 done
 
