@@ -118,7 +118,7 @@ export function GuestbookSection({
             <div
               key={message.id}
               id={`guestbook-msg-${message.id}`}
-              className={`border-b border-gray-100 last:border-0 transition-all duration-500 ${highlightId === message.id ? 'highlight-flash -mx-3 px-3 rounded-lg' : ''}`}
+              className={`border-b border-gray-100 last:border-0 rounded-md ${highlightId === message.id ? 'highlight-flash' : ''}`}
             >
               <ThreadedItemRenderer
                 item={message}

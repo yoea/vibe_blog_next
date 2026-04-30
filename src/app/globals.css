@@ -263,13 +263,11 @@
   border-radius: 9999px;
 }
 
-/* 留言高亮动画 */
+/* 留言/评论高亮动画 */
 @keyframes highlight-flash {
-  0% { background-color: var(--color-primary); opacity: 0.15; border-left-color: var(--color-primary); }
-  40% { background-color: var(--color-primary); opacity: 0.08; border-left-color: var(--color-primary); }
-  100% { background-color: transparent; opacity: 1; border-left-color: transparent; }
+  0% { background-color: oklch(0.56 0.22 266 / 0.15); }
+  100% { background-color: transparent; }
 }
 .highlight-flash {
-  border-left: 3px solid var(--color-primary);
   animation: highlight-flash 2.5s ease-out forwards;
 }

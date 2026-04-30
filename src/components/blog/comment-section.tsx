@@ -99,7 +99,7 @@ export function CommentSection({
             <div
               key={comment.id}
               id={`comment-${comment.id}`}
-              className={`border-b border-gray-100 last:border-0 transition-all duration-500 ${highlightId === comment.id ? 'highlight-flash -mx-3 px-3 rounded-lg' : ''}`}
+              className={`border-b border-gray-100 last:border-0 rounded-md ${highlightId === comment.id ? 'highlight-flash' : ''}`}
             >
               <ThreadedItemRenderer
                 item={comment}
