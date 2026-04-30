@@ -17,7 +17,26 @@ npm run dev        # 启动开发服务器 (监听所有网卡)
 npm run build      # 构建生产版本
 npm run lint       # ESLint 检查
 npx tsc --noEmit   # TypeScript 类型检查
+npm run release         # 发版 (自动 bump + CHANGELOG + commit + tag)
+npm run release:minor   # minor 版本 (0.x.0)
+npm run release:patch   # patch 版本 (0.0.x)
+npm run deploy:local    # 本地构建 + 上传部署
 ```
+
+## 发版规范（强制）
+
+当用户说"发版"时，**必须**执行 `npm run release` 系列命令，**禁止**手动创建 git tag。
+
+流程：
+1. `npm run release:minor`（或 `:patch`，视语义而定）
+   - standard-version 自动 bump `package.json` 版本号
+   - 自动生成/更新 `CHANGELOG.md`
+   - 创建 `chore: release vX.Y.Z` commit
+   - postrelease.js 创建附注 git tag（含 CHANGELOG 内容）
+2. `git push origin main && git push origin vX.Y.Z` 推送到 Gitee
+3. `git push github main && git push github vX.Y.Z` 推送到 GitHub
+
+版本号唯一来源是 `package.json` 的 `version` 字段，构建时通过 `deploy-local.mjs` 注入 `NEXT_PUBLIC_BUILD_VERSION`。Git tag 只是标记，不参与版本显示。
 
 ## 项目架构
 
