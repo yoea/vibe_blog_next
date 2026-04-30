@@ -282,11 +282,6 @@ try {
   process.exit(1)
 }
 
-// =========================
-// 6. 清理，也可以选择打包成功后保留tar包，下次打包会自动覆盖。
-// =========================
-try { unlinkSync(artifactPath) } catch {}
-
 const elapsed = Math.floor((Date.now() - startTime) / 1000)
 const min = Math.floor(elapsed / 60)
 const sec = elapsed % 60
