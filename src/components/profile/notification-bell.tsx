@@ -76,18 +76,6 @@ export function NotificationBell({ initialUnreadCount }: Props) {
     }
   }, [open, initialLoaded, loadNotifications])
 
-  // 打开弹窗时标记当前可见的未读通知为已读
-  useEffect(() => {
-    if (open && notifications.length > 0) {
-      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id)
-      if (unreadIds.length > 0) {
-        markAsRead(unreadIds)
-        setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, is_read: true } : n))
-        setUnreadCount(prev => Math.max(0, prev - unreadIds.length))
-      }
-    }
-  }, [open, notifications])
-
   const handleDismiss = async (id: string, wasUnread: boolean) => {
     if (wasUnread) await markAsRead([id])
     await dismissNotification(id)
@@ -152,7 +140,7 @@ export function NotificationBell({ initialUnreadCount }: Props) {
               notifications.map(n => (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : ''}`}
+                  className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 ${!n.is_read ? 'bg-accent/30 -mx-2 px-2 rounded-md' : 'opacity-60'}`}
                 >
                   <Avatar
                     avatarUrl={n.actor_avatar_url}
