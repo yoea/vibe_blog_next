@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, Settings } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import Link from 'next/link'
 import {
   Dialog,
@@ -114,14 +114,7 @@ export function NotificationBell({ initialUnreadCount }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[420px] max-h-[80vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>通知</span>
-              <Link href="/settings" onClick={() => setOpen(false)}>
-                <Button variant="ghost" size="icon-xs" className="text-muted-foreground">
-                  <Settings className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-            </DialogTitle>
+            <DialogTitle>通知</DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto -mx-6 px-6 space-y-1">
