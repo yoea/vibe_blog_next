@@ -98,7 +98,10 @@ echo "✓ 维护页已启动 (PID: $MAINT_PID)"
 # 6. 原子替换
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
-mv "$PROJECT_DIR/.next/standalone" "$PROJECT_DIR/.next/standalone.old"
+if [ -d "$PROJECT_DIR/.next/standalone" ]; then
+  mv "$PROJECT_DIR/.next/standalone" "$PROJECT_DIR/.next/standalone.old"
+fi
+mkdir -p "$PROJECT_DIR/.next"
 mv "$DEPLOY_TMP" "$PROJECT_DIR/.next/standalone"
 echo "✓ 文件替换完成"
 
