@@ -1,6 +1,6 @@
 #!/bin/bash
 # 服务端部署脚本（由 deploy-local.mjs 通过 ssh 触发）
-# 接收上传的构建产物 → 校验 → 维护页 → 替换 → 启动 → 健康检查
+# 接收上传的构建产物 → 校验 → 替换 → 启动 → 健康检查
 set -euo pipefail
 
 # =========================
@@ -10,7 +10,6 @@ PROJECT_DIR="/home/ewing/craft/vibe_blog_next"
 ARTIFACT_PATH="/tmp/deploy-artifact.tar.gz"
 LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
-APP_PORT=$(grep -oP 'PORT:\s*\K\d+' "$PROJECT_DIR/scripts/ecosystem.config.js" || echo "8083")
 # 健康检查用外部 URL（localhost 在某些 ECS 环境不可达）
 # 优先读 .env.local 中的 NEXT_PUBLIC_SITE_URL，fallback 到默认值
 SITE_URL=$(grep -oP 'NEXT_PUBLIC_SITE_URL=\K\S+' "$PROJECT_DIR/.env.local" 2>/dev/null || echo "https://blog.ewing.top")
@@ -19,10 +18,8 @@ HEALTH_RETRIES=6
 HEALTH_DELAY=10
 
 # 清理函数
-MAINT_PID=""
 DEPLOY_TMP=""
 cleanup() {
-  [ -n "$MAINT_PID" ] && kill "$MAINT_PID" 2>/dev/null || true
   [ -n "$DEPLOY_TMP" ] && rm -rf "$DEPLOY_TMP"
   rm -f "$ARTIFACT_PATH"
   rm -f "$LOCK_FILE"
@@ -81,21 +78,7 @@ EXPECTED_COMMIT=$(grep -oP 'build_commit=\K\S+' "$DEPLOY_TMP/.deploy-meta" 2>/de
 echo "✓ 解压完成 (commit: $EXPECTED_COMMIT)"
 
 # =========================
-# 4. 停止当前应用
-# =========================
-pm2 stop "$PM2_NAME" 2>/dev/null || true
-echo "✓ 已停止当前应用"
-
-# =========================
-# 5. 启动维护页
-# =========================
-cd "$PROJECT_DIR"
-node scripts/maintenance-server.js &
-MAINT_PID=$!
-echo "✓ 维护页已启动 (PID: $MAINT_PID)"
-
-# =========================
-# 6. 原子替换
+# 4. 原子替换（旧应用仍在运行，文件在内存中，替换安全）
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
 if [ -d "$PROJECT_DIR/.next/standalone" ]; then
@@ -106,26 +89,21 @@ mv "$DEPLOY_TMP" "$PROJECT_DIR/.next/standalone"
 echo "✓ 文件替换完成"
 
 # =========================
-# 7. 停维护页、启动新版本
+# 5. 重启应用
 # =========================
-if [ -n "$MAINT_PID" ]; then
-  kill "$MAINT_PID" 2>/dev/null || true
-  MAINT_PID=""
-  sleep 1
-fi
-
 cd "$PROJECT_DIR"
 if [ -f .env.local ]; then
   set -a
   source .env.local
   set +a
 fi
+pm2 stop "$PM2_NAME" 2>/dev/null || true
 pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
 pm2 save
 echo "✓ 新版本已启动"
 
 # =========================
-# 8. 健康检查（通过 /api/healthz 接口验证）
+# 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
 echo "健康检查..."
 sleep "$HEALTH_DELAY"
@@ -172,13 +150,13 @@ if [ "$HEALTH_OK" = false ]; then
 fi
 
 # =========================
-# 9. 清理旧版本
+# 7. 清理旧版本
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
 echo "✓ 旧版本已清理"
 
 # =========================
-# 10. 部署报告
+# 8. 部署报告
 # =========================
 if [ -f "$PROJECT_DIR/.next/standalone/.deploy-meta" ]; then
   echo ""
