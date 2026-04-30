@@ -16,6 +16,7 @@ cd "$PROJECT_DIR"
 echo "进入项目目录: $PROJECT_DIR"
 
 # webhook触发自动部署时候webhook-server.js里会先拉取代码，但如果拉失败，这里会执行强制覆盖重置，确保部署环境代码和远程仓库保持一致
+echo "强行同步代码..."
 git fetch origin
 git reset --hard origin/main
 
