@@ -108,7 +108,7 @@ echo "✓ 新版本已启动"
 # =========================
 # 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
-echo "健康检查..."
+echo "正在访问 /api/healthz 进行健康检查..."
 sleep "$HEALTH_DELAY"
 
 HEALTH_OK=false
@@ -118,7 +118,7 @@ for i in $(seq 1 $HEALTH_RETRIES); do
   ACTUAL_COMMIT=$(echo "$BODY" | sed -n 's/.*"build_commit"\s*:\s*"\([^"]*\)".*/\1/p')
 
   if [ -n "$ACTUAL_COMMIT" ] && [ "$ACTUAL_COMMIT" = "$EXPECTED_COMMIT" ]; then
-    echo "  ✓ 服务正常 (commit: $ACTUAL_COMMIT)"
+    echo "  ✓ /api/healthz 返回服务正常状态！ (commit: $ACTUAL_COMMIT)"
     HEALTH_OK=true
     break
   fi
