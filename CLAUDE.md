@@ -35,7 +35,7 @@ npx tsc --noEmit   # TypeScript 类型检查
 | `(auth)/` | login, register, settings (需登录) |
 | `(blog)/` | 首页, posts/[slug] (详情), posts/new, posts-edit/[slug], my-posts |
 | `author/` | 作者列表, author/[authorId] (个人页 + 留言板) |
-| `api/` | auth/callback, generate-summary, site-stats, my-ip |
+| `api/` | auth/callback, generate-summary, generate-tags, healthz, site-stats, my-ip |
 
 ### Supabase 客户端 (src/lib/supabase/)
 
@@ -74,7 +74,7 @@ npx tsc --noEmit   # TypeScript 类型检查
 
 ### 数据库 (supabase/init.sql)
 
-**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages
+**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages, site_config
 
 **触发器**: 自动更新 `updated_at`; 注册时自动创建 `user_settings` 行
 
@@ -90,6 +90,5 @@ npx tsc --noEmit   # TypeScript 类型检查
 | `NEXT_PUBLIC_SITE_TITLE` | 是 | 客户端+服务端 |
 | `NEXT_PUBLIC_SITE_URL` | 是 | 客户端+服务端 |
 | `NEXT_PUBLIC_SITE_DESCRIPTION` | 否 | 客户端+服务端 |
-| `OPENAI_API_KEY` | 否 | 服务端 (摘要生成) |
-| `OPENAI_BASE_URL` | 否 | 服务端 |
-| `OPENAI_MODEL` | 否 | 服务端 (默认: gpt-4o-mini) |
+
+> AI 配置（API Key、Base URL、Model）已迁移到数据库 `site_config` 表，通过管理后台设置页面管理，不再使用环境变量。

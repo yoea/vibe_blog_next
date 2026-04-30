@@ -12,7 +12,9 @@ LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
 APP_PORT=$(grep -oP 'PORT:\s*\K\d+' "$PROJECT_DIR/scripts/ecosystem.config.js" || echo "8083")
 # 健康检查用外部 URL（localhost 在某些 ECS 环境不可达）
-HEALTH_URL="${SERVER_URL:-http://ewing.top}/api/healthz"
+# 优先读 .env.local 中的 NEXT_PUBLIC_SITE_URL，fallback 到默认值
+SITE_URL=$(grep -oP 'NEXT_PUBLIC_SITE_URL=\K\S+' "$PROJECT_DIR/.env.local" 2>/dev/null || echo "https://blog.ewing.top")
+HEALTH_URL="${SITE_URL}/api/healthz"
 HEALTH_RETRIES=6
 HEALTH_DELAY=10
 
