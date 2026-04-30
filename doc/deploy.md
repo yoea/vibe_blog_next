@@ -57,11 +57,12 @@ Git Tag Push → Webhook → 服务器 git pull → npm ci → next build → PM
 ```
 
 **问题：** 服务器仅 2GB 内存，`next build` 峰值内存消耗可达 1GB+。当内存不足时，操作系统大量使用 swap，导致：
+
 - 磁盘 BPS 拉满（swap 读写）
 - CPU 降至 12%（等待 I/O）
-- SSH 连不上、网页打不开（系统卡死）
+- SSH 连不上、网页打不开（系统卡死），只能通过ECS平台强制重启解决
 
-即便添加 `NODE_OPTIONS="--max-old-space-size=768"` 限制堆内存，构建仍然非常缓慢且存在风险。
+即便添加 `NODE_OPTIONS="--max-old-space-size=768"` 限制堆内存，构建仍然非常缓慢（1分钟）且存在死机风险。
 
 ### 新方案：本地构建上传
 
@@ -92,10 +93,10 @@ Git Tag Push → Webhook → 服务器 git pull → npm ci → next build → PM
 
 ```
 # ~/.ssh/config
-Host ewing.top
-    User ewing
-    HostName ewing.top
-    Port 47222
+Host myserver.com
+    User ubuntu
+    HostName myserver.com
+    Port 22
     IdentityFile ~/.ssh/your_private_key
 ```
 
@@ -210,6 +211,19 @@ SERVER_DIR=/opt/myapp npm run deploy:local
 | `SERVER_DIR` | `/home/ewing/craft/vibe_blog_next` | 服务器项目目录 |
 
 SSH 端口、用户名、密钥均由 `~/.ssh/config` 管理，无需在脚本中配置。
+
+### 修改应用端口
+
+应用端口只需改 **2 个地方**：
+
+| 文件 | 改什么 |
+|------|--------|
+| `scripts/ecosystem.config.js` | `PORT: 8083` → 改为目标端口（source of truth） |
+| nginx 配置 | 反向代理指向的端口 |
+
+其他文件自动跟随：
+- `maintenance-server.js` 读取 `process.env.PORT`（由 PM2 注入）
+- `deploy-remote.sh` 从 `ecosystem.config.js` 自动读取端口
 
 ### 构建时环境变量
 
