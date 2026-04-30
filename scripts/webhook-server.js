@@ -1,5 +1,6 @@
 // Webhook 接收服务器
-// 监听 GitHub/Gitee 推送事件，tag 推送触发自动部署，分支推送仅拉取代码
+// 监听 GitHub/Gitee 推送事件，分支推送自动拉取代码保持服务端同步
+// 部署通过本地构建 + 上传完成，见 scripts/deploy-local.mjs
 const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
@@ -27,11 +28,7 @@ function loadEnvFile() {
 loadEnvFile()
 
 const SECRET = process.env.WEBHOOK_SECRET || null
-
 const DEPLOY_DIR = '/home/ewing/craft/vibe_blog_next'
-let currentDeploy = null // 追踪当前部署进程
-let deployTimer = null   // 防抖计时器（合并 GitHub/Gitee 双重 tag 推送）
-const DEBOUNCE_MS = 5000 // 防抖等待时间：5 秒
 
 // 获取本地时间字符串 (UTC+8)
 function localTime() {
@@ -48,46 +45,6 @@ function pullOnly() {
       console.error(`[${localTime()}] git pull 失败 (exit ${code})`)
     }
   })
-}
-
-function restartSelf() {
-  // 通过 PM2 IPC 自重启，PM2 会先 SIGTERM 当前进程再拉起新进程
-  if (process.send) {
-    process.send({ type: 'pm2:restart' })
-  } else {
-    spawn('pm2', ['restart', 'webhook'], { stdio: 'inherit', cwd: DEPLOY_DIR })
-  }
-}
-
-function runDeploy() {
-  // 如果已有部署在跑，杀掉整个进程组（包括所有子进程）
-  if (currentDeploy) {
-    console.log(`[${localTime()}] 终止上一次部署...`)
-    try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {}
-    currentDeploy = null
-  }
-
-  const proc = spawn('bash', ['-c', `cd ${DEPLOY_DIR} && git fetch origin && git reset --hard origin/main && bash scripts/deploy.sh`], {
-    detached: true,   // 创建新进程组，便于整树清理
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: 600000,
-  })
-
-  proc.stdout?.on('data', (d) => process.stdout.write(`[deploy] ${d}`))
-  proc.stderr?.on('data', (d) => process.stderr.write(`[deploy:err] ${d}`))
-  proc.on('exit', (code, signal) => {
-    currentDeploy = null
-    if (code === 0) {
-      console.log(`[${localTime()}] 部署成功，重启 webhook 进程加载最新代码...`)
-      restartSelf()
-    } else if (signal === 'SIGTERM') {
-      console.log(`[${localTime()}] 部署被终止（新请求覆盖）`)
-    } else {
-      console.error(`[${localTime()}] 部署失败 (exit ${code})`)
-    }
-  })
-
-  currentDeploy = proc
 }
 
 const server = http.createServer((req, res) => {
@@ -115,52 +72,28 @@ const server = http.createServer((req, res) => {
     console.log(`[${localTime()}] 收到 webhook 请求`)
 
     // 解析推送事件信息（GitHub / Gitee 格式兼容）
-    let eventInfo = {}
     let ref = ''
     try {
       const payload = JSON.parse(body)
       ref = payload.ref || ''
-      eventInfo = {
-        repository: payload.repository?.name || payload.repository?.full_name || null,
-        ref: payload.ref || null,
-        branch: ref.startsWith('refs/heads/') ? ref.replace('refs/heads/', '') : null,
-        tag: ref.startsWith('refs/tags/') ? ref.replace('refs/tags/', '') : null,
-        pusher: payload.pusher?.name || payload.sender?.login || null,
-        commits: Array.isArray(payload.commits) ? payload.commits.length : null,
-      }
     } catch { /* 非 JSON 体，跳过 */ }
 
     const isTagPush = ref.startsWith('refs/tags/')
 
-    res.writeHead(202, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({
-      status: 'accepted',
-      timestamp: new Date().toISOString(),
-      deploy: {
-        triggered: isTagPush,
-        debounced: isTagPush,
-        ...eventInfo,
-      },
-    }))
-
-    // 分支推送只拉取代码，不发版不部署
-    if (!isTagPush) {
-      console.log(`[${localTime()}] 分支推送，仅拉取代码（ref=${ref}）`)
-      pullOnly()
+    // Tag 推送不再触发自动部署（已改为本地构建上传），仅记录日志
+    if (isTagPush) {
+      console.log(`[${localTime()}] Tag 推送: ${ref}（已改为本地部署，不触发自动构建）`)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ status: 'ignored', reason: 'tag deploy disabled, use npm run deploy:local' }))
       return
     }
 
-    // Tag 推送：防抖合并（GitHub/Gitee 双重 webhook）
-    if (deployTimer) {
-      console.log(`[${localTime()}] 重置部署防抖计时器（${DEBOUNCE_MS / 1000}s）`)
-      clearTimeout(deployTimer)
-    }
-    deployTimer = setTimeout(() => {
-      deployTimer = null
-      console.log(`[${localTime()}] 防抖结束，开始部署...`)
-      runDeploy()
-    }, DEBOUNCE_MS)
-    console.log(`[${localTime()}] Tag 推送已接收，${DEBOUNCE_MS / 1000}s 后开始部署（等待防抖）`)
+    // 分支推送：自动拉取代码
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ status: 'pulling', ref }))
+
+    console.log(`[${localTime()}] 分支推送，拉取代码（ref=${ref}）`)
+    pullOnly()
   })
 })
 
@@ -168,12 +101,3 @@ server.listen(PORT, '0.0.0.0', () => {
   const status = SECRET ? '签名验证已启用' : '⚠️ 无签名验证（不安全）'
   console.log(`Webhook 接收器运行在 http://0.0.0.0:${PORT}（${status}）`)
 })
-
-// PM2 停止时清理部署进程组和防抖计时器
-function cleanup() {
-  if (deployTimer) { clearTimeout(deployTimer); deployTimer = null }
-  if (currentDeploy) { try { process.kill(-currentDeploy.pid, 'SIGTERM') } catch {} }
-  process.exit(0)
-}
-process.on('SIGINT', cleanup)
-process.on('SIGTERM', cleanup)

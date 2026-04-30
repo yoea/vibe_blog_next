@@ -71,27 +71,23 @@ npm run dev
 
 ```
 用户 → nginx (443) → PM2 (8083) → .next/standalone/server.js
-Git Push → Webhook (8084) → git pull + scripts/deploy.sh → PM2 重启
+本地构建 → scp 上传 → ssh 触发 deploy-remote.sh → PM2 重启
+Git Push → Webhook (8084) → 仅拉取代码（不构建不部署）
 ```
 
 ### 部署步骤
 
 ```bash
-# 1. 服务器拉取代码
-cd /home/ewing/craft/vibe_blog_next
-git pull
-
-# 2. 一键部署（构建 + PM2 重启）
-bash scripts/deploy.sh
+# 本地一键部署（构建 + 上传 + 服务端重启）
+npm run deploy:local
 ```
 
-### 自动部署
+详细部署文档见 [doc/deploy.md](doc/deploy.md)。
 
-项目配置了双远程推送自动部署（GitHub / Gitea），通过标签推送触发：
+### 自动代码同步
 
-1. 本地 `git push` 推送后，远程仓库向 webhook 服务发送 POST 请求
-2. `webhook-server.js` 验证签名后执行 `git pull && bash scripts/deploy.sh`
-3. PM2 重启 Next.js 应用（webhook 进程不会被重启，部署互不影响）
+项目配置了双远程推送（GitHub / Gitea），分支推送时 webhook 自动拉取代码保持服务端同步。
+部署不再通过 webhook 自动触发，改为本地构建 + 上传方式。
 
 ### PM2 管理
 
