@@ -109,6 +109,21 @@ export async function markAllAsRead(): Promise<ActionResult> {
   return {}
 }
 
+export async function dismissAllNotifications(): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '请先登录' }
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_dismissed: true })
+    .eq('recipient_id', user.id)
+    .eq('is_dismissed', false)
+
+  if (error) return { error: error.message }
+  return {}
+}
+
 export async function getUnreadCount(): Promise<ActionResult & { count?: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
