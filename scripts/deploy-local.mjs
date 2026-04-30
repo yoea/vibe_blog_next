@@ -144,8 +144,9 @@ if (!skipBuild) {
 console.log('打包产物...')
 const artifactPath = join(PROJECT_DIR, ARTIFACT_NAME)
 try {
-  // Windows 自带 tar（Windows 10 build 17063+）
-  run(`tar czf "${ARTIFACT_NAME}" -C .next/standalone .`)
+  // Windows 默认 shell 为 cmd.exe，其 bsdtar 不正确支持 -C 参数
+  // 强制使用 bash (Git Bash) 的 GNU tar
+  run(`tar czf "${ARTIFACT_NAME}" -C .next/standalone .`, { shell: 'bash' })
 } catch {
   console.error('❌ tar 命令不可用，请确保 Windows 10 17063+ 或安装 Git Bash')
   process.exit(1)
@@ -159,10 +160,10 @@ if (size < 1048576) {
   process.exit(1)
 }
 
-// 验证 tarball 内容
-const tarListing = runSilent(`tar tzf "${ARTIFACT_NAME}"`)
-if (!tarListing.split('\n').some(l => l.endsWith('/server.js') || l === 'server.js')) {
-  console.error('❌ 打包产物中缺少 server.js，tar 内容:')
+// 验证 tarball 内容（用 bash 保持与打包一致）
+const tarListing = runSilent(`bash -c "tar tzf '${ARTIFACT_NAME}'"`)
+if (!tarListing.split('\n').some(l => l === './server.js' || l === 'server.js')) {
+  console.error('❌ 打包产物中缺少 ./server.js，tar 内容:')
   console.error(tarListing.split('\n').slice(0, 20).join('\n'))
   try { unlinkSync(artifactPath) } catch {}
   process.exit(1)
