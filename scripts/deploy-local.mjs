@@ -193,7 +193,15 @@ if (!skipBuild) {
 console.log('打包产物...')
 const artifactPath = join(PROJECT_DIR, ARTIFACT_NAME)
 try {
-  bashRun(`tar czf "${ARTIFACT_NAME}" -C .next/standalone .`)
+  const excludes = [
+    './src', './scripts', './doc', './supabase',
+    './CLAUDE.md', './CHANGELOG.md', './README.md',
+    './LICENSE', './package-lock.json', './package.json',
+    './tsconfig.json', './tsconfig.tsbuildinfo',
+    './eslint.config.mjs', './postcss.config.mjs',
+    './components.json', './next.config.ts',
+  ].map(d => `--exclude="${d}"`).join(' ')
+  bashRun(`tar czf "${ARTIFACT_NAME}" ${excludes} -C .next/standalone .`)
 } catch {
   console.error('❌ tar 打包失败')
   process.exit(1)
