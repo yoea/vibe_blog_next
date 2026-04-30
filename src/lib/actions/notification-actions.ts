@@ -14,6 +14,8 @@ interface InsertNotificationParams {
   postSlug?: string | null
   postTitle?: string | null
   guestbookAuthorId?: string | null
+  guestbookMessageId?: string | null
+  guestbookMessageContent?: string | null
 }
 
 export async function insertNotification(params: InsertNotificationParams): Promise<void> {
@@ -38,6 +40,8 @@ export async function insertNotification(params: InsertNotificationParams): Prom
       post_slug: params.postSlug ?? null,
       post_title: params.postTitle ?? null,
       guestbook_author_id: params.guestbookAuthorId ?? null,
+      guestbook_message_id: params.guestbookMessageId ?? null,
+      guestbook_message_content: params.guestbookMessageContent ?? null,
     })
   } catch {
     // 通知插入失败不影响主流程，静默忽略

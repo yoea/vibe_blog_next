@@ -90,6 +90,8 @@ export async function createGuestbookMessage(
       actorName,
       actorAvatarUrl,
       guestbookAuthorId: toAuthorId,
+      guestbookMessageId: message.id,
+      guestbookMessageContent: content.trim(),
     })
   }
 

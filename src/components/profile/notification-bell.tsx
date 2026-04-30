@@ -33,7 +33,7 @@ function getNotificationLink(n: Notification): string {
     case 'post_comment':
       return `/posts/${n.post_slug}#comments`
     case 'guestbook_message':
-      return `/author/${n.guestbook_author_id}#guestbook`
+      return `/author/${n.guestbook_author_id}?hl=${n.guestbook_message_id ?? ''}#guestbook`
   }
 }
 
@@ -162,6 +162,9 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                     </div>
                     {n.post_title && (
                       <p className="text-xs text-muted-foreground truncate">{n.post_title}</p>
+                    )}
+                    {n.type === 'guestbook_message' && n.guestbook_message_content && (
+                      <p className="text-xs text-muted-foreground truncate">{n.guestbook_message_content}</p>
                     )}
                     <div className="flex items-center gap-2 pt-0.5">
                       <span className="text-[11px] text-muted-foreground/60" suppressHydrationWarning>{formatTimeAgo(n.created_at)}</span>

@@ -100,6 +100,8 @@ export interface Notification {
   post_slug: string | null
   post_title: string | null
   guestbook_author_id: string | null
+  guestbook_message_id: string | null
+  guestbook_message_content: string | null
   is_read: boolean
   is_dismissed: boolean
   created_at: string

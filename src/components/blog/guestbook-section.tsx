@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createGuestbookMessage, deleteGuestbookMessage, getMoreGuestbookMessages } from '@/lib/actions/guestbook-actions'
 import { useThreadedList } from './use-threaded-list'
 import { ThreadedItemRenderer } from './threaded-item'
@@ -29,6 +30,18 @@ export function GuestbookSection({
   messagesPublic?: boolean
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const searchParams = useSearchParams()
+  const [highlightId, setHighlightId] = useState<string | null>(searchParams.get('hl'))
+
+  useEffect(() => {
+    if (!highlightId) return
+    const el = document.getElementById(`guestbook-msg-${highlightId}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    const timer = setTimeout(() => setHighlightId(null), 2000)
+    return () => clearTimeout(timer)
+  }, [highlightId])
 
   const {
     items: messages,
@@ -95,7 +108,11 @@ export function GuestbookSection({
       {visibleMessages.length > 0 && (
         <div className="space-y-3">
           {visibleMessages.map((message) => (
-            <div key={message.id} className="border-b border-gray-100 last:border-0">
+            <div
+              key={message.id}
+              id={`guestbook-msg-${message.id}`}
+              className={`border-b border-gray-100 last:border-0 transition-colors duration-300 ${highlightId === message.id ? 'bg-yellow-100 dark:bg-yellow-900/30 rounded-md -mx-2 px-2' : ''}`}
+            >
               <ThreadedItemRenderer
                 item={message}
                 currentUserId={currentUserId}
