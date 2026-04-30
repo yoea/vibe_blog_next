@@ -10,12 +10,18 @@ PROJECT_DIR="/home/ewing/craft/vibe_blog_next"
 ARTIFACT_PATH="/tmp/deploy-artifact.tar.gz"
 LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
-# 健康检查用外部 URL（localhost 在某些 ECS 环境不可达）
-# 优先读 .env.local 中的 NEXT_PUBLIC_SITE_URL，fallback 到默认值
+
+
+# =========================
+# 健康检查相关配置
+# =========================
+# 用于健康检查的链接，优先读 .env.local 中的 NEXT_PUBLIC_SITE_URL，fallback 到默认值
 SITE_URL=$(grep -oP 'NEXT_PUBLIC_SITE_URL=\K\S+' "$PROJECT_DIR/.env.local" 2>/dev/null || echo "https://blog.ewing.top")
 HEALTH_URL="${SITE_URL}/api/healthz"
-HEALTH_RETRIES=6
-HEALTH_DELAY=10
+# 健康检查重试次数
+HEALTH_RETRIES=5
+# 健康检查重试间隔（秒）
+HEALTH_DELAY=5
 
 # 清理函数
 DEPLOY_TMP=""
@@ -108,7 +114,7 @@ echo "✓ 新版本已启动"
 # =========================
 # 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
-echo "正在访问 /api/healthz 进行健康检查..."
+echo "正在访问 /api/healthz 进行网站健康检查..."
 sleep "$HEALTH_DELAY"
 
 HEALTH_OK=false
