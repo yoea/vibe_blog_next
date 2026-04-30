@@ -103,28 +103,9 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
 
-  const { data: message } = await supabase
-    .from('guestbook_messages')
-    .select('author_id, to_author_id')
-    .eq('id', messageId)
-    .single()
-
-  if (!message) return { error: '留言不存在' }
-  if (message.author_id !== user.id && message.to_author_id !== user.id) return { error: '无权限删除' }
-
-  // Use service role to bypass RLS (page owner may delete others' messages)
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) return { error: '服务器配置错误' }
-
-  const { createClient: createAdminClient } = await import('@supabase/supabase-js')
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    serviceKey,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
-
-  // Delete parent message — ON DELETE CASCADE auto-removes child replies
-  const { error } = await admin
+  // RLS guestbook_delete: auth.uid() = author_id OR auth.uid() = to_author_id
+  // 留言作者和页面主人都有权删除，直接用普通客户端即可
+  const { error } = await supabase
     .from('guestbook_messages')
     .delete()
     .eq('id', messageId)
