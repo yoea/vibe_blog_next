@@ -19,7 +19,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user && !redirectedRef.current) {
         redirectedRef.current = true
-        toast.info('已登录，正在跳转')
         window.location.href = redirectTo || '/profile'
       } else {
         setChecking(false)
@@ -43,8 +42,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       setError(message)
       toast.error(message)
     } else {
-      // login_success cookie 由 LoginToast 统一处理提示
-      document.cookie = 'login_success=1; max-age=10; path=/'
       window.location.href = redirectTo || '/'
     }
   }

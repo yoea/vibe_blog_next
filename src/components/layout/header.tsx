@@ -88,7 +88,10 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
       {user ? (
         <>
           <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
-            <User className="h-4 w-4" />
+            <span className="relative">
+              <User className="h-4 w-4" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 border border-background" />
+            </span>
             <span>个人中心</span>
           </Link>
           <Link href="/settings" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
