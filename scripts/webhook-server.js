@@ -94,9 +94,18 @@ const server = http.createServer((req, res) => {
 
     // 解析推送事件信息（GitHub / Gitee 格式兼容）
     let ref = ''
+    let eventInfo = {}
     try {
       const payload = JSON.parse(body)
       ref = payload.ref || ''
+      eventInfo = {
+        repository: payload.repository?.full_name || payload.repository?.name || null,
+        pusher: payload.pusher?.name || payload.sender?.login || null,
+        branch: ref.startsWith('refs/heads/') ? ref.replace('refs/heads/', '') : null,
+        tag: ref.startsWith('refs/tags/') ? ref.replace('refs/tags/', '') : null,
+        commits: Array.isArray(payload.commits) ? payload.commits.length : null,
+        headCommit: payload.head_commit?.message?.split('\n')[0]?.slice(0, 80) || null,
+      }
     } catch { /* 非 JSON 体，跳过 */ }
 
     const isTagPush = ref.startsWith('refs/tags/')
@@ -105,15 +114,15 @@ const server = http.createServer((req, res) => {
     if (isTagPush) {
       console.log(`[${localTime()}] Tag 推送: ${ref}（已改为本地部署，不触发自动构建）`)
       res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({ status: 'ignored', reason: 'tag deploy disabled, use npm run deploy:local' }))
+      res.end(JSON.stringify({ status: 'ignored', reason: 'tag deploy disabled, use npm run deploy:local', ...eventInfo }))
       return
     }
 
     // 分支推送：自动拉取代码
     res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ status: 'pulling', ref }))
+    res.end(JSON.stringify({ status: 'pulling', ...eventInfo }))
 
-    console.log(`[${localTime()}] 分支推送，拉取代码（ref=${ref}）`)
+    console.log(`[${localTime()}] 分支推送，拉取代码（${eventInfo.repository} ${eventInfo.branch} by ${eventInfo.pusher}）`)
     pullOnly()
   })
 })
