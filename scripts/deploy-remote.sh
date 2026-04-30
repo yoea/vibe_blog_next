@@ -111,6 +111,14 @@ pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
 pm2 save
 echo "✓ 新版本已启动"
 
+# 重建 webhook 服务（确保脚本变更加载）
+if pm2 describe webhook >/dev/null 2>&1; then
+  pm2 delete webhook 2>/dev/null || true
+fi
+pm2 start scripts/ecosystem.config.js --only webhook
+pm2 save
+echo "✓ webhook 服务已重建"
+
 # =========================
 # 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
@@ -182,7 +190,7 @@ fi
 # 7. 清理旧版本
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
-echo "✓ 旧版本已清理"
+echo "✓ 服务器上的旧版本项目文件已清理"
 
 # =========================
 # 8. 部署报告
