@@ -122,16 +122,23 @@ echo "健康检查..."
 sleep "$HEALTH_DELAY"
 echo "  端口检查: $(ss -tlnp 2>/dev/null | grep ":${APP_PORT} " || netstat -tlnp 2>/dev/null | grep ":${APP_PORT} " || echo "未找到监听")"
 
+# 诊断: bash 内建 TCP 测试
+(echo > /dev/tcp/127.0.0.1/"$APP_PORT") 2>/dev/null && echo "  TCP 测试: ✓ 可连接" || echo "  TCP 测试: ✗ 连接失败"
+
 HEALTH_OK=false
 for i in $(seq 1 $HEALTH_RETRIES); do
-  CODE="000"
-  CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$HEALTH_URL" || true)
+  # 用 curl -v 捕获详细错误
+  CURL_OUT=$(curl -v -o /dev/null --connect-timeout 5 --max-time 10 "$HEALTH_URL" 2>&1) || true
+  CODE=$(echo "$CURL_OUT" | grep -oP 'HTTP/\S+ \K\d{3}' | tail -1)
+  CODE=${CODE:-000}
   if [ "$CODE" = "200" ]; then
     echo "  ✓ 服务正常 (HTTP $CODE)"
     HEALTH_OK=true
     break
   fi
   echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: HTTP $CODE"
+  # 首次失败打印 curl 详细输出
+  [ "$i" -eq 1 ] && echo "  curl 详情: $(echo "$CURL_OUT" | tail -5)"
   [ "$i" -lt "$HEALTH_RETRIES" ] && sleep "$HEALTH_DELAY"
 done
 
