@@ -11,7 +11,8 @@
     "release": "standard-version && node scripts/postrelease.js",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
-    "release:patch": "standard-version --release-as patch"
+    "release:patch": "standard-version --release-as patch",
+    "deploy:local": "node scripts/deploy-local.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

@@ -3,6 +3,15 @@
 # 停服 → 安装依赖 → 构建 → 启动新版本 → 健康检查
 set -euo pipefail
 
+# =========================
+# 0. 加锁（防止与 deploy-remote.sh 并发部署）
+# =========================
+exec 200>/tmp/deploy-vibe.lock
+if ! flock -w 120 200; then
+  echo "❌ 无法获取部署锁，可能有其他部署正在进行"
+  exit 1
+fi
+
 PROJECT_DIR="/home/ewing/craft/vibe_blog_next"
 SITE_URL="https://blog.ewing.top"
 PM2_NAME="vibe_blog_next"

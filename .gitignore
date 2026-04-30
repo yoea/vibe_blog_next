@@ -41,5 +41,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# deploy artifact
+/deploy-artifact.tar.gz
+
 # claude code
 .claude/
