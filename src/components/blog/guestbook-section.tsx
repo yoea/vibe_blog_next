@@ -31,6 +31,7 @@ export function GuestbookSection({
     items: messages,
     total,
     hasMore,
+    remainingTopLevel,
     replyTarget,
     setReplyTarget,
     handleSubmit,
@@ -109,7 +110,7 @@ export function GuestbookSection({
         hasMore={hasMore}
         loading={loading}
         onLoadMore={handleLoadMore}
-        remaining={total - messages.length}
+        remaining={remainingTopLevel}
         idleText="加载更多留言"
         loadedAllText="已显示全部留言"
       />

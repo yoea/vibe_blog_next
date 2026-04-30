@@ -32,7 +32,10 @@ export function useThreadedList<T extends ThreadedItem>({
   const [loading, setLoading] = useState(false)
   const [replyTarget, setReplyTarget] = useState<string | null>(null)
 
-  const hasMore = items.length < total
+  // items 包含顶层+回复（扁平），total 是顶层条目数，只比较顶层数量
+  const topLevelCount = items.filter((item) => !item.parent_id).length
+  const hasMore = topLevelCount < total
+  const remainingTopLevel = total - topLevelCount
 
   async function handleSubmit(content: string, parentId?: string, guestName?: string) {
     const result = await onSubmit(content, parentId, guestName)
@@ -77,17 +80,19 @@ export function useThreadedList<T extends ThreadedItem>({
       return false
     }
     if (!result.error) {
-      setItems((prev) => {
-        const isTopLevel = prev.some((item) => item.id === id)
-        return isTopLevel
+      const isTopLevel = items.some((item) => item.id === id)
+      setItems((prev) =>
+        isTopLevel
           ? prev.filter((item) => item.id !== id)
           : prev.map((item) => ({
               ...item,
               replies: item.replies?.filter((r) => r.id !== id),
             }))
-      })
-      setTotal((c) => c - 1)
-      if (onCountChange) onCountChange(-1)
+      )
+      if (isTopLevel) {
+        setTotal((c) => c - 1)
+        if (onCountChange) onCountChange(-1)
+      }
       return true
     }
     return false
@@ -116,6 +121,7 @@ export function useThreadedList<T extends ThreadedItem>({
     loading,
     replyTarget,
     hasMore,
+    remainingTopLevel,
     setReplyTarget,
     handleSubmit,
     handleDelete,

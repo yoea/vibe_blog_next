@@ -34,6 +34,7 @@ export function CommentSection({
     items: comments,
     total,
     hasMore,
+    remainingTopLevel,
     replyTarget,
     setReplyTarget,
     handleSubmit,
@@ -101,7 +102,7 @@ export function CommentSection({
         hasMore={hasMore}
         loading={loading}
         onLoadMore={handleLoadMore}
-        remaining={total - comments.length}
+        remaining={remainingTopLevel}
         idleText="加载更多评论"
         loadedAllText="已显示全部评论"
       />
