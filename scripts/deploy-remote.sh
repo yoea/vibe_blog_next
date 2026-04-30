@@ -53,7 +53,7 @@ if ! tar tzf "$ARTIFACT_PATH" >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! tar tzf "$ARTIFACT_PATH" | grep -q "server.js"; then
+if ! tar tzf "$ARTIFACT_PATH" | grep "server.js" >/dev/null; then
   echo "❌ 构建产物缺少 server.js"
   exit 1
 fi
