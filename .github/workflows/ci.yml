@@ -9,6 +9,7 @@ on:
 jobs:
   check:
     name: Lint & Type Check
+    if: github.repository == 'yoea/vibe_blog_next'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
