@@ -103,9 +103,28 @@ export async function deleteGuestbookMessage(messageId: string, toAuthorId: stri
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '请先登录' }
 
-  // RLS guestbook_delete: auth.uid() = author_id OR auth.uid() = to_author_id
-  // 留言作者和页面主人都有权删除，直接用普通客户端即可
-  const { error } = await supabase
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) return { error: '服务器配置错误' }
+
+  const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceKey,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  // 先验证留言存在且当前用户有权限删除
+  const { data: message } = await admin
+    .from('guestbook_messages')
+    .select('id, author_id, to_author_id')
+    .eq('id', messageId)
+    .single()
+
+  if (!message) return { error: '留言不存在' }
+  if (message.author_id !== user.id && message.to_author_id !== user.id) return { error: '无权限删除' }
+
+  // ON DELETE CASCADE 自动删除子回复
+  const { error } = await admin
     .from('guestbook_messages')
     .delete()
     .eq('id', messageId)

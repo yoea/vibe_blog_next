@@ -15,6 +15,7 @@ export function GuestbookSection({
   initialTotal,
   title = '留言板',
   icon,
+  showForm = true,
 }: {
   toAuthorId: string
   currentUserId: string | null
@@ -22,6 +23,7 @@ export function GuestbookSection({
   initialTotal: number
   title?: string
   icon?: ReactNode
+  showForm?: boolean
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -72,12 +74,14 @@ export function GuestbookSection({
         <h2 className="text-xl font-bold">{title}</h2>
       </div>
 
-      <CommentForm
-        postId={toAuthorId}
-        onSubmit={handleSubmit}
-        inputRef={inputRef}
-        currentUserId={currentUserId}
-      />
+      {showForm && (
+        <CommentForm
+          postId={toAuthorId}
+          onSubmit={handleSubmit}
+          inputRef={inputRef}
+          currentUserId={currentUserId}
+        />
+      )}
 
       {messages.length > 0 && (
         <div className="space-y-3">

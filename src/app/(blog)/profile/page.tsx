@@ -129,6 +129,7 @@ export default async function ProfilePage() {
           initialTotal={guestbookTotal}
           title="他人给我的留言"
           icon={<MessageSquare className="h-5 w-5" />}
+          showForm={false}
         />
       </section>
     </div>

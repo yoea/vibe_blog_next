@@ -70,7 +70,12 @@ export function useThreadedList<T extends ThreadedItem>({
   }
 
   async function handleDelete(id: string): Promise<boolean> {
-    const result = await onDeleteItem(id)
+    let result: { error?: string }
+    try {
+      result = await onDeleteItem(id)
+    } catch {
+      return false
+    }
     if (!result.error) {
       setItems((prev) => {
         const isTopLevel = prev.some((item) => item.id === id)
