@@ -13,6 +13,7 @@ interface InsertNotificationParams {
   postId?: string | null
   postSlug?: string | null
   postTitle?: string | null
+  commentId?: string | null
   guestbookAuthorId?: string | null
   guestbookMessageId?: string | null
   guestbookMessageContent?: string | null
@@ -39,6 +40,7 @@ export async function insertNotification(params: InsertNotificationParams): Prom
       post_id: params.postId ?? null,
       post_slug: params.postSlug ?? null,
       post_title: params.postTitle ?? null,
+      comment_id: params.commentId ?? null,
       guestbook_author_id: params.guestbookAuthorId ?? null,
       guestbook_message_id: params.guestbookMessageId ?? null,
       guestbook_message_content: params.guestbookMessageContent ?? null,

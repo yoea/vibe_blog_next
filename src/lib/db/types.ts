@@ -99,6 +99,7 @@ export interface Notification {
   post_id: string | null
   post_slug: string | null
   post_title: string | null
+  comment_id: string | null
   guestbook_author_id: string | null
   guestbook_message_id: string | null
   guestbook_message_content: string | null

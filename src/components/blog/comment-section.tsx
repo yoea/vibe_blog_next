@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createComment, getMoreComments } from '@/lib/actions/comment-actions'
 import { deleteComment, toggleCommentLike } from '@/lib/actions/comment-actions'
 import { toast } from 'sonner'
@@ -29,6 +30,8 @@ export function CommentSection({
   focusSignal?: number
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const searchParams = useSearchParams()
+  const [highlightId, setHighlightId] = useState<string | null>(searchParams.get('hl'))
 
   const {
     items: comments,
@@ -60,6 +63,21 @@ export function CommentSection({
   })
 
   useEffect(() => {
+    if (!highlightId) return
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(`comment-${highlightId}`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        setTimeout(() => setHighlightId(null), 2500)
+      } else {
+        toast.error('该评论已删除')
+        setHighlightId(null)
+      }
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [highlightId])
+
+  useEffect(() => {
     if (focusSignal && inputRef.current) {
       inputRef.current.focus()
     }
@@ -78,7 +96,11 @@ export function CommentSection({
       {comments.length > 0 && (
         <div className="space-y-3">
           {comments.map((comment) => (
-            <div key={comment.id} className="border-b border-gray-100 last:border-0">
+            <div
+              key={comment.id}
+              id={`comment-${comment.id}`}
+              className={`border-b border-gray-100 last:border-0 transition-all duration-500 ${highlightId === comment.id ? 'highlight-flash -mx-3 px-3 rounded-lg' : ''}`}
+            >
               <ThreadedItemRenderer
                 item={comment}
                 currentUserId={currentUserId}
@@ -92,6 +114,7 @@ export function CommentSection({
                 deleteDescription="确定删除这条评论？此操作不可撤销。"
                 canDelete={!!currentUserId && (currentUserId === comment.author_id || currentUserId === postAuthorId)}
                 renderActions={(item) => <LikeButton comment={item as CommentWithAuthor} currentUserId={currentUserId} />}
+                highlightId={highlightId}
               />
             </div>
           ))}

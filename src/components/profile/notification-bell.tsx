@@ -31,7 +31,7 @@ function getNotificationLink(n: Notification): string {
     case 'post_like':
       return `/posts/${n.post_slug}`
     case 'post_comment':
-      return `/posts/${n.post_slug}#comments`
+      return `/posts/${n.post_slug}?hl=${n.comment_id ?? ''}#comments`
     case 'guestbook_message':
       return `/author/${n.guestbook_author_id}?hl=${n.guestbook_message_id ?? ''}#guestbook`
   }
@@ -155,9 +155,9 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                   <Link
                     key={n.id}
                     href={getNotificationLink(n)}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       if ((e.target as HTMLElement).closest('[data-action]')) return
-                      handleView(n.id, !n.is_read)
+                      await handleView(n.id, !n.is_read)
                       setOpen(false)
                     }}
                     className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-primary/5 border-l-2 border-l-primary -mx-2 px-2 rounded-md' : 'opacity-60'}`}

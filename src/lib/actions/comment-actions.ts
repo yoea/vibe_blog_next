@@ -100,6 +100,7 @@ export async function createComment(
       postId,
       postSlug: post.slug,
       postTitle: post.title,
+      commentId: comment.id,
     })
   }
 

@@ -133,6 +133,7 @@ export function GuestbookSection({
                 deleteTitle="删除留言"
                 deleteDescription="确定删除这条留言？此操作不可撤销。"
                 highlightId={highlightId}
+                idPrefix="guestbook-msg"
               />
             </div>
           ))}
