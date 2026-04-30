@@ -106,7 +106,9 @@ if [ -f .env.local ]; then
   source .env.local
   set +a
 fi
-pm2 stop "$PM2_NAME" 2>/dev/null || true
+if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
+  pm2 delete "$PM2_NAME" 2>/dev/null || true
+fi
 pm2 start scripts/ecosystem.config.js --only "$PM2_NAME"
 pm2 save
 echo "✓ 新版本已启动"
