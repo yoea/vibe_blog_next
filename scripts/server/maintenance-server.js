@@ -7,7 +7,7 @@ const path = require('path')
 
 const port = parseInt(process.env.PORT, 10) || 8083
 const template = fs.readFileSync(
-  path.join(__dirname, '..', 'public', 'maintenance.html'),
+  path.join(__dirname, '..', '..', 'public', 'maintenance.html'),
   'utf-8'
 )
 

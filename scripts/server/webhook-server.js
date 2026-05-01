@@ -12,7 +12,7 @@ const MAX_BODY = 1024 * 1024 // 1 MB
 
 function loadEnvFile() {
   try {
-    const envPath = path.join(__dirname, '..', '.env.local')
+    const envPath = path.join(__dirname, '..', '..', '.env.local')
     const content = fs.readFileSync(envPath, 'utf8')
     for (const line of content.split('\n')) {
       const trimmed = line.trim()

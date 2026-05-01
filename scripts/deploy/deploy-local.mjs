@@ -16,8 +16,8 @@ const ARTIFACT_NAME = 'deploy-artifact.tar.gz'
 
 const skipBuild = process.argv.includes('--skip-build')
 
-// 项目根目录（scripts/ 的上一级）
-const PROJECT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+// 项目根目录（scripts/deploy/ 的上两级）
+const PROJECT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 process.chdir(PROJECT_DIR)
 
 // SSH 连接使用 ~/.ssh/config 中的 Host 别名，端口/密钥/用户名均由 config 管理
