@@ -10,8 +10,7 @@ permissions:
 
 jobs:
   release:
-    name: Create GitHub Release
-    if: github.repository == 'yoea/vibe_blog_next'
+    name: Create Gitea Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +29,18 @@ jobs:
           echo "$NOTES" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Create Release
+      - name: Create Release via API
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ github.ref_name }}" --title "v${{ github.ref_name }}" --notes "${{ steps.notes.outputs.notes }}"
+          GITEA_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl --fail --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer ${GITEA_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${{ gitea.server_url }}/api/v1/repos/${{ github.repository }}/releases" \
+            -d "$(jq -n \
+              --arg tag "${GITHUB_REF_NAME}" \
+              --arg name "v${GITHUB_REF_NAME}" \
+              --arg body "${{ steps.notes.outputs.notes }}" \
+              '{tag_name: $tag, name: $name, body: $body}'
+            )"
