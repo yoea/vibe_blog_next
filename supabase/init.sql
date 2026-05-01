@@ -551,3 +551,29 @@ do $$ begin
   create policy "notifications_insert_authenticated" on notifications for insert with check (auth.uid() is not null);
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================
+-- Articles Archive（文章归档）
+-- ============================================
+
+create table if not exists articles_archive (
+  id uuid default gen_random_uuid() primary key,
+  original_id uuid not null,
+  author_id uuid not null,
+  title varchar(255) not null,
+  slug varchar(255) not null,
+  content text not null,
+  excerpt text,
+  published boolean default false,
+  is_pinned boolean default false,
+  created_at timestamptz not null,
+  updated_at timestamptz not null,
+  archived_at timestamptz default now(),
+  archived_by uuid references auth.users(id) on delete set null
+);
+
+create index if not exists idx_archive_archived_at on articles_archive(archived_at desc);
+create index if not exists idx_archive_title_search on articles_archive using gin (title gin_trgm_ops);
+create index if not exists idx_archive_original_id on articles_archive(original_id);
+
+alter table articles_archive enable row level security;

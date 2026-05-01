@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react'
+import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2, Archive } from 'lucide-react'
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
 import { toggleMaintenanceMode, updateAIConfig, updateICPConfig, toggleDeployNotify } from '@/lib/actions/admin-actions'
@@ -407,6 +407,24 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                   {aiSaving ? '保存中...' : '保存'}
                 </Button>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* 归档文章管理 */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h4 className="text-sm font-medium">归档文章管理</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  查看、搜索、恢复或永久删除已归档的文章
+                </p>
+              </div>
+              <Link href="/admin/archive">
+                <Button variant="outline" size="sm" className="shrink-0 hover:border-foreground/30 hover:shadow-sm">
+                  <Archive className="h-3.5 w-3.5 mr-1.5" />
+                  管理
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

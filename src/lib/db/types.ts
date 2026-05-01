@@ -87,6 +87,27 @@ export interface PostEditorData extends Post {
   draft_updated_at?: string | null
 }
 
+export interface ArchivedPost {
+  id: string
+  original_id: string
+  author_id: string
+  title: string
+  slug: string
+  content: string
+  excerpt: string | null
+  published: boolean
+  is_pinned: boolean
+  created_at: string
+  updated_at: string
+  archived_at: string
+  archived_by: string | null
+}
+
+export interface ArchivedPostWithAuthor extends ArchivedPost {
+  author_name: string | null
+  author_avatar: string | null
+}
+
 export type NotificationType = 'post_like' | 'post_comment' | 'guestbook_message'
 
 export interface Notification {
