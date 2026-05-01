@@ -46,6 +46,10 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `ci.yml` | push/PR to main | ESLint + TypeScript 类型检查 |
 | `release.yml` | push tag `v*` | 自动创建 GitHub Release，从 CHANGELOG.md 提取该版本的更新内容（新功能、修复、重构等）作为 release notes |
 
+> **CHANGELOG 格式**：standard-version 对 minor/major 生成 `## [0.5.0]`（两级标题），对 patch 生成 `### [0.4.3]`（三级标题）。release.yml 的 sed 提取使用 `^#{2,3}` 兼容两种格式。Release 标题直接使用 `${{ github.ref_name }}`（已含 `v` 前缀，无需再加）。
+>
+> **注意**：release workflow 执行的是 **tag 所指向提交** 的代码。如果 workflow 修复提交在 tag 之后，必须 `git tag -f` 将 tag 移到包含修复的提交，否则修复不生效。
+
 ## 项目架构
 
 ### 技术栈
