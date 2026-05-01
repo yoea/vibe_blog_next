@@ -22,7 +22,7 @@ export function DonateButton({ children }: { children?: ReactNode }) {
 
   return (
     <>
-      <div onClick={() => setOpen(true)}>{children}</div>
+      <span className="inline-flex" onClick={() => setOpen(true)}>{children}</span>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
