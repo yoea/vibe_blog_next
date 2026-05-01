@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 本地构建 + 上传部署脚本（Node.js 版，兼容 PowerShell/cmd/Git Bash）
-// 用法: node scripts/deploy-local.mjs [--skip-build]
+// 用法: node scripts/deploy/deploy-local.mjs [--skip-build]
 
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync, unlinkSync, statSync, mkdirSync, cpSync, rmSync } from 'node:fs'
@@ -283,7 +283,7 @@ try {
 // =========================
 console.log('触发远端部署...')
 try {
-  run(`ssh ${sshOpts} ${sshTarget} "bash ${SERVER_DIR}/scripts/deploy-remote.sh"`)
+  run(`ssh ${sshOpts} ${sshTarget} "bash ${SERVER_DIR}/scripts/deploy/deploy-remote.sh"`)
 } catch {
   console.error('❌ 远端部署失败')
   try { unlinkSync(artifactPath) } catch {}

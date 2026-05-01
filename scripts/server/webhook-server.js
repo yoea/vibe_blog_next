@@ -1,6 +1,6 @@
 // Webhook 接收服务器
 // 监听 GitHub/Gitee 推送事件，分支推送自动拉取代码保持服务端同步
-// 部署通过本地构建 + 上传完成，见 scripts/deploy-local.mjs
+// 部署通过本地构建 + 上传完成，见 scripts/deploy/deploy-local.mjs
 const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
@@ -45,8 +45,8 @@ function pullOnly() {
   proc.on('exit', (code) => {
     if (code === 0) {
       console.log(`[${localTime()}] git pull 完成，代码已更新至最新`)
-      // 执行 post-pull 钩子（需 WEBHOOK_AUTO_BUILD=true 且钩子存在）
-      const hookPath = path.join(DEPLOY_DIR, 'scripts', 'post-pull.sh')
+      // scripts\new-blog-deploy.sh部署的情况下执行 post-pull 钩子（需且钩子存在）
+      const hookPath = path.join(DEPLOY_DIR, 'scripts', 'server', 'post-pull.sh')
       if (process.env.WEBHOOK_AUTO_BUILD === 'true' && fs.existsSync(hookPath)) {
         console.log(`[${localTime()}] 执行 post-pull 钩子...`)
         const hook = spawn('bash', [hookPath], { cwd: DEPLOY_DIR, stdio: 'inherit', env: { ...process.env } })

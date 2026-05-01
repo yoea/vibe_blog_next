@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 自动扫描 src/app 下的 page.tsx，生成 sitemap 路由数据
-// 用法: node scripts/generate-sitemap.mjs
+// 用法: node scripts/build/generate-sitemap.mjs
 
 import { readdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, relative, dirname } from 'path'
@@ -68,8 +68,8 @@ const routes = scanRoutes(APP_DIR)
 
 // 生成文件内容
 const lines = [
-  '// 此文件由 scripts/generate-sitemap.mjs 自动生成，请勿手动编辑',
-  '// 运行 `node scripts/generate-sitemap.mjs` 重新生成',
+  '// 此文件由 scripts/build/generate-sitemap.mjs 自动生成，请勿手动编辑',
+  '// 运行 `node scripts/build/generate-sitemap.mjs` 重新生成',
   '',
   'export interface SitemapRoute {',
   '  path: string',

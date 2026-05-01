@@ -141,11 +141,11 @@ pm2 delete vibe_blog_next 2>/dev/null || true
 pm2 delete webhook 2>/dev/null || true
 
 # 启动主应用
-pm2 start scripts/ecosystem.config.js --only vibe_blog_next
+pm2 start scripts/server/ecosystem.config.js --only vibe_blog_next
 
 # 启动 webhook（如果存在）
-if [ -f "scripts/webhook-server.js" ]; then
-    pm2 start scripts/ecosystem.config.js --only webhook
+if [ -f "scripts/server/webhook-server.js" ]; then
+    pm2 start scripts/server/ecosystem.config.js --only webhook
 fi
 
 pm2 save

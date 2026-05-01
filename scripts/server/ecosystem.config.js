@@ -13,7 +13,7 @@ module.exports = {
     },
     {
       name: 'webhook',
-      script: 'scripts/webhook-server.js',
+      script: 'scripts/server/webhook-server.js',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       env: {
         WEBHOOK_PORT: 8084,

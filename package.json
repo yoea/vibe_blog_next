@@ -5,16 +5,16 @@
   "license": "AGPL-3.0",
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "prebuild": "node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/build/generate-sitemap.mjs",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
-    "sitemap:generate": "node scripts/generate-sitemap.mjs",
-    "release": "standard-version && node scripts/postrelease.js",
+    "sitemap:generate": "node scripts/build/generate-sitemap.mjs",
+    "release": "standard-version && node scripts/build/postrelease.js",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch",
-    "deploy:local": "node scripts/deploy-local.mjs"
+    "deploy:local": "node scripts/deploy/deploy-local.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

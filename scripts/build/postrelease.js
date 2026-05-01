@@ -5,9 +5,9 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 
-const pkg = require('../package.json')
+const pkg = require('../../package.json')
 const version = pkg.version
-const changelog = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8')
+const changelog = fs.readFileSync(path.join(__dirname, '..', '..', 'CHANGELOG.md'), 'utf8')
 
 // 从 CHANGELOG 中提取当前版本的 release notes
 // 兼容 ## [0.2.0]（minor/major）和 ### [0.1.12]（patch）两种格式
