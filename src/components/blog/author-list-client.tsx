@@ -184,10 +184,10 @@ export function AuthorListClient({
                     e.stopPropagation()
                     if (!isProtected) setConfirmDeleteId(user.id)
                   }}
-                  className={`mr-2 h-6 w-6 ${isProtected ? 'text-muted-foreground/40' : 'text-muted-foreground hover:text-destructive'}`}
-                  title={isProtected ? undefined : '删除用户'}
+                  className={`mr-2 h-6 w-6 ${isProtected ? 'text-muted-foreground/40 cursor-not-allowed' : 'text-muted-foreground hover:text-destructive'}`}
+                  title={isProtected ? '不可删除' : '删除用户'}
                 >
-                  {isProtected ? <Shield className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               )}
             </div>

@@ -463,7 +463,7 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                 contentLength >= CONTENT_MAX_ALERT
                   ? 'focus:ring-red-500 border-red-400'
                   : 'focus:ring-ring border-transparent'
-              } pr-16 min-h-[200px]`}
+              } pr-11 md:pr-16 min-h-[200px]`}
               />
               <button
                 type="button"

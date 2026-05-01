@@ -35,6 +35,11 @@ export function MarkdownPreview({ content }: { content: string }) {
           pre: ({ children, className }) => (
             <CodeBlock className={className}>{children}</CodeBlock>
           ),
+          table: ({ children }) => (
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <table>{children}</table>
+            </div>
+          ),
         }}
       >
         {content}

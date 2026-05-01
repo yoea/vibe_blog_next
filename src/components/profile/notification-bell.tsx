@@ -127,15 +127,15 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             <DialogTitle className="flex items-center justify-between pr-10">
               <span>通知</span>
               {total > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {unreadCount > 0 && (
                     <button
                       type="button"
                       onClick={handleMarkAllRead}
                       onMouseDown={(e) => e.preventDefault()}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 text-sm p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     >
-                      <CheckCheck className="h-3.5 w-3.5" />
+                      <CheckCheck className="h-4 w-4" />
                       <span className="hidden sm:inline">全部已读</span>
                     </button>
                   )}
@@ -143,9 +143,9 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                     type="button"
                     onClick={handleDismissAll}
                     onMouseDown={(e) => e.preventDefault()}
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                    className="flex items-center gap-1.5 text-sm p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                     <span className="hidden sm:inline">全部清空</span>
                   </button>
                 </div>
