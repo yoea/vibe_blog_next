@@ -30,11 +30,12 @@ interface Props {
   initialTags: TagWithCreator[]
   currentUserId: string | null
   isAdmin: boolean
+  showCreate?: boolean
 }
 
-export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
+export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = true }: Props) {
   const [tags, setTags] = useState(initialTags)
-  const [showCreate, setShowCreate] = useState(false)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newTagName, setNewTagName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<TagWithCreator | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -73,7 +74,7 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
         toast.error(result.error)
       } else {
         toast.success('标签已创建')
-        setShowCreate(false)
+        setShowCreateDialog(false)
         setNewTagName('')
         router.refresh()
       }
@@ -99,9 +100,9 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
   if (!tags.length) {
     return (
       <div className="space-y-4">
-        {currentUserId && (
+        {currentUserId && showCreate && (
           <div className="flex justify-end">
-            <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Button size="sm" onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4" />
               新建标签
             </Button>
@@ -140,8 +141,8 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
               </button>
             ))}
           </div>
-          {currentUserId && (
-            <Button size="sm" onClick={() => setShowCreate(true)}>
+          {currentUserId && showCreate && (
+            <Button size="sm" onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">新建标签</span>
             </Button>
@@ -181,7 +182,7 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
       </div>
 
       {/* Create dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>新建标签</DialogTitle>
@@ -194,14 +195,14 @@ export function TagManager({ initialTags, currentUserId, isAdmin }: Props) {
             onChange={(e) => setNewTagName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleCreate()
-              if (e.key === 'Escape') setShowCreate(false)
+              if (e.key === 'Escape') setShowCreateDialog(false)
             }}
             placeholder="标签名"
             maxLength={50}
             className="w-full px-3 py-2 rounded-md border bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)} disabled={isPending}>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={isPending}>
               取消
             </Button>
             <Button onClick={handleCreate} disabled={isPending || !newTagName.trim()}>

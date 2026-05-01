@@ -126,7 +126,7 @@ export default async function ProfilePage() {
           <Tags className="h-5 w-5" />
           <h2 className="text-xl font-bold">我的标签</h2>
         </div>
-        <TagManager initialTags={userTags} currentUserId={user.id} isAdmin={isAdmin} />
+        <TagManager initialTags={userTags} currentUserId={user.id} isAdmin={isAdmin} showCreate={false} />
       </section>
 
       {/* Module 4: Guestbook Messages */}
