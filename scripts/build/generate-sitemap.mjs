@@ -7,8 +7,8 @@ import { join, relative, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const APP_DIR = join(__dirname, '..', 'src', 'app')
-const OUTPUT = join(__dirname, '..', 'src', 'app', 'sitemap', 'sitemap-data.ts')
+const APP_DIR = join(__dirname, '..', '..', 'src', 'app')
+const OUTPUT = join(__dirname, '..', '..', 'src', 'app', 'sitemap', 'sitemap-data.ts')
 
 // 扫描所有 page.tsx 文件，生成路由路径
 function scanRoutes(dir, basePath = '') {
