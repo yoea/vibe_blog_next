@@ -88,10 +88,7 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
       {user ? (
         <>
           <Link href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
-            <span className="relative">
-              <User className="h-4 w-4" />
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 border border-background" />
-            </span>
+            <User className="h-4 w-4" />
             <span>个人中心</span>
           </Link>
           <Link href="/settings" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors">
@@ -114,6 +111,9 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
           <span className="font-bold text-lg">{siteTitle}</span>
+          {user && (
+            <span className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0" title="已登录" />
+          )}
         </Link>
 
         {/* Desktop nav */}

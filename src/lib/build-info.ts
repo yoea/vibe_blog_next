@@ -12,12 +12,16 @@ export interface BuildInfo {
 }
 
 export function getBuildInfo(): BuildInfo {
-  let pkgVersion = '0.1.0'
-  try {
-    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'))
-    pkgVersion = pkg.version ?? pkgVersion
-  } catch {
-    // fallback
+  let pkgVersion = '0.4.0'
+  if (process.env.NEXT_PUBLIC_BUILD_VERSION) {
+    pkgVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
+  } else {
+    try {
+      const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'))
+      pkgVersion = pkg.version ?? pkgVersion
+    } catch {
+      // fallback
+    }
   }
 
   const info: BuildInfo = {

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCommentsForPost } from '@/lib/db/queries'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
@@ -164,14 +165,17 @@ export async function deleteComment(commentId: string, postId: string): Promise<
     return { error: '无权限删除此评论' }
   }
 
+  // Use admin client to bypass RLS (post_author_comment_delete policy subquery may be blocked)
+  const admin = createAdminClient()
+
   // Also delete child replies (1-level nesting)
-  const { error: childError } = await supabase.from('post_comments')
+  const { error: childError } = await admin.from('post_comments')
     .delete()
     .eq('parent_id', commentId)
 
   if (childError) return { error: `删除回复失败: ${childError.message}` }
 
-  const { error, count } = await supabase.from('post_comments')
+  const { error, count } = await admin.from('post_comments')
     .delete({ count: 'exact' })
     .eq('id', commentId)
 
