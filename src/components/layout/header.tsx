@@ -8,7 +8,7 @@ import { LogIn, FileText, Settings, Menu, X, Sun, Moon, SunMoon, Home, User, Sea
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 
 export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMaintenance?: boolean }) {
-  const [user, setUser] = useState<{ email: string | null } | null>(null)
+  const [user, setUser] = useState<{ email: string | null; displayName: string | null } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMac, setIsMac] = useState(false)
   const [sticky, setSticky] = useState(false)
@@ -68,15 +68,31 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
 
     const syncSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) setUser({ email: session.user.email ?? null })
-      else setUser(null)
+      if (session?.user) {
+        const { data: settings } = await supabase
+          .from('user_settings')
+          .select('display_name')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+        setUser({ email: session.user.email ?? null, displayName: settings?.display_name ?? null })
+      } else {
+        setUser(null)
+      }
     }
 
     syncSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) setUser({ email: session.user.email ?? null })
-      else setUser(null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { data: settings } = await supabase
+          .from('user_settings')
+          .select('display_name')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+        setUser({ email: session.user.email ?? null, displayName: settings?.display_name ?? null })
+      } else {
+        setUser(null)
+      }
     })
 
     // 页面重新可见时校验 session（处理 tab 切换后 token 过期的场景）
@@ -128,7 +144,7 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
             <span className="font-bold text-lg">{siteTitle}</span>
           </Link>
           {user && (
-            <Link href="/profile" className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0 hover:ring-2 hover:ring-green-500/30 transition-all" title="已登录·点击访问个人中心" />
+            <Link href="/profile" className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0 hover:ring-2 hover:ring-green-500/30 transition-all" title={user.displayName ? `${user.displayName} · 个人中心` : '在线 · 个人中心'} />
           )}
         </div>
 
