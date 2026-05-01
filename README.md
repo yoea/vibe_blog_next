@@ -145,6 +145,10 @@ pm2 resurrect                                  # 恢复保存的进程列表
 
 ---
 
+## 发版说明
+详细发版指南文档见 [doc/release.md](doc/release.md)。
+
+
 ## Supabase 生产环境配置
 
 部署到生产域名后，需要在 Supabase Dashboard 中更新回调地址：
