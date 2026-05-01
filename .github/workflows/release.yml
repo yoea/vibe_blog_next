@@ -22,7 +22,7 @@ jobs:
         id: notes
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          NOTES=$(sed -n "/^### \[${VERSION}\]/,/^### \[/p" CHANGELOG.md | sed '1d' | sed '$ { /^### \[/d; }')
+          NOTES=$(sed -nE "/^#{2,3} \[${VERSION}\]/,/^#{2,3} \[/p" CHANGELOG.md | sed '1d' | sed '$ { /^#{2,3} \[/d; }')
           if [ -z "$NOTES" ]; then
             NOTES="Release ${GITHUB_REF_NAME}"
           fi
@@ -33,4 +33,4 @@ jobs:
       - name: Create Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ github.ref_name }}" --title "v${{ github.ref_name }}" --notes "${{ steps.notes.outputs.notes }}"
+        run: gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes "${{ steps.notes.outputs.notes }}"
