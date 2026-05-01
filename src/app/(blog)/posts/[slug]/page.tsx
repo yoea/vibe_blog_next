@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   const { data: post } = await getPostBySlug(slug)
   if (!post) return { title: '文章不存在' }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `http://localhost:${process.env.PORT || 3000}`
   return {
     title: post.title,
     openGraph: {
@@ -30,10 +31,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
       publishedTime: post.created_at,
       modifiedTime: post.updated_at,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${slug}`,
-      images: process.env.NEXT_PUBLIC_SITE_URL
-        ? [{ url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`, width: 1200, height: 630 }]
-        : undefined,
+      url: `${siteUrl}/posts/${slug}`,
+      images: [{ url: `${siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
     },
   }
 }
@@ -126,7 +125,7 @@ export default async function PostPage({ params, searchParams }: PageProps) {
           initialCommentCount={post.comment_count}
           initialComments={comments ?? []}
           initialTotal={totalComments ?? 0}
-          shareUrl={`${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`}
+          shareUrl={`${process.env.NEXT_PUBLIC_SITE_URL ?? `http://localhost:${process.env.PORT || 3000}`}/posts/${post.slug}`}
           published={post.published}
           editButton={currentUserId === post.author_id ? (
             <Button variant="outline" size="sm">

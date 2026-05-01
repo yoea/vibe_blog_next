@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `http://localhost:${process.env.PORT || 3000}`
 
   // When forwarded from the proxy (code detected without callback path),
   // use the explicit redirect_to parameter instead of guessing the type.

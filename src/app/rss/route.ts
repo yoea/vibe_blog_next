@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `http://localhost:${process.env.PORT || 3000}`
   const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog'
   const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? ''
 
