@@ -69,13 +69,14 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const router = useRouter()
 
   const handleLogout = async () => {
-    const supabase = createClient()
-
-    // 先清除本地 session（不依赖网络，立即生效）
-    await supabase.auth.signOut({ scope: 'local' })
-
-    // 后台尝试撤销 refresh token（不阻塞用户）
-    supabase.auth.signOut({ scope: 'global' }).catch(() => {})
+    // 直接清除 sb-* auth cookie，绕过 SDK 可能的初始化/锁阻塞
+    document.cookie.split(';').forEach(c => {
+      const name = c.trim().split('=')[0]
+      if (name.startsWith('sb-')) {
+        document.cookie = `${name}=; path=/; max-age=0`
+        document.cookie = `${name}=; path=/; max-age=0; domain=${location.hostname}`
+      }
+    })
 
     toast.success('已退出登录')
     window.location.href = '/'
@@ -255,7 +256,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
             <CardTitle>账户安全</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={() => setShowChangePassword(true)} className="w-full sm:w-auto">修改密码</Button>
+            <Button variant="outline" onClick={() => setShowChangePassword(true)} className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm">修改密码</Button>
             <p className="text-xs text-muted-foreground mt-1">验证当前密码后设置新密码。</p>
           </CardContent>
         </Card>
@@ -268,7 +269,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
         </CardHeader>
         <CardContent>
           <DonateButton>
-            <Button variant="outline" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm">
               <Heart className="h-4 w-4 mr-1.5 text-red-500" />
               给网站作者充电
             </Button>
@@ -294,7 +295,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                     : '开启后访客将看到维护页面，管理员可在维护页面点击结束维护'}
                 </p>
               </div>
-              <Button variant={maintenanceMode ? 'destructive' : 'outline'} size="sm" onClick={handleMaintenanceToggle} disabled={maintenanceLoading} className="shrink-0">
+              <Button variant={maintenanceMode ? 'destructive' : 'outline'} size="sm" onClick={handleMaintenanceToggle} disabled={maintenanceLoading} className="shrink-0 hover:border-foreground/30 hover:shadow-sm">
                 <Wrench className="h-3.5 w-3.5 mr-1.5" />
                 {maintenanceLoading ? '处理中...' : maintenanceMode ? '关闭' : '开启'}
               </Button>
@@ -369,7 +370,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                   <Label htmlFor="icp-number">备案号</Label>
                   <Input id="icp-number" value={icpNumber} onChange={(e) => setIcpNumber(e.target.value)} placeholder="浙ICP备XXXXXXXX号-X" />
                 </div>
-                <Button variant="outline" size="sm" onClick={handleSaveICP} disabled={icpSaving} className="shrink-0 mb-px">
+                <Button variant="outline" size="sm" onClick={handleSaveICP} disabled={icpSaving} className="shrink-0 mb-px hover:border-foreground/30 hover:shadow-sm">
                   {icpSaving ? '保存中...' : '保存'}
                 </Button>
               </div>
@@ -402,7 +403,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
                     </button>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleSaveAIConfig} disabled={aiSaving} className="shrink-0 mb-px">
+                <Button variant="outline" size="sm" onClick={handleSaveAIConfig} disabled={aiSaving} className="shrink-0 mb-px hover:border-foreground/30 hover:shadow-sm">
                   {aiSaving ? '保存中...' : '保存'}
                 </Button>
               </div>
@@ -418,12 +419,12 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <button type="button" onClick={handleLogout} className="inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground h-8 gap-1.5 px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none select-none w-full sm:w-auto">退出登录</button>
+            <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm">退出登录</Button>
             <p className="text-xs text-muted-foreground mt-1">退出登录后，你将返回主页</p>
           </div>
           <Separator />
           <div>
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto">注销账号</Button>
+            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto hover:bg-destructive hover:text-destructive-foreground hover:shadow-sm">注销账号</Button>
             <p className="text-xs text-muted-foreground mt-1">注销后你的文章和评论将被保留，仅用户信息匿名化</p>
           </div>
         </CardContent>
