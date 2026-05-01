@@ -122,13 +122,15 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
   return (
     <header ref={headerRef} className={`border-b bg-background relative${sticky ? ' sticky top-0 z-50' : ''}`}>
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
-          <span className="font-bold text-lg">{siteTitle}</span>
+        <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
+            <span className="font-bold text-lg">{siteTitle}</span>
+          </Link>
           {user && (
-            <span className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0" title="已登录" />
+            <Link href="/profile" className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0 hover:ring-2 hover:ring-green-500/30 transition-all" title="已登录·点击访问个人中心" />
           )}
-        </Link>
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-2">
