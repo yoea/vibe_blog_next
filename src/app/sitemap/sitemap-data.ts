@@ -1,5 +1,5 @@
-// 此文件由 scripts/generate-sitemap.mjs 自动生成，请勿手动编辑
-// 运行 `node scripts/generate-sitemap.mjs` 重新生成
+// 此文件由 scripts/build/generate-sitemap.mjs 自动生成，请勿手动编辑
+// 运行 `node scripts/build/generate-sitemap.mjs` 重新生成
 
 export interface SitemapRoute {
   path: string

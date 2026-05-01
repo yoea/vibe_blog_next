@@ -71,35 +71,22 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const handleLogout = async () => {
     logger.info('退出登录按钮被点击')
     const supabase = createClient()
-    const timeoutMessage = '__signout_timeout__'
-    const timeoutPromise = new Promise<{ error: { message: string } }>((resolve) => {
-      window.setTimeout(() => resolve({ error: { message: timeoutMessage } }), 5000)
-    })
 
     try {
-      logger.info('1. 调用 signOut 方法')
-      const { error } = await Promise.race([supabase.auth.signOut(), timeoutPromise])
-      if (error && error.message !== timeoutMessage) {
+      logger.info('调用 signOut')
+      const { error } = await supabase.auth.signOut()
+      if (error) {
         logger.error('[logout] signOut error:', error)
         toast.error(error.message ?? '退出登录失败')
         return
       }
-
-      if (error?.message === timeoutMessage) {
-        logger.warn('[logout] signOut timeout, forcing redirect')
-      } else {
-        logger.info('[logout] signOut result: ok')
-      }
-
-      toast.success('已退出登录')
-      window.location.href = '/'
-      return
+      logger.info('[logout] signOut ok')
     } catch (e) {
       logger.error('[logout] signOut exception:', e)
-      toast.error('退出登录时发生错误')
-      window.location.href = '/'
-      return
     }
+
+    toast.success('已退出登录')
+    window.location.href = '/'
   }
 
   const handleDeleteAccount = async () => {

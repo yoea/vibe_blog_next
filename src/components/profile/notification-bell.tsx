@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Bell, X, Eye, CheckCheck, Trash2 } from 'lucide-react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,7 @@ interface Props {
 }
 
 export function NotificationBell({ initialUnreadCount }: Props) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount)
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -172,14 +173,8 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             ) : (
               <>
                 {notifications.map(n => (
-                  <Link
+                  <div
                     key={n.id}
-                    href={getNotificationLink(n)}
-                    onClick={async (e) => {
-                      if ((e.target as HTMLElement).closest('[data-action]')) return
-                      await handleView(n.id, !n.is_read)
-                      setOpen(false)
-                    }}
                     className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-primary/5 border-l-2 border-l-primary -mx-2 px-2 rounded-md' : 'opacity-60'}`}
                   >
                     <Avatar
@@ -189,7 +184,14 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                       size="xs"
                       className="mt-0.5 shrink-0"
                     />
-                    <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex-1 min-w-0 space-y-1"
+                      onClick={async (e) => {
+                        if ((e.target as HTMLElement).closest('[data-action]')) return
+                        await handleView(n.id, !n.is_read)
+                        router.push(getNotificationLink(n))
+                        setOpen(false)
+                      }}
+                    >
                       <div className="text-sm">
                         <span className="font-medium">{n.actor_name ?? '匿名用户'}</span>
                         <span className="text-muted-foreground ml-1">{getNotificationText(n.type, n.post_title)}</span>
@@ -221,7 +223,7 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                         </span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
 
                 {hasMore ? (
