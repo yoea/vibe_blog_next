@@ -424,7 +424,7 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
           </div>
           <Separator />
           <div>
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto hover:bg-destructive hover:text-destructive-foreground hover:shadow-sm">注销账号</Button>
+            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="w-full sm:w-auto hover:bg-destructive/30 hover:shadow-sm">注销账号</Button>
             <p className="text-xs text-muted-foreground mt-1">注销后你的文章和评论将被保留，仅用户信息匿名化</p>
           </div>
         </CardContent>
