@@ -33,10 +33,18 @@ npm run deploy:local    # 本地构建 + 上传部署
    - 自动生成/更新 `CHANGELOG.md`
    - 创建 `chore: release vX.Y.Z` commit
    - postrelease.js 创建附注 git tag（含 CHANGELOG 内容）
-2. `git push origin main && git push origin vX.Y.Z` 推送到 Gitee
-3. `git push github main && git push github vX.Y.Z` 推送到 GitHub
+2. `git push --follow-tags origin main` 推送到 Gitee
+3. `git push --follow-tags github main` 推送到 GitHub
+4. GitHub Actions 自动创建 Release（从 CHANGELOG.md 提取更新内容作为 release notes）
 
 版本号唯一来源是 `package.json` 的 `version` 字段，构建时通过 `deploy-local.mjs` 注入 `NEXT_PUBLIC_BUILD_VERSION`。Git tag 只是标记，不参与版本显示。
+
+### GitHub Actions（`.github/workflows/`）
+
+| 文件 | 触发条件 | 功能 |
+|------|---------|------|
+| `ci.yml` | push/PR to main | ESLint + TypeScript 类型检查 |
+| `release.yml` | push tag `v*` | 自动创建 GitHub Release，从 CHANGELOG.md 提取该版本的更新内容（新功能、修复、重构等）作为 release notes |
 
 ## 项目架构
 
