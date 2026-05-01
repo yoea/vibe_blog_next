@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.4.2...v0.4.3) (2026-05-01)
+
 ### [0.4.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.4.1...v0.4.2) (2026-05-01)
 
 
