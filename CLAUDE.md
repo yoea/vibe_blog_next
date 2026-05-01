@@ -8,7 +8,7 @@
 
 开发者名叫Ethan/伊森。
 
-要求每次重启claude之后，先运行npm run dev以启动项目运行
+要求每次claude code启动本项目之后，先运行npm run dev以启动开发服务器运行
 
 ## 常用命令
 
