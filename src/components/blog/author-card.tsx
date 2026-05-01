@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react'
-import { Shield } from 'lucide-react'
-import { Avatar } from '@/components/ui/avatar'
+import type { ReactNode } from 'react';
+import { Shield } from 'lucide-react';
+import { Avatar } from '@/components/ui/avatar';
 
 interface StatItem {
-  icon: ReactNode
-  label: string
-  href?: string
+  icon: ReactNode;
+  label: string;
+  href?: string;
 }
 
 export function AuthorCard({
@@ -16,12 +16,12 @@ export function AuthorCard({
   actions,
   isAdmin,
 }: {
-  userId: string
-  displayName: string
-  avatarUrl?: string | null
-  stats?: StatItem[]
-  actions?: ReactNode
-  isAdmin?: boolean
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  stats?: StatItem[];
+  actions?: ReactNode;
+  isAdmin?: boolean;
 }) {
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
@@ -44,7 +44,9 @@ export function AuthorCard({
                 </span>
               )}
             </h1>
-            <p className="text-xs text-muted-foreground">ID: {userId.slice(0, 8)}</p>
+            <p className="text-xs text-muted-foreground">
+              ID: {userId.slice(0, 8)}
+            </p>
           </div>
           {actions}
         </div>
@@ -56,20 +58,24 @@ export function AuthorCard({
                   {stat.icon}
                   {stat.label}
                 </>
-              )
+              );
               return stat.href ? (
-                <a key={i} href={stat.href} className="inline-flex items-center gap-1 hover:text-foreground transition-colors">
+                <a
+                  key={i}
+                  href={stat.href}
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                >
                   {content}
                 </a>
               ) : (
                 <span key={i} className="inline-flex items-center gap-1">
                   {content}
                 </span>
-              )
+              );
             })}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,30 +1,38 @@
-import { getPostsByTag } from '@/lib/db/queries'
-import { loadMorePostsByTag } from '@/lib/actions/post-actions'
-import { PostListClient } from '@/components/blog/post-list-client'
-import { linkRefTag } from '@/lib/constants'
-import { notFound } from 'next/navigation'
-import type { Metadata } from 'next'
+import { getPostsByTag } from '@/lib/db/queries';
+import { loadMorePostsByTag } from '@/lib/actions/post-actions';
+import { PostListClient } from '@/components/blog/post-list-client';
+import { linkRefTag } from '@/lib/constants';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug: rawSlug } = await params
-  const slug = decodeURIComponent(rawSlug)
-  const { tagName } = await getPostsByTag(slug, 1, 1)
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const { tagName } = await getPostsByTag(slug, 1, 1);
   return {
     title: tagName ? `标签：${tagName}` : '标签',
-  }
+  };
 }
 
 export default async function TagPage({ params }: PageProps) {
-  const { slug: rawSlug } = await params
-  const slug = decodeURIComponent(rawSlug)
-  const { data: posts, count, tagName, tagColor, error } = await getPostsByTag(slug, 1, 10)
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const {
+    data: posts,
+    count,
+    tagName,
+    tagColor,
+    error,
+  } = await getPostsByTag(slug, 1, 10);
 
   if (error || !tagName) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -47,5 +55,5 @@ export default async function TagPage({ params }: PageProps) {
         linkRef={linkRefTag(tagName)}
       />
     </div>
-  )
+  );
 }

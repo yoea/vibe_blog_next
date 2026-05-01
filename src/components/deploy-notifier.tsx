@@ -1,50 +1,58 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog'
-import { BadgeCheck, GitCommitHorizontal, Calendar, ExternalLink, Hash, Users, Server } from 'lucide-react'
+} from '@/components/ui/dialog';
+import {
+  BadgeCheck,
+  GitCommitHorizontal,
+  Calendar,
+  ExternalLink,
+  Hash,
+  Users,
+  Server,
+} from 'lucide-react';
 
-const STORAGE_KEY = 'last_known_commit'
+const STORAGE_KEY = 'last_known_commit';
 
 interface Props {
-  enabled: boolean
+  enabled: boolean;
 }
 
 export function DeployNotifier({ enabled }: Props) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
-  const buildCommit = process.env.NEXT_PUBLIC_BUILD_COMMIT
-  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION
-  const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME
-  const buildCommitCount = process.env.NEXT_PUBLIC_BUILD_COMMIT_COUNT
-  const buildContributors = process.env.NEXT_PUBLIC_BUILD_CONTRIBUTORS
-  const buildHost = process.env.NEXT_PUBLIC_BUILD_HOST
+  const buildCommit = process.env.NEXT_PUBLIC_BUILD_COMMIT;
+  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION;
+  const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME;
+  const buildCommitCount = process.env.NEXT_PUBLIC_BUILD_COMMIT_COUNT;
+  const buildContributors = process.env.NEXT_PUBLIC_BUILD_CONTRIBUTORS;
+  const buildHost = process.env.NEXT_PUBLIC_BUILD_HOST;
   const formattedBuildTime = buildTime
     ? new Date(buildTime).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
-    : null
+    : null;
 
   useEffect(() => {
-    if (!enabled || !buildCommit) return
+    if (!enabled || !buildCommit) return;
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === null) {
         // First visit — store current commit, don't show dialog
-        localStorage.setItem(STORAGE_KEY, buildCommit)
-        return
+        localStorage.setItem(STORAGE_KEY, buildCommit);
+        return;
       }
       if (stored !== buildCommit) {
         // Version changed — show dialog and update stored commit
-        setOpen(true)
-        localStorage.setItem(STORAGE_KEY, buildCommit)
+        setOpen(true);
+        localStorage.setItem(STORAGE_KEY, buildCommit);
       }
     } catch {}
-  }, [enabled, buildCommit])
+  }, [enabled, buildCommit]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -54,9 +62,7 @@ export function DeployNotifier({ enabled }: Props) {
             <BadgeCheck className="h-5 w-5 text-green-500" />
             部署成功
           </DialogTitle>
-          <DialogDescription>
-            站点已升级到新版本
-          </DialogDescription>
+          <DialogDescription>站点已升级到新版本</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
           {buildVersion && (
@@ -123,5 +129,5 @@ export function DeployNotifier({ enabled }: Props) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

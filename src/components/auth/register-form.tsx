@@ -1,60 +1,67 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, ShieldCheck, Mail, CheckCircle, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Mail,
+  CheckCircle,
+  Loader2,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 export function RegisterForm() {
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const strengthChecks = [
     { label: '至少 8 个字符', pass: password.length >= 8 },
     { label: '包含大写字母', pass: /[A-Z]/.test(password) },
     { label: '包含小写字母', pass: /[a-z]/.test(password) },
     { label: '包含数字', pass: /\d/.test(password) },
-  ]
-  const strength = strengthChecks.filter((c) => c.pass).length
+  ];
+  const strength = strengthChecks.filter((c) => c.pass).length;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const pwd = formData.get('password') as string
-    const confirm = formData.get('confirmPassword') as string
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const pwd = formData.get('password') as string;
+    const confirm = formData.get('confirmPassword') as string;
 
     if (pwd.length < 8) {
-      setError('密码长度至少 8 个字符')
-      setLoading(false)
-      return
+      setError('密码长度至少 8 个字符');
+      setLoading(false);
+      return;
     }
     if (pwd !== confirm) {
-      setError('两次输入的密码不一致')
-      setLoading(false)
-      return
+      setError('两次输入的密码不一致');
+      setLoading(false);
+      return;
     }
 
-    const supabase = createClient()
-    const { error: err } = await supabase.auth.signUp({ email, password: pwd })
-    setLoading(false)
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signUp({ email, password: pwd });
+    setLoading(false);
 
     if (err) {
-      setError(err.message)
-      toast.error(err.message)
+      setError(err.message);
+      toast.error(err.message);
     } else {
-      setSuccess(true)
-      toast.success('注册成功！请检查邮箱完成验证')
+      setSuccess(true);
+      toast.success('注册成功！请检查邮箱完成验证');
     }
   }
 
@@ -66,14 +73,22 @@ export function RegisterForm() {
             <CheckCircle className="h-5 w-5 text-green-600" />
             注册成功！
           </p>
-          <p className="text-sm text-green-700">请检查邮箱完成验证后即可登录。</p>
-          <p className="text-sm text-green-700">如果未收到邮件，请在 Supabase Dashboard 中关闭 "Confirm email"。</p>
-          <Button variant="outline" onClick={() => window.location.href = '/login'} className="mt-2">
+          <p className="text-sm text-green-700">
+            请检查邮箱完成验证后即可登录。
+          </p>
+          <p className="text-sm text-green-700">
+            如果未收到邮件，请在 Supabase Dashboard 中关闭 "Confirm email"。
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => (window.location.href = '/login')}
+            className="mt-2"
+          >
             去登录
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -81,35 +96,70 @@ export function RegisterForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">邮箱</Label>
-          <Input id="email" name="email" type="email" placeholder="you@example.com" required autoComplete="email" />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            required
+            autoComplete="email"
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="password">密码</Label>
           <div className="relative">
-            <Input id="password" name="password" type={showPassword ? 'text' : 'password'}
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              required minLength={8} autoComplete="new-password" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {password.length > 0 && (
             <div className="space-y-1.5 pt-1">
               <div className="flex gap-1">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
-                    i <= strength ? (
-                      strength <= 1 ? 'bg-red-400' : strength <= 2 ? 'bg-yellow-400' : strength <= 3 ? 'bg-blue-400' : 'bg-green-500'
-                    ) : 'bg-muted'
-                  }`} />
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full transition-colors ${
+                      i <= strength
+                        ? strength <= 1
+                          ? 'bg-red-400'
+                          : strength <= 2
+                            ? 'bg-yellow-400'
+                            : strength <= 3
+                              ? 'bg-blue-400'
+                              : 'bg-green-500'
+                        : 'bg-muted'
+                    }`}
+                  />
                 ))}
               </div>
               <ul className="space-y-0.5">
                 {strengthChecks.map((check) => (
-                  <li key={check.label} className={`text-xs flex items-center gap-1 ${check.pass ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    <ShieldCheck className={`h-3 w-3 ${check.pass ? 'text-green-500' : 'opacity-30'}`} />
+                  <li
+                    key={check.label}
+                    className={`text-xs flex items-center gap-1 ${check.pass ? 'text-green-600' : 'text-muted-foreground'}`}
+                  >
+                    <ShieldCheck
+                      className={`h-3 w-3 ${check.pass ? 'text-green-500' : 'opacity-30'}`}
+                    />
                     {check.label}
                   </li>
                 ))}
@@ -121,12 +171,26 @@ export function RegisterForm() {
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">确认密码</Label>
           <div className="relative">
-            <Input id="confirmPassword" name="confirmPassword" type={showConfirm ? 'text' : 'password'}
-              value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-              required minLength={8} autoComplete="new-password" />
-            <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirm ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showConfirm ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {confirmPassword.length > 0 && password !== confirmPassword && (
@@ -136,7 +200,13 @@ export function RegisterForm() {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button type="submit" disabled={loading || password.length < 8 || password !== confirmPassword} className="w-full">
+        <Button
+          type="submit"
+          disabled={
+            loading || password.length < 8 || password !== confirmPassword
+          }
+          className="w-full"
+        >
           {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {loading ? '注册中...' : '注册'}
         </Button>
@@ -163,5 +233,5 @@ export function RegisterForm() {
         </ul>
       </div>
     </div>
-  )
+  );
 }

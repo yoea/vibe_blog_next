@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useFormStatus } from 'react-dom'
-import { deletePost } from '@/lib/actions/post-actions'
-import type { PostWithAuthor } from '@/lib/db/types'
-import Link from 'next/link'
+import { useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { deletePost } from '@/lib/actions/post-actions';
+import type { PostWithAuthor } from '@/lib/db/types';
+import Link from 'next/link';
 
 export function PostActions({ post }: { post: PostWithAuthor }) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('确定删除这篇文章？')) return
-    setIsDeleting(true)
-    await deletePost(post.id)
-    window.location.href = '/'
-  }
+    if (!confirm('确定删除这篇文章？')) return;
+    setIsDeleting(true);
+    await deletePost(post.id);
+    window.location.href = '/';
+  };
 
   return (
     <div className="flex items-center gap-2 pt-2 border-t">
@@ -31,5 +31,5 @@ export function PostActions({ post }: { post: PostWithAuthor }) {
         {isDeleting ? '删除中...' : '删除'}
       </button>
     </div>
-  )
+  );
 }

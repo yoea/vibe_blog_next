@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -130,7 +130,11 @@
   }
   body {
     @apply text-foreground;
-    background: linear-gradient(135deg, var(--background) 0%, var(--background-secondary) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--background) 0%,
+      var(--background-secondary) 100%
+    );
     min-height: 100dvh;
     -webkit-text-size-adjust: 100%;
   }
@@ -185,7 +189,8 @@
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
   font-size: 0.875em;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 .markdown-body pre {
   background-color: var(--color-muted);
@@ -200,7 +205,8 @@
   padding: 0;
   color: inherit;
   font-size: 0.875rem;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
 }
 
 .markdown-body a {
@@ -244,7 +250,9 @@
 }
 
 #nprogress .peg {
-  box-shadow: 0 0 10px #6366f1, 0 0 5px #6366f1;
+  box-shadow:
+    0 0 10px #6366f1,
+    0 0 5px #6366f1;
 }
 
 /* 细滚动条 */
@@ -265,8 +273,12 @@
 
 /* 留言/评论高亮动画 */
 @keyframes highlight-flash {
-  0% { background-color: oklch(0.56 0.22 266 / 0.15); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: oklch(0.56 0.22 266 / 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 .highlight-flash {
   animation: highlight-flash 2.5s ease-out forwards;

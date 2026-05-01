@@ -1,266 +1,313 @@
-'use client'
+'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useFormStatus } from 'react-dom'
-import { useRouter } from 'next/navigation'
-import { MarkdownPreview } from '@/components/shared/markdown-preview'
-import { Separator } from '@/components/ui/separator'
-import { Button } from '@/components/ui/button'
-import { savePost } from '@/lib/actions/post-actions'
-import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save'
-import { toast } from 'sonner'
-import type { PostWithAuthor } from '@/lib/db/types'
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useRouter } from 'next/navigation';
+import { MarkdownPreview } from '@/components/shared/markdown-preview';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { savePost } from '@/lib/actions/post-actions';
+import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save';
+import { toast } from 'sonner';
+import type { PostWithAuthor } from '@/lib/db/types';
 
-const CONTENT_MAX_LENGTH = 50000
-const CONTENT_MAX_ALERT = CONTENT_MAX_LENGTH * 0.95
-const SUMMARY_COOLDOWN_MS = 10000
-const SUMMARY_MAX_LENGTH = 140
-const SUMMARY_MIN_CONTENT_LENGTH = 100
+const CONTENT_MAX_LENGTH = 50000;
+const CONTENT_MAX_ALERT = CONTENT_MAX_LENGTH * 0.95;
+const SUMMARY_COOLDOWN_MS = 10000;
+const SUMMARY_MAX_LENGTH = 140;
+const SUMMARY_MIN_CONTENT_LENGTH = 100;
 
 interface Props {
-  initialData?: PostWithAuthor
-  suggestedTags?: { name: string; slug: string; color: string | null; post_count: number }[]
+  initialData?: PostWithAuthor;
+  suggestedTags?: {
+    name: string;
+    slug: string;
+    color: string | null;
+    post_count: number;
+  }[];
 }
 
 export function PostEditor({ initialData, suggestedTags }: Props) {
-  const [tab, setTab] = useState<'edit' | 'preview'>('edit')
-  const [fullscreen, setFullscreen] = useState(false)
-  const [fsTab, setFsTab] = useState<'edit' | 'preview'>('edit')
-  const [error, setError] = useState('')
-  const [summaryLoading, setSummaryLoading] = useState(false)
-  const [summaryCooldown, setSummaryCooldown] = useState(false)
-  const [tagGenerating, setTagGenerating] = useState(false)
-  const [tagCooldown, setTagCooldown] = useState(false)
-  const [aiAlternative, setAiAlternative] = useState<string[]>([])
+  const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+  const [fullscreen, setFullscreen] = useState(false);
+  const [fsTab, setFsTab] = useState<'edit' | 'preview'>('edit');
+  const [error, setError] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryCooldown, setSummaryCooldown] = useState(false);
+  const [tagGenerating, setTagGenerating] = useState(false);
+  const [tagCooldown, setTagCooldown] = useState(false);
+  const [aiAlternative, setAiAlternative] = useState<string[]>([]);
 
-  const [modelName, setModelName] = useState('')
-  const lastSummaryTime = useRef(0)
-  const lastTagTime = useRef(0)
-  const router = useRouter()
-  const isEditing = !!initialData
+  const [modelName, setModelName] = useState('');
+  const lastSummaryTime = useRef(0);
+  const lastTagTime = useRef(0);
+  const router = useRouter();
+  const isEditing = !!initialData;
 
   // Post identity (for new posts, these start null and get set after first auto-save)
-  const [postId, setPostId] = useState<string | null>(initialData?.id ?? null)
-  const [slug, setSlug] = useState<string | null>(initialData?.slug ?? null)
+  const [postId, setPostId] = useState<string | null>(initialData?.id ?? null);
+  const [slug, setSlug] = useState<string | null>(initialData?.slug ?? null);
 
   // Editor state — prefer cloud draft over published data
-  const draftData = initialData && 'draft_title' in initialData
-    ? { title: (initialData as any).draft_title as string, content: (initialData as any).draft_content as string, excerpt: (initialData as any).draft_excerpt as string | null }
-    : null
-  const [title, setTitle] = useState(draftData?.title ?? initialData?.title ?? '')
-  const [content, setContent] = useState(draftData?.content ?? initialData?.content ?? '')
-  const [published, setPublished] = useState(initialData?.published ?? false)
-  const [excerpt, setExcerpt] = useState(draftData?.excerpt ?? initialData?.excerpt ?? '')
+  const draftData =
+    initialData && 'draft_title' in initialData
+      ? {
+          title: (initialData as any).draft_title as string,
+          content: (initialData as any).draft_content as string,
+          excerpt: (initialData as any).draft_excerpt as string | null,
+        }
+      : null;
+  const [title, setTitle] = useState(
+    draftData?.title ?? initialData?.title ?? '',
+  );
+  const [content, setContent] = useState(
+    draftData?.content ?? initialData?.content ?? '',
+  );
+  const [published, setPublished] = useState(initialData?.published ?? false);
+  const [excerpt, setExcerpt] = useState(
+    draftData?.excerpt ?? initialData?.excerpt ?? '',
+  );
   const [tags, setTags] = useState<string[]>(
     initialData && 'tags' in initialData
-      ? (initialData as any).tags?.map((t: any) => t.name) ?? []
-      : []
-  )
-  const [tagInput, setTagInput] = useState('')
-  const contentRef = useRef<HTMLTextAreaElement>(null)
+      ? ((initialData as any).tags?.map((t: any) => t.name) ?? [])
+      : [],
+  );
+  const [tagInput, setTagInput] = useState('');
+  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const autoGrow = useCallback(() => {
-    const el = contentRef.current
-    if (!el) return
+    const el = contentRef.current;
+    if (!el) return;
     // Save scroll position — setting height='auto' briefly collapses the textarea,
     // causing the browser to auto-scroll to keep the cursor visible.
-    const scrollX = window.scrollX
-    const scrollY = window.scrollY
-    el.style.height = 'auto'
-    el.style.height = el.scrollHeight + 120 + 'px'
-    window.scrollTo(scrollX, scrollY)
-  }, [])
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 120 + 'px';
+    window.scrollTo(scrollX, scrollY);
+  }, []);
 
   // Cloud auto-save
-  const { status: autoSaveStatus, countdown, hasContent, needsSave, retry } = useAutoSave({
+  const {
+    status: autoSaveStatus,
+    countdown,
+    hasContent,
+    needsSave,
+    retry,
+  } = useAutoSave({
     postId,
     title,
     content,
     excerpt,
     onPostCreated: useCallback((newPostId: string, newSlug: string) => {
-      setPostId(newPostId)
-      setSlug(newSlug)
+      setPostId(newPostId);
+      setSlug(newSlug);
       // Update the URL so refresh goes to the edit page
-      window.history.replaceState(null, '', `/posts-edit/${newSlug}`)
+      window.history.replaceState(null, '', `/posts-edit/${newSlug}`);
     }, []),
-  })
+  });
 
   useEffect(() => {
-    autoGrow()
-  }, [content, tab, autoGrow])
+    autoGrow();
+  }, [content, tab, autoGrow]);
 
   useEffect(() => {
     fetch('/api/generate-summary')
-      .then(r => r.json())
-      .then(data => setModelName(data.modelName))
-      .catch(() => {})
-  }, [])
+      .then((r) => r.json())
+      .then((data) => setModelName(data.modelName))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
-    if (!fullscreen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFullscreen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [fullscreen])
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fullscreen]);
 
-  const contentLength = content.trim().length
-  const canGenerateSummary = contentLength >= SUMMARY_MIN_CONTENT_LENGTH
+  const contentLength = content.trim().length;
+  const canGenerateSummary = contentLength >= SUMMARY_MIN_CONTENT_LENGTH;
 
-  const handleGenerateSummary = useCallback(async (): Promise<string | null> => {
+  const handleGenerateSummary = useCallback(async (): Promise<
+    string | null
+  > => {
     if (!canGenerateSummary) {
-      toast.warning(`正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`)
-      return null
+      toast.warning(
+        `正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`,
+      );
+      return null;
     }
 
-    const now = Date.now()
-    const elapsed = now - lastSummaryTime.current
+    const now = Date.now();
+    const elapsed = now - lastSummaryTime.current;
     if (elapsed < SUMMARY_COOLDOWN_MS) {
-      return null
+      return null;
     }
 
-    lastSummaryTime.current = now
-    setSummaryLoading(true)
-    setSummaryCooldown(true)
+    lastSummaryTime.current = now;
+    setSummaryLoading(true);
+    setSummaryCooldown(true);
 
     try {
       const res = await fetch('/api/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? '生成摘要失败')
-        return null
+        setError(data.error ?? '生成摘要失败');
+        return null;
       }
-      const summary = data.summary.slice(0, SUMMARY_MAX_LENGTH)
-      setExcerpt(summary)
-      setModelName(data.modelName)
-      return summary
+      const summary = data.summary.slice(0, SUMMARY_MAX_LENGTH);
+      setExcerpt(summary);
+      setModelName(data.modelName);
+      return summary;
     } catch {
-      setError('网络异常，请稍后重试')
-      return null
+      setError('网络异常，请稍后重试');
+      return null;
     } finally {
-      setSummaryLoading(false)
-      setTimeout(() => setSummaryCooldown(false), SUMMARY_COOLDOWN_MS)
+      setSummaryLoading(false);
+      setTimeout(() => setSummaryCooldown(false), SUMMARY_COOLDOWN_MS);
     }
-  }, [canGenerateSummary, content, title])
+  }, [canGenerateSummary, content, title]);
 
   // Helper: add a tag if not duplicate and under limit
   const addTag = useCallback((name: string) => {
     setTags((prev) => {
-      if (prev.length >= 7 || prev.includes(name)) return prev
-      return [...prev, name.slice(0, 20)]
-    })
-  }, [])
+      if (prev.length >= 7 || prev.includes(name)) return prev;
+      return [...prev, name.slice(0, 20)];
+    });
+  }, []);
 
   const handleGenerateTags = useCallback(async () => {
     if (contentLength < SUMMARY_MIN_CONTENT_LENGTH) {
-      toast.warning(`正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`)
-      return
+      toast.warning(
+        `正文内容不足，还需 ${SUMMARY_MIN_CONTENT_LENGTH - contentLength} 字`,
+      );
+      return;
     }
 
-    const now = Date.now()
-    if (now - lastTagTime.current < SUMMARY_COOLDOWN_MS) return
-    lastTagTime.current = now
-    setTagGenerating(true)
-    setTagCooldown(true)
+    const now = Date.now();
+    if (now - lastTagTime.current < SUMMARY_COOLDOWN_MS) return;
+    lastTagTime.current = now;
+    setTagGenerating(true);
+    setTagCooldown(true);
 
     try {
-      const existingNames = (suggestedTags ?? []).map((t) => t.name)
+      const existingNames = (suggestedTags ?? []).map((t) => t.name);
       const res = await fetch('/api/generate-tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content, existingTags: existingNames }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? '生成标签失败')
-        return
+        toast.error(data.error ?? '生成标签失败');
+        return;
       }
 
-      const highFreqNames = new Set((suggestedTags ?? []).map((t) => t.name))
-      const allAiTags: string[] = [...(data.recommended ?? []), ...(data.alternative ?? [])]
+      const highFreqNames = new Set((suggestedTags ?? []).map((t) => t.name));
+      const allAiTags: string[] = [
+        ...(data.recommended ?? []),
+        ...(data.alternative ?? []),
+      ];
 
       // Phase 1: auto-add tags matching existing high-frequency tags
-      const autoAdded = new Set<string>()
+      const autoAdded = new Set<string>();
       setTags((prev) => {
-        const next = [...prev]
+        const next = [...prev];
         for (const tag of allAiTags) {
-          if (next.length >= 7) break
+          if (next.length >= 7) break;
           if (highFreqNames.has(tag) && !next.includes(tag)) {
-            next.push(tag)
-            autoAdded.add(tag)
+            next.push(tag);
+            autoAdded.add(tag);
           }
         }
         // Phase 2: fill remaining with recommended tags
         for (const tag of data.recommended ?? []) {
-          if (next.length >= 7) break
+          if (next.length >= 7) break;
           if (!next.includes(tag) && !autoAdded.has(tag)) {
-            next.push(tag)
-            autoAdded.add(tag)
+            next.push(tag);
+            autoAdded.add(tag);
           }
         }
-        return next
-      })
+        return next;
+      });
 
       // Build alternative list: all AI tags minus ones already added
-      const allAddedNow = new Set(autoAdded)
+      const allAddedNow = new Set(autoAdded);
       setTags((prev) => {
         // prev already updated; use it to filter alternatives
-        return prev
-      })
+        return prev;
+      });
       // Collect alternatives: tags not auto-added and not in current tags
-      const alternatives = [...(data.recommended ?? []), ...(data.alternative ?? [])].filter(
-        (t) => !allAddedNow.has(t)
-      )
-      setAiAlternative(alternatives)
+      const alternatives = [
+        ...(data.recommended ?? []),
+        ...(data.alternative ?? []),
+      ].filter((t) => !allAddedNow.has(t));
+      setAiAlternative(alternatives);
 
       if (allAddedNow.size > 0) {
-        toast.success(`已添加 ${allAddedNow.size} 个标签`)
+        toast.success(`已添加 ${allAddedNow.size} 个标签`);
       }
     } catch {
-      toast.error('网络异常，请稍后重试')
+      toast.error('网络异常，请稍后重试');
     } finally {
-      setTagGenerating(false)
-      setTimeout(() => setTagCooldown(false), SUMMARY_COOLDOWN_MS)
+      setTagGenerating(false);
+      setTimeout(() => setTagCooldown(false), SUMMARY_COOLDOWN_MS);
     }
-  }, [contentLength, title, content, suggestedTags])
+  }, [contentLength, title, content, suggestedTags]);
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault()
-    if (!title.trim()) { toast.error('请输入文章标题'); return }
-    if (!content.trim()) { toast.error('请输入正文内容'); return }
+    e.preventDefault();
+    if (!title.trim()) {
+      toast.error('请输入文章标题');
+      return;
+    }
+    if (!content.trim()) {
+      toast.error('请输入正文内容');
+      return;
+    }
 
-    const formData = new FormData(e.currentTarget)
-    formData.set('title', title)
-    formData.set('content', content)
-    formData.set('excerpt', excerpt)
-    formData.set('published', published ? 'on' : 'off')
-    formData.set('tags', JSON.stringify(tags))
-    formData.set('_slug', slug ?? initialData?.slug ?? '')
+    const formData = new FormData(e.currentTarget);
+    formData.set('title', title);
+    formData.set('content', content);
+    formData.set('excerpt', excerpt);
+    formData.set('published', published ? 'on' : 'off');
+    formData.set('tags', JSON.stringify(tags));
+    formData.set('_slug', slug ?? initialData?.slug ?? '');
     // For new posts that have been auto-saved, pass the post ID
     if (!isEditing && postId && slug) {
-      formData.set('_mode', 'update')
-      formData.set('_id', postId)
+      formData.set('_mode', 'update');
+      formData.set('_id', postId);
     }
-    const result = await savePost(formData)
+    const result = await savePost(formData);
     if (result.error) {
-      setError(result.error)
+      setError(result.error);
     } else {
-      router.push('/profile')
-      router.refresh()
+      router.push('/profile');
+      router.refresh();
     }
-  }
+  };
 
   return (
     <div className="flex flex-col flex-1 gap-6 min-h-0">
-      <form onSubmit={handleSubmit} method="post" className="flex flex-col flex-1 gap-4 min-h-0" noValidate>
+      <form
+        onSubmit={handleSubmit}
+        method="post"
+        className="flex flex-col flex-1 gap-4 min-h-0"
+        noValidate
+      >
         {isEditing && <input type="hidden" name="_mode" value="update" />}
         {isEditing && <input type="hidden" name="_id" value={initialData.id} />}
 
         <div className="space-y-2 shrink-0">
-          <label htmlFor="title" className="block text-sm font-medium">标题</label>
+          <label htmlFor="title" className="block text-sm font-medium">
+            标题
+          </label>
           <input
             id="title"
             name="title"
@@ -272,17 +319,33 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
         </div>
 
         <div className="space-y-2 shrink-0">
-          <label htmlFor="excerpt" className="block text-sm font-medium">摘要</label>
+          <label htmlFor="excerpt" className="block text-sm font-medium">
+            摘要
+          </label>
           {modelName && (
             <p className="text-xs text-muted-foreground">
-              正文字数超100字后，可点击下方按钮由 <code className="font-mono">{modelName}</code> 总结摘要
+              正文字数超100字后，可点击下方按钮由{' '}
+              <code className="font-mono">{modelName}</code> 总结摘要
               {summaryLoading ? (
                 <span className="inline-flex items-center gap-1.5 text-xs text-blue-500 ml-2">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  <svg
+                    className="animate-spin h-3 w-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
                   生成中...
                 </span>
               ) : excerpt ? (
-                <button type="button" onClick={handleGenerateSummary} disabled={summaryCooldown} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 ml-2 underline">
+                <button
+                  type="button"
+                  onClick={handleGenerateSummary}
+                  disabled={summaryCooldown}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 ml-2 underline"
+                >
                   重新生成摘要
                 </button>
               ) : null}
@@ -300,18 +363,54 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                     ? 'text-gray-400 hover:bg-blue-500 hover:text-white cursor-pointer'
                     : 'text-gray-300 hover:bg-blue-500 hover:text-white cursor-pointer'
               }`}
-              title={summaryCooldown ? '冷却中，请稍后再试' : canGenerateSummary ? '点击生成摘要' : ''}
+              title={
+                summaryCooldown
+                  ? '冷却中，请稍后再试'
+                  : canGenerateSummary
+                    ? '点击生成摘要'
+                    : ''
+              }
             >
               {summaryLoading ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                  <path d="M5 3v4" />
+                  <path d="M19 17v4" />
+                  <path d="M3 5h4" />
+                  <path d="M17 19h4" />
+                </svg>
               )}
             </button>
             <textarea
               id="excerpt"
               value={excerpt}
-              onChange={(e) => setExcerpt(e.target.value.slice(0, SUMMARY_MAX_LENGTH))}
+              onChange={(e) =>
+                setExcerpt(e.target.value.slice(0, SUMMARY_MAX_LENGTH))
+              }
               placeholder="一句话概括文章..."
               maxLength={SUMMARY_MAX_LENGTH}
               rows={2}
@@ -330,20 +429,55 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
               <button
                 type="button"
                 onClick={handleGenerateTags}
-                disabled={tagGenerating || tagCooldown || contentLength < SUMMARY_MIN_CONTENT_LENGTH}
+                disabled={
+                  tagGenerating ||
+                  tagCooldown ||
+                  contentLength < SUMMARY_MIN_CONTENT_LENGTH
+                }
                 className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-all ${
                   tagGenerating
                     ? 'bg-blue-50 text-blue-500 border-blue-200 dark:bg-blue-950 dark:border-blue-800 cursor-wait'
-                    : contentLength >= SUMMARY_MIN_CONTENT_LENGTH && !tagCooldown
+                    : contentLength >= SUMMARY_MIN_CONTENT_LENGTH &&
+                        !tagCooldown
                       ? 'text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary cursor-pointer'
                       : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
-                title={tagCooldown ? '冷却中，请稍后再试' : contentLength < SUMMARY_MIN_CONTENT_LENGTH ? '正文内容不足 100 字' : 'AI 推荐标签'}
+                title={
+                  tagCooldown
+                    ? '冷却中，请稍后再试'
+                    : contentLength < SUMMARY_MIN_CONTENT_LENGTH
+                      ? '正文内容不足 100 字'
+                      : 'AI 推荐标签'
+                }
               >
                 {tagGenerating ? (
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  <svg
+                    className="animate-spin h-3 w-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                    <path d="M5 3v4" />
+                    <path d="M19 17v4" />
+                    <path d="M3 5h4" />
+                    <path d="M17 19h4" />
+                  </svg>
                 )}
                 {tagGenerating ? '生成中...' : 'AI 推荐标签'}
               </button>
@@ -352,29 +486,39 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
           <p className="text-xs text-muted-foreground">
             按 Enter 添加标签，最多 7 个
             {modelName && (
-              <span className="ml-2 text-muted-foreground/70">由 <code className="font-mono">{modelName}</code> 驱动</span>
+              <span className="ml-2 text-muted-foreground/70">
+                由 <code className="font-mono">{modelName}</code> 驱动
+              </span>
             )}
             {suggestedTags && suggestedTags.length > 0 && (
               <span className="ml-2">
                 常用标签：
-                {suggestedTags.filter(t => !tags.includes(t.name)).map((tag) => (
-                  <button
-                    key={tag.slug}
-                    type="button"
-                    onClick={() => addTag(tag.name)}
-                    disabled={tags.length >= 7}
-                    className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ color: tag.color ?? '#3B82F6', backgroundColor: (tag.color ?? '#3B82F6') + '18' }}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
+                {suggestedTags
+                  .filter((t) => !tags.includes(t.name))
+                  .map((tag) => (
+                    <button
+                      key={tag.slug}
+                      type="button"
+                      onClick={() => addTag(tag.name)}
+                      disabled={tags.length >= 7}
+                      className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        color: tag.color ?? '#3B82F6',
+                        backgroundColor: (tag.color ?? '#3B82F6') + '18',
+                      }}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
               </span>
             )}
           </p>
           <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-md border bg-transparent min-h-[2.25rem] focus-within:ring-2 focus-within:ring-ring">
             {tags.map((tag, i) => (
-              <span key={i} className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground">
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground"
+              >
                 {tag}
                 <button
                   type="button"
@@ -392,12 +536,12 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    e.preventDefault()
-                    const val = tagInput.trim()
+                    e.preventDefault();
+                    const val = tagInput.trim();
                     if (val && !tags.includes(val) && tags.length < 7) {
-                      setTags([...tags, val.slice(0, 20)])
+                      setTags([...tags, val.slice(0, 20)]);
                     }
-                    setTagInput('')
+                    setTagInput('');
                   }
                 }}
                 placeholder={tags.length === 0 ? '添加标签...' : ''}
@@ -407,14 +551,16 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
           </div>
           {aiAlternative.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-muted-foreground shrink-0">备选：</span>
+              <span className="text-xs text-muted-foreground shrink-0">
+                备选：
+              </span>
               {aiAlternative.map((tag) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => {
-                    addTag(tag)
-                    setAiAlternative((prev) => prev.filter((t) => t !== tag))
+                    addTag(tag);
+                    setAiAlternative((prev) => prev.filter((t) => t !== tag));
                   }}
                   disabled={tags.includes(tag) || tags.length >= 7}
                   className="text-xs px-2 py-0.5 rounded border border-dashed text-muted-foreground hover:text-foreground hover:border-solid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
@@ -430,18 +576,39 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium ${tab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>源码</span>
-            <Switch checked={tab === 'preview'} onChange={(c) => setTab(c ? 'preview' : 'edit')} />
-            <span className={`text-xs font-medium ${tab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
+            <span
+              className={`text-xs font-medium ${tab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}
+            >
+              源码
+            </span>
+            <Switch
+              checked={tab === 'preview'}
+              onChange={(c) => setTab(c ? 'preview' : 'edit')}
+            />
+            <span
+              className={`text-xs font-medium ${tab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}
+            >
+              预览
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <SubmitButton isEditing={isEditing || !!postId} />
-            <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
+            <AutoSaveIndicator
+              status={autoSaveStatus}
+              countdown={countdown}
+              hasContent={hasContent}
+              needsSave={needsSave}
+              onRetry={retry}
+            />
             <label className="flex items-center gap-2 cursor-pointer">
               <span className="text-xs font-medium text-muted-foreground select-none">
                 {published ? '公开' : '私密'}
               </span>
-              <input type="hidden" name="published" value={published ? 'on' : 'off'} />
+              <input
+                type="hidden"
+                name="published"
+                value={published ? 'on' : 'off'}
+              />
               <Switch checked={published} onChange={setPublished} />
             </label>
           </div>
@@ -455,15 +622,15 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                 id="content"
                 value={content}
                 onChange={(e) => {
-                  setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH))
+                  setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH));
                 }}
                 maxLength={CONTENT_MAX_LENGTH}
                 placeholder="# 开始写作...\n支持 Markdown 语法"
                 className={`font-mono text-base md:text-sm p-4 w-full rounded-md border bg-muted/60 focus:outline-none focus:ring-2 overflow-hidden resize-none ${
-                contentLength >= CONTENT_MAX_ALERT
-                  ? 'focus:ring-red-500 border-red-400'
-                  : 'focus:ring-ring border-transparent'
-              } pr-11 md:pr-16 min-h-[200px]`}
+                  contentLength >= CONTENT_MAX_ALERT
+                    ? 'focus:ring-red-500 border-red-400'
+                    : 'focus:ring-ring border-transparent'
+                } pr-11 md:pr-16 min-h-[200px]`}
               />
               <button
                 type="button"
@@ -471,11 +638,30 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                 className="absolute top-1.5 right-1.5 p-1.5 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors z-10"
                 title="全屏编辑"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
               </button>
-              <p className={`absolute bottom-2 right-3 text-xs pointer-events-none select-none z-10 ${
-                contentLength >= CONTENT_MAX_ALERT ? 'text-red-500' : 'text-muted-foreground'
-              }`}>
+              <p
+                className={`absolute bottom-2 right-3 text-xs pointer-events-none select-none z-10 ${
+                  contentLength >= CONTENT_MAX_ALERT
+                    ? 'text-red-500'
+                    : 'text-muted-foreground'
+                }`}
+              >
                 {contentLength}/{CONTENT_MAX_LENGTH} 字
               </p>
             </div>
@@ -493,12 +679,27 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
         <div className="fixed inset-0 z-50 bg-background flex flex-col">
           <div className="flex items-center justify-between px-6 py-3 border-b shrink-0">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-muted-foreground select-none">源码</span>
-              <Switch checked={fsTab === 'preview'} onChange={(c) => setFsTab(c ? 'preview' : 'edit')} />
-              <span className={`text-xs font-medium select-none ${fsTab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}>预览</span>
+              <span className="text-xs font-medium text-muted-foreground select-none">
+                源码
+              </span>
+              <Switch
+                checked={fsTab === 'preview'}
+                onChange={(c) => setFsTab(c ? 'preview' : 'edit')}
+              />
+              <span
+                className={`text-xs font-medium select-none ${fsTab === 'preview' ? 'text-foreground' : 'text-muted-foreground'}`}
+              >
+                预览
+              </span>
             </div>
             <div className="flex items-center gap-3">
-              <AutoSaveIndicator status={autoSaveStatus} countdown={countdown} hasContent={hasContent} needsSave={needsSave} onRetry={retry} />
+              <AutoSaveIndicator
+                status={autoSaveStatus}
+                countdown={countdown}
+                hasContent={hasContent}
+                needsSave={needsSave}
+                onRetry={retry}
+              />
               <span className="text-xs text-muted-foreground">
                 {contentLength}/{CONTENT_MAX_LENGTH} 字
               </span>
@@ -508,7 +709,22 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
                 className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="退出全屏 (Esc)"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
               </button>
             </div>
           </div>
@@ -517,7 +733,9 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
             <textarea
               autoFocus
               value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH))}
+              onChange={(e) =>
+                setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH))
+              }
               maxLength={CONTENT_MAX_LENGTH}
               placeholder="# 开始写作...\n支持 Markdown 语法"
               className={`flex-1 font-mono text-base md:text-lg p-6 w-full resize-none bg-transparent focus:outline-none border-none ${
@@ -532,25 +750,39 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function SubmitButton({ isEditing }: { isEditing: boolean }) {
-  const { pending } = useFormStatus()
-  const label = pending ? (isEditing ? '保存中...' : '创建中...') : (isEditing ? '保存修改' : '创建文章')
+  const { pending } = useFormStatus();
+  const label = pending
+    ? isEditing
+      ? '保存中...'
+      : '创建中...'
+    : isEditing
+      ? '保存修改'
+      : '创建文章';
   return (
     <Button type="submit" disabled={pending} size="sm">
       {label}
     </Button>
-  )
+  );
 }
 
 // ── Reusable toggle switch ──
-function Switch({ checked, onChange, size = 'sm' }: { checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }) {
-  const width = size === 'sm' ? 'w-9' : 'w-11'
-  const height = size === 'sm' ? 'h-5' : 'h-6'
-  const circle = size === 'sm' ? 'w-4 h-4' : 'w-4 h-4'
-  const translate = size === 'sm' ? 'translate-x-4' : 'translate-x-[1.125rem]'
+function Switch({
+  checked,
+  onChange,
+  size = 'sm',
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  size?: 'sm' | 'md';
+}) {
+  const width = size === 'sm' ? 'w-9' : 'w-11';
+  const height = size === 'sm' ? 'h-5' : 'h-6';
+  const circle = size === 'sm' ? 'w-4 h-4' : 'w-4 h-4';
+  const translate = size === 'sm' ? 'translate-x-4' : 'translate-x-[1.125rem]';
   return (
     <button
       type="button"
@@ -567,12 +799,24 @@ function Switch({ checked, onChange, size = 'sm' }: { checked: boolean; onChange
         }`}
       />
     </button>
-  )
+  );
 }
 
 // ── Auto-save status indicator ──
-function AutoSaveIndicator({ status, countdown, hasContent, needsSave, onRetry }: { status: AutoSaveStatus; countdown: number; hasContent: boolean; needsSave: boolean; onRetry: () => void }) {
-  if (!hasContent) return null
+function AutoSaveIndicator({
+  status,
+  countdown,
+  hasContent,
+  needsSave,
+  onRetry,
+}: {
+  status: AutoSaveStatus;
+  countdown: number;
+  hasContent: boolean;
+  needsSave: boolean;
+  onRetry: () => void;
+}) {
+  if (!hasContent) return null;
 
   // No changes since last save
   if (status === 'idle' && !needsSave) {
@@ -581,7 +825,7 @@ function AutoSaveIndicator({ status, countdown, hasContent, needsSave, onRetry }
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
         已暂存草稿
       </span>
-    )
+    );
   }
 
   if (status === 'idle') {
@@ -590,20 +834,35 @@ function AutoSaveIndicator({ status, countdown, hasContent, needsSave, onRetry }
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
         {countdown}秒后自动暂存草稿
       </span>
-    )
+    );
   }
-  const label = status === 'saving' ? '暂存草稿中...' : status === 'saved' ? '已自动暂存草稿' : '暂存草稿失败'
-  const dotColor = status === 'saving' ? 'bg-muted-foreground/50' : status === 'saved' ? 'bg-green-500' : 'bg-red-500'
-  const textColor = status === 'error' ? 'text-red-500' : 'text-muted-foreground'
+  const label =
+    status === 'saving'
+      ? '暂存草稿中...'
+      : status === 'saved'
+        ? '已自动暂存草稿'
+        : '暂存草稿失败';
+  const dotColor =
+    status === 'saving'
+      ? 'bg-muted-foreground/50'
+      : status === 'saved'
+        ? 'bg-green-500'
+        : 'bg-red-500';
+  const textColor =
+    status === 'error' ? 'text-red-500' : 'text-muted-foreground';
   return (
     <span className="inline-flex items-center gap-1.5 text-xs">
       <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
       <span className={textColor}>{label}</span>
       {status === 'error' && (
-        <button type="button" onClick={onRetry} className="underline hover:text-foreground cursor-pointer">
+        <button
+          type="button"
+          onClick={onRetry}
+          className="underline hover:text-foreground cursor-pointer"
+        >
           重试
         </button>
       )}
     </span>
-  )
+  );
 }

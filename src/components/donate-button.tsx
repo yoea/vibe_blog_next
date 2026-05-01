@@ -1,28 +1,40 @@
-'use client'
+'use client';
 
-import { useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Heart } from 'lucide-react'
+} from '@/components/ui/dialog';
+import { Heart } from 'lucide-react';
 
 const tabs = [
-  { key: 'wechat', label: '微信支付', src: '/donate/wechat.jpg', alt: '微信收款码' },
-  { key: 'alipay', label: '支付宝', src: '/donate/alipay.jpg', alt: '支付宝收款码' },
-] as const
+  {
+    key: 'wechat',
+    label: '微信支付',
+    src: '/donate/wechat.jpg',
+    alt: '微信收款码',
+  },
+  {
+    key: 'alipay',
+    label: '支付宝',
+    src: '/donate/alipay.jpg',
+    alt: '支付宝收款码',
+  },
+] as const;
 
 export function DonateButton({ children }: { children?: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'wechat' | 'alipay'>('wechat')
+  const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'wechat' | 'alipay'>('wechat');
 
-  const current = tabs.find((t) => t.key === activeTab)!
+  const current = tabs.find((t) => t.key === activeTab)!;
 
   return (
     <>
-      <span className="inline-flex" onClick={() => setOpen(true)}>{children}</span>
+      <span className="inline-flex" onClick={() => setOpen(true)}>
+        {children}
+      </span>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
@@ -60,5 +72,5 @@ export function DonateButton({ children }: { children?: ReactNode }) {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

@@ -1,14 +1,16 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '法律信息',
-}
+};
 
 export default function LegalPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 py-8">
       <h1 className="text-3xl font-bold">法律信息</h1>
-      <p className="text-sm text-muted-foreground">最后更新：2026 年 4 月 26 日</p>
+      <p className="text-sm text-muted-foreground">
+        最后更新：2026 年 4 月 26 日
+      </p>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">一、服务说明</h2>
@@ -32,7 +34,9 @@ export default function LegalPage() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">三、内容规范</h2>
-        <p className="text-sm leading-relaxed">用户发布的内容（包括但不限于文章、评论、留言）不得包含：</p>
+        <p className="text-sm leading-relaxed">
+          用户发布的内容（包括但不限于文章、评论、留言）不得包含：
+        </p>
         <ul className="list-disc pl-6 space-y-1.5 text-sm leading-relaxed">
           <li>违反中华人民共和国法律法规的内容</li>
           <li>色情、暴力、赌博、毒品等违法违规信息</li>
@@ -59,9 +63,13 @@ export default function LegalPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">五、免责声明</h2>
         <ul className="list-disc pl-6 space-y-1.5 text-sm leading-relaxed">
-          <li>本网站按&ldquo;现状&rdquo;提供服务，不保证服务不会中断或没有错误</li>
+          <li>
+            本网站按&ldquo;现状&rdquo;提供服务，不保证服务不会中断或没有错误
+          </li>
           <li>用户发布的内容仅代表其个人观点，不代表本网站立场</li>
-          <li>因不可抗力（包括但不限于服务器故障、网络中断、自然灾害等）导致的服务中断，本网站不承担责任</li>
+          <li>
+            因不可抗力（包括但不限于服务器故障、网络中断、自然灾害等）导致的服务中断，本网站不承担责任
+          </li>
           <li>本网站有权在必要时修改或暂停服务，恕不另行通知</li>
         </ul>
       </section>
@@ -86,9 +94,18 @@ export default function LegalPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">八、联系方式</h2>
         <p className="text-sm leading-relaxed">
-          如有疑问或需联系网站运营者，请通过 <a href="https://github.com/yoea" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a> 与我们联系。
+          如有疑问或需联系网站运营者，请通过{' '}
+          <a
+            href="https://github.com/yoea"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            GitHub
+          </a>{' '}
+          与我们联系。
         </p>
       </section>
     </div>
-  )
+  );
 }

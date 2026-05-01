@@ -1,28 +1,30 @@
-import { getAllUsers } from '@/lib/db/queries'
-import { loadMoreAuthors } from '@/lib/actions/post-actions'
-import { deleteUserAsAdmin } from '@/lib/actions/admin-actions'
-import { isSuperAdmin, getSuperAdminUserIds } from '@/lib/utils/admin'
-import { AuthorListClient } from '@/components/blog/author-list-client'
-import { createClient } from '@/lib/supabase/server'
+import { getAllUsers } from '@/lib/db/queries';
+import { loadMoreAuthors } from '@/lib/actions/post-actions';
+import { deleteUserAsAdmin } from '@/lib/actions/admin-actions';
+import { isSuperAdmin, getSuperAdminUserIds } from '@/lib/utils/admin';
+import { AuthorListClient } from '@/components/blog/author-list-client';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata = {
   title: '作者列表',
-}
+};
 
 export default async function AuthorListPage() {
-  const { data: users, hasMore = false, error } = await getAllUsers(1, 20)
+  const { data: users, hasMore = false, error } = await getAllUsers(1, 20);
 
   if (error) {
-    return <p className="text-destructive">加载失败: {error}</p>
+    return <p className="text-destructive">加载失败: {error}</p>;
   }
 
-  const isAdmin = await isSuperAdmin()
+  const isAdmin = await isSuperAdmin();
 
   // Get the current user ID and all super admin user IDs for protection
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const currentUserId = user?.id ?? ''
-  const adminUserIds = isAdmin ? await getSuperAdminUserIds() : []
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const currentUserId = user?.id ?? '';
+  const adminUserIds = isAdmin ? await getSuperAdminUserIds() : [];
 
   return (
     <div className="space-y-6">
@@ -37,5 +39,5 @@ export default async function AuthorListPage() {
         adminUserIds={adminUserIds}
       />
     </div>
-  )
+  );
 }

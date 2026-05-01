@@ -1,23 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
-import { getUserColor } from '@/lib/utils/colors'
-import { cn } from '@/lib/utils'
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog'
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { getUserColor } from '@/lib/utils/colors';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export interface AvatarProps {
-  avatarUrl?: string | null
-  displayName?: string | null
-  userId: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-  className?: string
-  previewable?: boolean
+  avatarUrl?: string | null;
+  displayName?: string | null;
+  userId: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  className?: string;
+  previewable?: boolean;
   /** 延迟加载头像图片，先显示 fallback 再异步加载，适合列表页批量使用 */
-  defer?: boolean
+  defer?: boolean;
 }
 
 const sizeMap = {
@@ -27,50 +24,66 @@ const sizeMap = {
   lg: { px: 48, fontSize: 'text-lg' },
   xl: { px: 64, fontSize: 'text-xl' },
   '2xl': { px: 80, fontSize: 'text-2xl' },
-}
+};
 
-export function Avatar({ avatarUrl, displayName, userId, size = 'md', className, previewable, defer }: AvatarProps) {
-  const [imgError, setImgError] = useState(false)
-  const [imgLoaded, setImgLoaded] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const mountedRef = useRef(false)
-  const { px, fontSize } = sizeMap[size]
-  const initial = (displayName ?? userId).charAt(0).toUpperCase()
-  const bgColor = getUserColor(userId)
+export function Avatar({
+  avatarUrl,
+  displayName,
+  userId,
+  size = 'md',
+  className,
+  previewable,
+  defer,
+}: AvatarProps) {
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const mountedRef = useRef(false);
+  const { px, fontSize } = sizeMap[size];
+  const initial = (displayName ?? userId).charAt(0).toUpperCase();
+  const bgColor = getUserColor(userId);
 
   useEffect(() => {
-    mountedRef.current = true
-    return () => { mountedRef.current = false }
-  }, [])
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // 有头像时，预加载图片
   useEffect(() => {
-    if (!avatarUrl || imgError) return
-    const img = new window.Image()
-    img.src = avatarUrl
+    if (!avatarUrl || imgError) return;
+    const img = new window.Image();
+    img.src = avatarUrl;
     img.onload = () => {
-      if (mountedRef.current) setImgLoaded(true)
-    }
+      if (mountedRef.current) setImgLoaded(true);
+    };
     img.onerror = () => {
-      if (mountedRef.current) setImgError(true)
-    }
-  }, [avatarUrl, imgError])
+      if (mountedRef.current) setImgError(true);
+    };
+  }, [avatarUrl, imgError]);
 
-  const shouldShowImage = avatarUrl && !imgError && imgLoaded
-  const showPreview = previewable && avatarUrl && !imgError
+  const shouldShowImage = avatarUrl && !imgError && imgLoaded;
+  const showPreview = previewable && avatarUrl && !imgError;
 
   const avatarContent = shouldShowImage ? (
     <div
       className={cn(
         'relative rounded-full overflow-hidden shrink-0',
         showPreview && 'cursor-pointer',
-        className
+        className,
       )}
       style={{ width: px, height: px }}
       onClick={showPreview ? () => setPreviewOpen(true) : undefined}
       role={showPreview ? 'button' : undefined}
       tabIndex={showPreview ? 0 : undefined}
-      onKeyDown={showPreview ? (e) => { if (e.key === 'Enter' || e.key === ' ') setPreviewOpen(true) } : undefined}
+      onKeyDown={
+        showPreview
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') setPreviewOpen(true);
+            }
+          : undefined
+      }
     >
       <Image
         src={avatarUrl}
@@ -86,13 +99,13 @@ export function Avatar({ avatarUrl, displayName, userId, size = 'md', className,
       className={cn(
         'flex items-center justify-center rounded-full font-bold text-white shrink-0 select-none',
         fontSize,
-        className
+        className,
       )}
       style={{ width: px, height: px, backgroundColor: bgColor }}
     >
       {initial}
     </div>
-  )
+  );
 
   return (
     <div suppressHydrationWarning>
@@ -110,5 +123,5 @@ export function Avatar({ avatarUrl, displayName, userId, size = 'md', className,
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

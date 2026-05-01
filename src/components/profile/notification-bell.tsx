@@ -1,112 +1,123 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import { Bell, X, CheckCheck, Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, X, CheckCheck, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/ui/avatar'
-import { formatTimeAgo } from '@/lib/utils/time'
-import { getNotifications, markAsRead, dismissNotification, markAllAsRead, dismissAllNotifications } from '@/lib/actions/notification-actions'
-import type { Notification, NotificationType } from '@/lib/db/types'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
+import { formatTimeAgo } from '@/lib/utils/time';
+import {
+  getNotifications,
+  markAsRead,
+  dismissNotification,
+  markAllAsRead,
+  dismissAllNotifications,
+} from '@/lib/actions/notification-actions';
+import type { Notification, NotificationType } from '@/lib/db/types';
 
-function getNotificationText(type: NotificationType, postTitle?: string | null): string {
+function getNotificationText(
+  type: NotificationType,
+  postTitle?: string | null,
+): string {
   switch (type) {
     case 'post_like':
-      return `点赞了你的文章`
+      return `点赞了你的文章`;
     case 'post_comment':
-      return `评论了你的文章`
+      return `评论了你的文章`;
     case 'guestbook_message':
-      return '在你的主页留言了'
+      return '在你的主页留言了';
   }
 }
 
 function getNotificationLink(n: Notification): string {
   switch (n.type) {
     case 'post_like':
-      return `/posts/${n.post_slug}`
+      return `/posts/${n.post_slug}`;
     case 'post_comment':
-      return `/posts/${n.post_slug}?hl=${n.comment_id ?? ''}#comments`
+      return `/posts/${n.post_slug}?hl=${n.comment_id ?? ''}#comments`;
     case 'guestbook_message':
-      return `/author/${n.guestbook_author_id}?hl=${n.guestbook_message_id ?? ''}#guestbook`
+      return `/author/${n.guestbook_author_id}?hl=${n.guestbook_message_id ?? ''}#guestbook`;
   }
 }
 
 interface Props {
-  initialUnreadCount: number
+  initialUnreadCount: number;
 }
 
 export function NotificationBell({ initialUnreadCount }: Props) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(initialUnreadCount)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [initialLoaded, setInitialLoaded] = useState(false)
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   const loadNotifications = useCallback(async (pageNum: number) => {
-    setLoading(true)
-    const result = await getNotifications(pageNum)
+    setLoading(true);
+    const result = await getNotifications(pageNum);
     if (result.data) {
       if (pageNum === 1) {
-        setNotifications(result.data)
+        setNotifications(result.data);
       } else {
-        setNotifications(prev => {
-          const existingIds = new Set(prev.map(n => n.id))
-          const trulyNew = result.data!.filter(n => !existingIds.has(n.id))
-          return [...prev, ...trulyNew]
-        })
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.id));
+          const trulyNew = result.data!.filter((n) => !existingIds.has(n.id));
+          return [...prev, ...trulyNew];
+        });
       }
-      setTotal(result.total ?? 0)
-      setPage(pageNum)
+      setTotal(result.total ?? 0);
+      setPage(pageNum);
     }
-    setLoading(false)
-    setInitialLoaded(true)
-  }, [])
+    setLoading(false);
+    setInitialLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (open && !initialLoaded) {
-      loadNotifications(1)
+      loadNotifications(1);
     }
-  }, [open, initialLoaded, loadNotifications])
+  }, [open, initialLoaded, loadNotifications]);
 
   const handleDismiss = async (id: string, wasUnread: boolean) => {
-    if (wasUnread) await markAsRead([id])
-    await dismissNotification(id)
-    setNotifications(prev => prev.filter(n => n.id !== id))
-    setTotal(prev => prev - 1)
-    if (wasUnread) setUnreadCount(prev => Math.max(0, prev - 1))
-  }
+    if (wasUnread) await markAsRead([id]);
+    await dismissNotification(id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setTotal((prev) => prev - 1);
+    if (wasUnread) setUnreadCount((prev) => Math.max(0, prev - 1));
+  };
 
   const handleView = async (id: string, wasUnread: boolean) => {
     if (wasUnread) {
-      await markAsRead([id])
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      await markAsRead([id]);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     }
-  }
+  };
 
   const handleMarkAllRead = async () => {
-    await markAllAsRead()
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-    setUnreadCount(0)
-  }
+    await markAllAsRead();
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+  };
 
   const handleDismissAll = async () => {
-    await dismissAllNotifications()
-    setNotifications([])
-    setTotal(0)
-    setUnreadCount(0)
-  }
+    await dismissAllNotifications();
+    setNotifications([]);
+    setTotal(0);
+    setUnreadCount(0);
+  };
 
-  const hasMore = notifications.length < total
+  const hasMore = notifications.length < total;
 
   return (
     <>
@@ -165,14 +176,21 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto -mx-6 px-6 space-y-1 scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
-            {!initialLoaded || loading && notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+          <div
+            className="flex-1 overflow-y-auto -mx-6 px-6 space-y-1 scrollbar-thin"
+            style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+          >
+            {!initialLoaded || (loading && notifications.length === 0) ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                加载中...
+              </div>
             ) : notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">暂无通知</div>
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                暂无通知
+              </div>
             ) : (
               <>
-                {notifications.map(n => (
+                {notifications.map((n) => (
                   <div
                     key={n.id}
                     className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.is_read ? 'bg-primary/5 border-l-2 border-l-primary -mx-2 px-2 rounded-md' : 'opacity-60'}`}
@@ -184,30 +202,49 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                       size="xs"
                       className="mt-0.5 shrink-0"
                     />
-                    <div className="flex-1 min-w-0 space-y-1"
+                    <div
+                      className="flex-1 min-w-0 space-y-1"
                       onClick={async (e) => {
-                        if ((e.target as HTMLElement).closest('[data-action]')) return
-                        await handleView(n.id, !n.is_read)
-                        router.push(getNotificationLink(n))
-                        setOpen(false)
+                        if ((e.target as HTMLElement).closest('[data-action]'))
+                          return;
+                        await handleView(n.id, !n.is_read);
+                        router.push(getNotificationLink(n));
+                        setOpen(false);
                       }}
                     >
                       <div className="text-sm">
-                        <span className="font-medium">{n.actor_name ?? '匿名用户'}</span>
-                        <span className="text-muted-foreground ml-1">{getNotificationText(n.type, n.post_title)}</span>
+                        <span className="font-medium">
+                          {n.actor_name ?? '匿名用户'}
+                        </span>
+                        <span className="text-muted-foreground ml-1">
+                          {getNotificationText(n.type, n.post_title)}
+                        </span>
                       </div>
                       {n.post_title && (
-                        <p className="text-xs text-muted-foreground truncate">{n.post_title}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {n.post_title}
+                        </p>
                       )}
-                      {n.type === 'guestbook_message' && n.guestbook_message_content && (
-                        <p className="text-xs text-muted-foreground truncate">{n.guestbook_message_content}</p>
-                      )}
+                      {n.type === 'guestbook_message' &&
+                        n.guestbook_message_content && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {n.guestbook_message_content}
+                          </p>
+                        )}
                       <div className="flex items-center gap-2 pt-0.5">
-                        <span className="text-[11px] text-muted-foreground/60" suppressHydrationWarning>{formatTimeAgo(n.created_at)}</span>
+                        <span
+                          className="text-[11px] text-muted-foreground/60"
+                          suppressHydrationWarning
+                        >
+                          {formatTimeAgo(n.created_at)}
+                        </span>
                         <div className="flex-1" />
                         <button
                           data-action
-                          onClick={(e) => { e.stopPropagation(); handleDismiss(n.id, !n.is_read) }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDismiss(n.id, !n.is_read);
+                          }}
                           className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                           title="忽略"
                         >
@@ -223,7 +260,10 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => { loadNotifications(page + 1); (e.target as HTMLElement).blur() }}
+                      onClick={(e) => {
+                        loadNotifications(page + 1);
+                        (e.target as HTMLElement).blur();
+                      }}
                       disabled={loading}
                     >
                       {loading ? '加载中...' : '加载更多'}
@@ -240,5 +280,5 @@ export function NotificationBell({ initialUnreadCount }: Props) {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

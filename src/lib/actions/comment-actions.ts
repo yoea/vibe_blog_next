@@ -1,55 +1,74 @@
-'use server'
+'use server';
 
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { getCommentsForPost } from '@/lib/db/queries'
-import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
-import { checkIpRateLimit } from '@/lib/utils/rate-limit'
-import { insertNotification } from '@/lib/actions/notification-actions'
-import type { ActionResult } from '@/lib/db/types'
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getCommentsForPost } from '@/lib/db/queries';
+import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { checkIpRateLimit } from '@/lib/utils/rate-limit';
+import { insertNotification } from '@/lib/actions/notification-actions';
+import type { ActionResult } from '@/lib/db/types';
 
-async function getPostSlug(supabase: any, postId: string): Promise<string | null> {
-  const { data } = await supabase.from('posts').select('slug').eq('id', postId).single()
-  return data?.slug ?? null
+async function getPostSlug(
+  supabase: any,
+  postId: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from('posts')
+    .select('slug')
+    .eq('id', postId)
+    .single();
+  return data?.slug ?? null;
 }
 
 export async function createComment(
   postId: string,
   content: string,
   parentId?: string,
-  guestName?: string
+  guestName?: string,
 ): Promise<ActionResult & { data?: any }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!content.trim()) return { error: '评论内容不能为空' }
-  if (content.trim().length > 500) return { error: '评论内容不能超过 500 个字符' }
+  if (!content.trim()) return { error: '评论内容不能为空' };
+  if (content.trim().length > 500)
+    return { error: '评论内容不能超过 500 个字符' };
 
   const insertData: any = {
     post_id: postId,
     content: content.trim(),
-  }
+  };
 
   if (user) {
-    insertData.author_id = user.id
-    insertData.author_email = user.email
+    insertData.author_id = user.id;
+    insertData.author_email = user.email;
   } else {
-    const name = guestName?.trim()
-    if (!name) return { error: '请填写昵称' }
-    if (name.length > 50) return { error: '昵称不能超过 50 个字符' }
+    const name = guestName?.trim();
+    if (!name) return { error: '请填写昵称' };
+    if (name.length > 50) return { error: '昵称不能超过 50 个字符' };
 
-    const h = await headers()
-    const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? h.get('x-real-ip')
-      ?? null
-    if (!ip || ip === 'unknown') return { error: '无法获取 IP 地址' }
+    const h = await headers();
+    const ip =
+      h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      h.get('x-real-ip') ??
+      null;
+    if (!ip || ip === 'unknown') return { error: '无法获取 IP 地址' };
 
-    const { allowed, remaining } = await checkIpRateLimit(ip, 'post_comments', 10, 60)
-    if (!allowed) return { error: `评论过于频繁，请 ${remaining > 0 ? `${remaining} 分钟后再试` : '稍后再试'}` }
+    const { allowed, remaining } = await checkIpRateLimit(
+      ip,
+      'post_comments',
+      10,
+      60,
+    );
+    if (!allowed)
+      return {
+        error: `评论过于频繁，请 ${remaining > 0 ? `${remaining} 分钟后再试` : '稍后再试'}`,
+      };
 
-    insertData.guest_name = name
-    insertData.ip = ip
+    insertData.guest_name = name;
+    insertData.ip = ip;
   }
 
   if (parentId) {
@@ -58,39 +77,40 @@ export async function createComment(
       .from('post_comments')
       .select('id, parent_id')
       .eq('id', parentId)
-      .single()
+      .single();
     if (parent) {
-      insertData.parent_id = parent.parent_id ?? parent.id
+      insertData.parent_id = parent.parent_id ?? parent.id;
     } else {
-      insertData.parent_id = parentId
+      insertData.parent_id = parentId;
     }
   }
 
-  const { data: comment, error } = await supabase.from('post_comments')
+  const { data: comment, error } = await supabase
+    .from('post_comments')
     .insert(insertData)
     .select('*')
-    .single()
+    .single();
 
-  if (error) return { error: error.message }
+  if (error) return { error: error.message };
 
   // 插入通知
   const { data: post } = await supabase
     .from('posts')
     .select('author_id, title, slug')
     .eq('id', postId)
-    .single()
+    .single();
 
   if (post && (!user || post.author_id !== user.id)) {
-    let actorName: string | null = guestName ?? '匿名游客'
-    let actorAvatarUrl: string | null = null
+    let actorName: string | null = guestName ?? '匿名游客';
+    let actorAvatarUrl: string | null = null;
     if (user) {
       const { data: settings } = await supabase
         .from('user_settings')
         .select('display_name, avatar_url')
         .eq('user_id', user.id)
-        .maybeSingle()
-      actorName = settings?.display_name ?? user.email ?? '匿名用户'
-      actorAvatarUrl = settings?.avatar_url ?? null
+        .maybeSingle();
+      actorName = settings?.display_name ?? user.email ?? '匿名用户';
+      actorAvatarUrl = settings?.avatar_url ?? null;
     }
     insertNotification({
       recipientId: post.author_id,
@@ -102,7 +122,7 @@ export async function createComment(
       postSlug: post.slug,
       postTitle: post.title,
       commentId: comment.id,
-    })
+    });
   }
 
   if (user) {
@@ -110,19 +130,23 @@ export async function createComment(
       .from('user_settings')
       .select('display_name, avatar_url')
       .eq('user_id', user.id)
-      .maybeSingle()
+      .maybeSingle();
 
     return {
       data: {
         ...comment,
         parent_id: comment.parent_id ?? null,
         author_email: user.email,
-        author: { email: user.email, display_name: settings?.display_name ?? null, avatar_url: settings?.avatar_url ?? null },
+        author: {
+          email: user.email,
+          display_name: settings?.display_name ?? null,
+          avatar_url: settings?.avatar_url ?? null,
+        },
         like_count: 0,
         is_liked: false,
         replies: [],
       },
-    }
+    };
   }
 
   return {
@@ -130,65 +154,81 @@ export async function createComment(
       ...comment,
       parent_id: comment.parent_id ?? null,
       author_email: null,
-      author: { email: null, display_name: comment.guest_name ?? '匿名游客', avatar_url: null },
+      author: {
+        email: null,
+        display_name: comment.guest_name ?? '匿名游客',
+        avatar_url: null,
+      },
       like_count: 0,
       is_liked: false,
       replies: [],
     },
-  }
+  };
 }
 
-export async function deleteComment(commentId: string, postId: string): Promise<ActionResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: '未登录' }
+export async function deleteComment(
+  commentId: string,
+  postId: string,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: '未登录' };
 
   // 允许评论作者或文章作者删除
   const { data: comment } = await supabase
     .from('post_comments')
     .select('author_id')
     .eq('id', commentId)
-    .single()
+    .single();
 
-  if (!comment) return { error: '评论不存在' }
+  if (!comment) return { error: '评论不存在' };
 
   const { data: post } = await supabase
     .from('posts')
     .select('author_id')
     .eq('id', postId)
-    .single()
+    .single();
 
-  const isCommentAuthor = comment.author_id === user.id
-  const isPostAuthor = post?.author_id === user.id
+  const isCommentAuthor = comment.author_id === user.id;
+  const isPostAuthor = post?.author_id === user.id;
 
   if (!isCommentAuthor && !isPostAuthor) {
-    return { error: '无权限删除此评论' }
+    return { error: '无权限删除此评论' };
   }
 
   // Use admin client to bypass RLS (post_author_comment_delete policy subquery may be blocked)
-  const admin = createAdminClient()
+  const admin = createAdminClient();
 
   // Also delete child replies (1-level nesting)
-  const { error: childError } = await admin.from('post_comments')
+  const { error: childError } = await admin
+    .from('post_comments')
     .delete()
-    .eq('parent_id', commentId)
+    .eq('parent_id', commentId);
 
-  if (childError) return { error: `删除回复失败: ${childError.message}` }
+  if (childError) return { error: `删除回复失败: ${childError.message}` };
 
-  const { error, count } = await admin.from('post_comments')
+  const { error, count } = await admin
+    .from('post_comments')
     .delete({ count: 'exact' })
-    .eq('id', commentId)
+    .eq('id', commentId);
 
-  if (error) return { error: error.message }
-  if (count === 0) return { error: '删除失败，评论可能已被删除或无权限' }
-  const slug = await getPostSlug(supabase, postId)
-  if (slug) revalidatePath(`/posts/${slug}`)
-  return {}
+  if (error) return { error: error.message };
+  if (count === 0) return { error: '删除失败，评论可能已被删除或无权限' };
+  const slug = await getPostSlug(supabase, postId);
+  if (slug) revalidatePath(`/posts/${slug}`);
+  return {};
 }
 
-export async function toggleCommentLike(commentId: string, clientIp?: string): Promise<ActionResult & { liked?: boolean }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export async function toggleCommentLike(
+  commentId: string,
+  clientIp?: string,
+): Promise<ActionResult & { liked?: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
     const { data: existing } = await supabase
@@ -196,58 +236,63 @@ export async function toggleCommentLike(commentId: string, clientIp?: string): P
       .select('id')
       .eq('comment_id', commentId)
       .eq('user_id', user.id)
-      .maybeSingle()
+      .maybeSingle();
 
     if (existing) {
       const { error } = await supabase
         .from('comment_likes')
         .delete()
-        .eq('id', existing.id)
-      if (error) return { error: error.message }
-      return { liked: false }
+        .eq('id', existing.id);
+      if (error) return { error: error.message };
+      return { liked: false };
     } else {
       const { error } = await supabase
         .from('comment_likes')
-        .insert({ comment_id: commentId, user_id: user.id })
-      if (error) return { error: error.message }
-      return { liked: true }
+        .insert({ comment_id: commentId, user_id: user.id });
+      if (error) return { error: error.message };
+      return { liked: true };
     }
   }
 
   // Guest: track by IP
-  const ip = clientIp ?? (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? (await headers()).get('x-real-ip')
-    ?? null
-  if (!ip || ip === 'unknown') return { error: '无法获取IP' }
+  const ip =
+    clientIp ??
+    (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    (await headers()).get('x-real-ip') ??
+    null;
+  if (!ip || ip === 'unknown') return { error: '无法获取IP' };
 
-  const { allowed } = await checkIpRateLimit(ip, 'comment_likes', 10, 60)
-  if (!allowed) return { error: '操作过于频繁，请稍后再试' }
+  const { allowed } = await checkIpRateLimit(ip, 'comment_likes', 10, 60);
+  if (!allowed) return { error: '操作过于频繁，请稍后再试' };
 
   const { data: existing } = await supabase
     .from('comment_likes')
     .select('id')
     .eq('comment_id', commentId)
     .eq('ip', ip)
-    .maybeSingle()
+    .maybeSingle();
 
   if (existing) {
     const { error } = await supabase
       .from('comment_likes')
       .delete()
-      .eq('id', existing.id)
-    if (error) return { error: error.message }
-    return { liked: false }
+      .eq('id', existing.id);
+    if (error) return { error: error.message };
+    return { liked: false };
   } else {
     const { error } = await supabase
       .from('comment_likes')
-      .insert({ comment_id: commentId, ip })
-    if (error) return { error: error.message }
-    return { liked: true }
+      .insert({ comment_id: commentId, ip });
+    if (error) return { error: error.message };
+    return { liked: true };
   }
 }
 
-export async function getMoreComments(postId: string, page: number): Promise<ActionResult & { data?: any[]; total?: number }> {
-  const result = await getCommentsForPost(postId, { page, pageSize: 10 })
-  if (result.error) return { error: result.error }
-  return { data: result.data, total: result.total }
+export async function getMoreComments(
+  postId: string,
+  page: number,
+): Promise<ActionResult & { data?: any[]; total?: number }> {
+  const result = await getCommentsForPost(postId, { page, pageSize: 10 });
+  if (result.error) return { error: result.error };
+  return { data: result.data, total: result.total };
 }

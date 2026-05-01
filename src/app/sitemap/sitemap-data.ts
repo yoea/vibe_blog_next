@@ -2,8 +2,8 @@
 // 运行 `node scripts/build/generate-sitemap.mjs` 重新生成
 
 export interface SitemapRoute {
-  path: string
-  title: string
+  path: string;
+  title: string;
 }
 
 export const routes: SitemapRoute[] = [
@@ -19,4 +19,4 @@ export const routes: SitemapRoute[] = [
   { path: '/register', title: '注册' },
   { path: '/settings', title: '设置' },
   { path: '/tags', title: '标签管理' },
-]
+];

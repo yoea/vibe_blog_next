@@ -1,8 +1,10 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
-  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(',').map(s => s.trim()) ?? ['localhost'],
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(',').map((s) =>
+    s.trim(),
+  ) ?? ['localhost'],
   images: {
     remotePatterns: [
       {

@@ -1,24 +1,24 @@
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(text)
-    return true
+    await navigator.clipboard.writeText(text);
+    return true;
   } catch {
     // HTTP 环境降级方案
-    const textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.style.position = 'fixed'
-    textarea.style.top = '0'
-    textarea.style.left = '0'
-    textarea.style.opacity = '0'
-    document.body.appendChild(textarea)
-    textarea.select()
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
     try {
-      document.execCommand('copy')
-      return true
+      document.execCommand('copy');
+      return true;
     } catch {
-      return false
+      return false;
     } finally {
-      document.body.removeChild(textarea)
+      document.body.removeChild(textarea);
     }
   }
 }

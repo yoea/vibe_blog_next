@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server';
 
 interface RateLimitResult {
-  allowed: boolean
-  remaining: number
+  allowed: boolean;
+  remaining: number;
 }
 
 /**
@@ -16,20 +16,20 @@ export async function checkIpRateLimit(
   ip: string,
   table: string,
   maxCount: number,
-  windowMinutes: number
+  windowMinutes: number,
 ): Promise<RateLimitResult> {
-  const supabase = await createClient()
-  const since = new Date(Date.now() - windowMinutes * 60_000).toISOString()
+  const supabase = await createClient();
+  const since = new Date(Date.now() - windowMinutes * 60_000).toISOString();
 
   const { count } = await supabase
     .from(table)
     .select('*', { count: 'exact', head: true })
     .eq('ip', ip)
-    .gte('created_at', since)
+    .gte('created_at', since);
 
-  const current = count ?? 0
+  const current = count ?? 0;
   return {
     allowed: current < maxCount,
     remaining: Math.max(0, maxCount - current),
-  }
+  };
 }

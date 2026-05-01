@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useState, type ReactNode } from 'react'
-import { CommentForm } from './comment-form'
-import Link from 'next/link'
-import { MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
-import { toast } from 'sonner'
-import { getUserColor } from '@/lib/utils/colors'
-import { formatTimeAgo } from '@/lib/utils/time'
-import { Avatar } from '@/components/ui/avatar'
+import { useState, type ReactNode } from 'react';
+import { CommentForm } from './comment-form';
+import Link from 'next/link';
+import { MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from 'sonner';
+import { getUserColor } from '@/lib/utils/colors';
+import { formatTimeAgo } from '@/lib/utils/time';
+import { Avatar } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import type { ThreadedItemBase } from '@/lib/db/types'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import type { ThreadedItemBase } from '@/lib/db/types';
 
 interface ThreadedItem extends ThreadedItemBase {
-  replies?: this[]
+  replies?: this[];
 }
 
 export function ThreadedItemRenderer<T extends ThreadedItem>({
@@ -40,42 +40,49 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
   highlightId,
   idPrefix = 'comment',
 }: {
-  item: T
-  currentUserId: string | null
-  identifier: string
-  replyTarget?: string | null
-  onReply?: (id: string) => void
-  onCancelReply?: () => void
-  onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => Promise<boolean> | boolean
-  deleteTitle?: string
-  deleteDescription?: string
-  canDelete?: boolean
-  children?: ReactNode
-  renderActions?: (item: T) => ReactNode
-  highlightId?: string | null
-  idPrefix?: string
+  item: T;
+  currentUserId: string | null;
+  identifier: string;
+  replyTarget?: string | null;
+  onReply?: (id: string) => void;
+  onCancelReply?: () => void;
+  onSubmitReply?: (
+    content: string,
+    parentId?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<boolean> | boolean;
+  deleteTitle?: string;
+  deleteDescription?: string;
+  canDelete?: boolean;
+  children?: ReactNode;
+  renderActions?: (item: T) => ReactNode;
+  highlightId?: string | null;
+  idPrefix?: string;
 }) {
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const isReplyActive = replyTarget === item.id
-  const isGuest = !item.author_id
+  const isReplyActive = replyTarget === item.id;
+  const isGuest = !item.author_id;
   const displayName = isGuest
     ? (item.author?.display_name ?? '匿名游客')
-    : (item.author?.display_name ?? item.author_email?.split('@')[0] ?? '匿名用户')
-  const avatarUrl = !isGuest ? (item.author as any)?.avatar_url ?? null : null
+    : (item.author?.display_name ??
+      item.author_email?.split('@')[0] ??
+      '匿名用户');
+  const avatarUrl = !isGuest
+    ? ((item.author as any)?.avatar_url ?? null)
+    : null;
 
   const handleConfirmDelete = async () => {
-    setDeleting(true)
-    const ok = await onDelete(item.id)
-    setDeleting(false)
+    setDeleting(true);
+    const ok = await onDelete(item.id);
+    setDeleting(false);
     if (ok) {
-      setShowConfirm(false)
+      setShowConfirm(false);
     } else {
-      toast.error('删除失败，请重试')
+      toast.error('删除失败，请重试');
     }
-  }
+  };
 
   return (
     <>
@@ -98,7 +105,10 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5 truncate">
               {isGuest ? (
-                <span className="font-medium truncate" style={{ color: getUserColor('guest') }}>
+                <span
+                  className="font-medium truncate"
+                  style={{ color: getUserColor('guest') }}
+                >
                   {displayName}
                 </span>
               ) : (
@@ -111,12 +121,18 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 </Link>
               )}
               {isGuest && (
-                <span className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">游客</span>
+                <span className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                  游客
+                </span>
               )}
             </div>
-            <span className="shrink-0 ml-2" suppressHydrationWarning>{formatTimeAgo(item.created_at)}</span>
+            <span className="shrink-0 ml-2" suppressHydrationWarning>
+              {formatTimeAgo(item.created_at)}
+            </span>
           </div>
-          <p className="text-sm whitespace-pre-wrap break-words">{item.content}</p>
+          <p className="text-sm whitespace-pre-wrap break-words">
+            {item.content}
+          </p>
 
           <div className="flex items-center gap-3 pt-1">
             {renderActions ? renderActions(item) : children}
@@ -129,7 +145,8 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 回复
               </button>
             )}
-            {(canDelete ?? (currentUserId && currentUserId === item.author_id)) && (
+            {(canDelete ??
+              (currentUserId && currentUserId === item.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
@@ -177,24 +194,37 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
         </div>
       )}
 
-      <Dialog open={showConfirm} onOpenChange={(open) => { if (!deleting) setShowConfirm(open) }}>
+      <Dialog
+        open={showConfirm}
+        onOpenChange={(open) => {
+          if (!deleting) setShowConfirm(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{deleteTitle}</DialogTitle>
             <DialogDescription>{deleteDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={deleting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirm(false)}
+              disabled={deleting}
+            >
               取消
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+            >
               {deleting ? '删除中...' : '确认删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
 
 function ReplyList<T extends ThreadedItem>({
@@ -214,27 +244,34 @@ function ReplyList<T extends ThreadedItem>({
   highlightId,
   idPrefix = 'comment',
 }: {
-  replies: T[]
-  parentAuthorName: string
-  currentUserId: string | null
-  identifier: string
-  replyTarget?: string | null
-  onReply?: (id: string) => void
-  onCancelReply?: () => void
-  onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => Promise<boolean> | boolean
-  deleteTitle?: string
-  deleteDescription?: string
-  canDelete?: boolean
-  renderActions?: (item: T) => ReactNode
-  highlightId?: string | null
-  idPrefix?: string
+  replies: T[];
+  parentAuthorName: string;
+  currentUserId: string | null;
+  identifier: string;
+  replyTarget?: string | null;
+  onReply?: (id: string) => void;
+  onCancelReply?: () => void;
+  onSubmitReply?: (
+    content: string,
+    parentId?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<boolean> | boolean;
+  deleteTitle?: string;
+  deleteDescription?: string;
+  canDelete?: boolean;
+  renderActions?: (item: T) => ReactNode;
+  highlightId?: string | null;
+  idPrefix?: string;
 }) {
-  const shouldExpand = highlightId ? replies.some(r => r.id === highlightId) : false
-  const [collapsed, setCollapsed] = useState(replies.length > 1 && !shouldExpand)
-  const hiddenCount = replies.length - 1
+  const shouldExpand = highlightId
+    ? replies.some((r) => r.id === highlightId)
+    : false;
+  const [collapsed, setCollapsed] = useState(
+    replies.length > 1 && !shouldExpand,
+  );
+  const hiddenCount = replies.length - 1;
 
-  if (replies.length === 0) return null
+  if (replies.length === 0) return null;
 
   return (
     <>
@@ -258,8 +295,8 @@ function ReplyList<T extends ThreadedItem>({
           highlightId={highlightId}
           idPrefix={idPrefix}
         />
-        {hiddenCount > 0 && (
-          collapsed ? (
+        {hiddenCount > 0 &&
+          (collapsed ? (
             <button
               onClick={() => setCollapsed(false)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors py-1"
@@ -297,11 +334,10 @@ function ReplyList<T extends ThreadedItem>({
                 收起回复
               </button>
             </>
-          )
-        )}
+          ))}
       </div>
     </>
-  )
+  );
 }
 
 function ReplyItem<T extends ThreadedItem>({
@@ -321,42 +357,49 @@ function ReplyItem<T extends ThreadedItem>({
   highlightId,
   idPrefix = 'comment',
 }: {
-  reply: T
-  parentAuthorName: string
-  currentUserId: string | null
-  identifier: string
-  replyTarget?: string | null
-  onReply?: (id: string) => void
-  onCancelReply?: () => void
-  onSubmitReply?: (content: string, parentId?: string) => Promise<{ success: boolean; error?: string }>
-  onDelete: (id: string) => Promise<boolean> | boolean
-  deleteTitle?: string
-  deleteDescription?: string
-  canDelete?: boolean
-  renderActions?: (item: T) => ReactNode
-  highlightId?: string | null
-  idPrefix?: string
+  reply: T;
+  parentAuthorName: string;
+  currentUserId: string | null;
+  identifier: string;
+  replyTarget?: string | null;
+  onReply?: (id: string) => void;
+  onCancelReply?: () => void;
+  onSubmitReply?: (
+    content: string,
+    parentId?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<boolean> | boolean;
+  deleteTitle?: string;
+  deleteDescription?: string;
+  canDelete?: boolean;
+  renderActions?: (item: T) => ReactNode;
+  highlightId?: string | null;
+  idPrefix?: string;
 }) {
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const isReplyActive = replyTarget === reply.id
-  const isGuest = !reply.author_id
+  const isReplyActive = replyTarget === reply.id;
+  const isGuest = !reply.author_id;
   const displayName = isGuest
     ? (reply.author?.display_name ?? '匿名游客')
-    : (reply.author?.display_name ?? reply.author_email?.split('@')[0] ?? '匿名用户')
-  const avatarUrl = !isGuest ? (reply.author as any)?.avatar_url ?? null : null
+    : (reply.author?.display_name ??
+      reply.author_email?.split('@')[0] ??
+      '匿名用户');
+  const avatarUrl = !isGuest
+    ? ((reply.author as any)?.avatar_url ?? null)
+    : null;
 
   const handleConfirmDelete = async () => {
-    setDeleting(true)
-    const ok = await onDelete(reply.id)
-    setDeleting(false)
+    setDeleting(true);
+    const ok = await onDelete(reply.id);
+    setDeleting(false);
     if (ok) {
-      setShowConfirm(false)
+      setShowConfirm(false);
     } else {
-      toast.error('删除失败，请重试')
+      toast.error('删除失败，请重试');
     }
-  }
+  };
 
   return (
     <>
@@ -379,7 +422,10 @@ function ReplyItem<T extends ThreadedItem>({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5 truncate">
               {isGuest ? (
-                <span className="font-medium truncate" style={{ color: getUserColor('guest') }}>
+                <span
+                  className="font-medium truncate"
+                  style={{ color: getUserColor('guest') }}
+                >
                   {displayName}
                 </span>
               ) : (
@@ -392,10 +438,14 @@ function ReplyItem<T extends ThreadedItem>({
                 </Link>
               )}
             </div>
-            <span className="shrink-0 ml-2" suppressHydrationWarning>{formatTimeAgo(reply.created_at)}</span>
+            <span className="shrink-0 ml-2" suppressHydrationWarning>
+              {formatTimeAgo(reply.created_at)}
+            </span>
           </div>
           <p className="text-sm whitespace-pre-wrap break-words">
-            <span className="text-muted-foreground">回复 @{parentAuthorName}：</span>
+            <span className="text-muted-foreground">
+              回复 @{parentAuthorName}：
+            </span>
             {reply.content}
           </p>
 
@@ -410,7 +460,8 @@ function ReplyItem<T extends ThreadedItem>({
                 回复
               </button>
             )}
-            {(canDelete ?? (currentUserId && currentUserId === reply.author_id)) && (
+            {(canDelete ??
+              (currentUserId && currentUserId === reply.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
@@ -436,22 +487,35 @@ function ReplyItem<T extends ThreadedItem>({
         </div>
       </div>
 
-      <Dialog open={showConfirm} onOpenChange={(open) => { if (!deleting) setShowConfirm(open) }}>
+      <Dialog
+        open={showConfirm}
+        onOpenChange={(open) => {
+          if (!deleting) setShowConfirm(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{deleteTitle}</DialogTitle>
             <DialogDescription>{deleteDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={deleting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirm(false)}
+              disabled={deleting}
+            >
               取消
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+            >
               {deleting ? '删除中...' : '确认删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

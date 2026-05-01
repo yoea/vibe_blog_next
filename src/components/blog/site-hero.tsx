@@ -1,16 +1,23 @@
-import { FileText } from 'lucide-react'
-import { SiteStats } from './site-stats'
-import { getSiteViewsCount, getSiteLikesCount, getTotalPostsCount } from '@/lib/db/queries'
-import { createClient } from '@/lib/supabase/server'
+import { FileText } from 'lucide-react';
+import { SiteStats } from './site-stats';
+import {
+  getSiteViewsCount,
+  getSiteLikesCount,
+  getTotalPostsCount,
+} from '@/lib/db/queries';
+import { createClient } from '@/lib/supabase/server';
 
 export async function SiteHero() {
-  const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog'
-  const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? '简洁美观的多人博客平台'
-  const { count: viewsCount } = await getSiteViewsCount()
-  const { count: likesCount } = await getSiteLikesCount()
-  const { count: totalPosts } = await getTotalPostsCount()
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog';
+  const siteDescription =
+    process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? '简洁美观的多人博客平台';
+  const { count: viewsCount } = await getSiteViewsCount();
+  const { count: likesCount } = await getSiteLikesCount();
+  const { count: totalPosts } = await getTotalPostsCount();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <section className="text-center py-10 space-y-3 mb-8 md:mb-0">
@@ -32,5 +39,5 @@ export async function SiteHero() {
         </p>
       )}
     </section>
-  )
+  );
 }

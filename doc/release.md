@@ -49,14 +49,14 @@ git push --follow-tags github main                   │
 
 日常开发必须使用 [Conventional Commits](https://www.conventionalcommits.org/) 格式。`standard-version` 根据 commit 前缀决定版本号 bump 级别：
 
-| 前缀 | 含义 | 版本号影响 |
-|------|------|:---:|
-| `feat:` | 新功能 | **minor** (0.x.0) |
-| `fix:` | Bug 修复 | **patch** (0.0.x) |
-| `chore:` | 杂项变更 | patch |
-| `docs:` | 文档 | patch |
-| `refactor:` | 重构 | patch |
-| `perf:` | 性能优化 | patch |
+| 前缀        | 含义     |    版本号影响     |
+| ----------- | -------- | :---------------: |
+| `feat:`     | 新功能   | **minor** (0.x.0) |
+| `fix:`      | Bug 修复 | **patch** (0.0.x) |
+| `chore:`    | 杂项变更 |       patch       |
+| `docs:`     | 文档     |       patch       |
+| `refactor:` | 重构     |       patch       |
+| `perf:`     | 性能优化 |       patch       |
 
 > `BREAKING CHANGE`（commit body 含此关键字，或标题以 `!` 结尾）触发 **major** 版本。
 
@@ -68,9 +68,9 @@ CHANGELOG 的分类标题（中文）由 `.versionrc` 控制。
 
 `package.json` 中定义了三组命令：
 
-| 命令 | 用途 |
-|------|------|
-| `npm run release` | 自动判断 bump 级别 |
+| 命令                    | 用途               |
+| ----------------------- | ------------------ |
+| `npm run release`       | 自动判断 bump 级别 |
 | `npm run release:minor` | 强制 minor (0.x.0) |
 | `npm run release:patch` | 强制 patch (0.0.x) |
 
@@ -113,10 +113,10 @@ standard-version && node scripts/build/postrelease.js
 
 项目配置了两个 git 远程：
 
-| 名称 | 地址 | 平台 |
-|------|------|------|
-| `origin` | `git@git.ewing.top:yoea/vibe_blog_next.git` | Gitee |
-| `github` | `git@github.com:yoea/vibe_blog_next.git` | GitHub |
+| 名称     | 地址                                        | 平台   |
+| -------- | ------------------------------------------- | ------ |
+| `origin` | `git@git.ewing.top:yoea/vibe_blog_next.git` | Gitee  |
+| `github` | `git@github.com:yoea/vibe_blog_next.git`    | GitHub |
 
 ```bash
 git push --follow-tags origin main   # 推送到 Gitee
@@ -178,14 +178,14 @@ gh release create "v0.5.0" \
 
 ## 文件清单
 
-| 文件 | 来源 | 作用 |
-|------|:--:|------|
-| `package.json` (scripts) | 项目自带 | 定义 `release` / `release:minor` / `release:patch` 命令 |
-| `.versionrc` | 项目自带 | `standard-version` 配置，定义 CHANGELOG 中文分类标题 |
-| `CHANGELOG.md` | standard-version 自动维护 | 所有版本的更新记录，release notes 的**唯一数据源** |
-| `scripts/build/postrelease.js` | 项目自定义 | 将轻量 tag 升级为附注 tag，message = CHANGELOG 段落 |
-| `.github/workflows/ci.yml` | 项目自定义 | 每次 push/PR 执行 TypeScript 类型检查 + ESLint |
-| `.github/workflows/release.yml` | 项目自定义 | tag 推送时从 CHANGELOG 提取内容，创建 GitHub Release |
+| 文件                            |           来源            | 作用                                                    |
+| ------------------------------- | :-----------------------: | ------------------------------------------------------- |
+| `package.json` (scripts)        |         项目自带          | 定义 `release` / `release:minor` / `release:patch` 命令 |
+| `.versionrc`                    |         项目自带          | `standard-version` 配置，定义 CHANGELOG 中文分类标题    |
+| `CHANGELOG.md`                  | standard-version 自动维护 | 所有版本的更新记录，release notes 的**唯一数据源**      |
+| `scripts/build/postrelease.js`  |        项目自定义         | 将轻量 tag 升级为附注 tag，message = CHANGELOG 段落     |
+| `.github/workflows/ci.yml`      |        项目自定义         | 每次 push/PR 执行 TypeScript 类型检查 + ESLint          |
+| `.github/workflows/release.yml` |        项目自定义         | tag 推送时从 CHANGELOG 提取内容，创建 GitHub Release    |
 
 ---
 
@@ -196,11 +196,13 @@ gh release create "v0.5.0" \
 Release workflow 运行时执行的是 **tag 所指向 commit** 的 `.github/workflows/release.yml`，不是 main 分支最新 commit。
 
 > 如果 workflow 修复提交在 tag 之后，必须执行：
+>
 > ```bash
 > git tag -f vX.Y.Z HEAD
 > node scripts/build/postrelease.js
 > git push --force github vX.Y.Z
 > ```
+>
 > 将 tag 移到包含修复的 commit，否则修复不生效。
 
 ### CHANGELOG 标题级别

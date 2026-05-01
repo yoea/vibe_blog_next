@@ -1,30 +1,34 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
-  const [message, setMessage] = useState('服务器内部错误')
+  const [message, setMessage] = useState('服务器内部错误');
 
   useEffect(() => {
-    const msg = error.message?.toLowerCase() || ''
+    const msg = error.message?.toLowerCase() || '';
     if (msg.includes('maintenance') || msg.includes('维护')) {
-      setMessage('站点正在维护中，请稍后再试')
-    } else if (msg.includes('deploy') || msg.includes('部署') || msg.includes('building')) {
-      setMessage('新版本正在部署中，页面暂时不可用')
+      setMessage('站点正在维护中，请稍后再试');
+    } else if (
+      msg.includes('deploy') ||
+      msg.includes('部署') ||
+      msg.includes('building')
+    ) {
+      setMessage('新版本正在部署中，页面暂时不可用');
     } else if (msg.includes('timeout') || msg.includes('超时')) {
-      setMessage('请求超时，请检查网络后重试')
+      setMessage('请求超时，请检查网络后重试');
     } else if (msg.includes('database') || msg.includes('数据库')) {
-      setMessage('数据库连接异常，请稍后再试')
+      setMessage('数据库连接异常，请稍后再试');
     } else if (msg.includes('rate limit') || msg.includes('too many')) {
-      setMessage('请求过于频繁，请稍后再试')
+      setMessage('请求过于频繁，请稍后再试');
     }
-  }, [error])
+  }, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
@@ -40,5 +44,5 @@ export default function GlobalError({
         重试
       </button>
     </div>
-  )
+  );
 }

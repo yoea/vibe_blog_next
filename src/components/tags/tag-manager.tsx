@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import { useState, useTransition, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createTag, deleteTag } from '@/lib/actions/post-actions'
-import { Button } from '@/components/ui/button'
+import { useState, useTransition, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createTag, deleteTag } from '@/lib/actions/post-actions';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,90 +12,115 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { toast } from 'sonner'
-import { Plus, Trash2, ArrowUpDown, Hash, Calendar, User, TrendingUp } from 'lucide-react'
-import type { TagWithCreator } from '@/lib/db/queries'
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import {
+  Plus,
+  Trash2,
+  ArrowUpDown,
+  Hash,
+  Calendar,
+  User,
+  TrendingUp,
+} from 'lucide-react';
+import type { TagWithCreator } from '@/lib/db/queries';
 
-type SortKey = 'created_at' | 'post_count' | 'created_by' | 'name'
+type SortKey = 'created_at' | 'post_count' | 'created_by' | 'name';
 
-const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ElementType }[] = [
-  { key: 'created_at', label: '创建时间', icon: Calendar },
-  { key: 'post_count', label: '引用次数', icon: TrendingUp },
-  { key: 'created_by', label: '创建人', icon: User },
-  { key: 'name', label: '名称', icon: Hash },
-]
+const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ElementType }[] =
+  [
+    { key: 'created_at', label: '创建时间', icon: Calendar },
+    { key: 'post_count', label: '引用次数', icon: TrendingUp },
+    { key: 'created_by', label: '创建人', icon: User },
+    { key: 'name', label: '名称', icon: Hash },
+  ];
 
 interface Props {
-  initialTags: TagWithCreator[]
-  currentUserId: string | null
-  isAdmin: boolean
-  showCreate?: boolean
+  initialTags: TagWithCreator[];
+  currentUserId: string | null;
+  isAdmin: boolean;
+  showCreate?: boolean;
 }
 
-export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = true }: Props) {
-  const [tags, setTags] = useState(initialTags)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [newTagName, setNewTagName] = useState('')
-  const [deleteTarget, setDeleteTarget] = useState<TagWithCreator | null>(null)
-  const [isPending, startTransition] = useTransition()
-  const [sortBy, setSortBy] = useState<SortKey>('created_at')
-  const router = useRouter()
+export function TagManager({
+  initialTags,
+  currentUserId,
+  isAdmin,
+  showCreate = true,
+}: Props) {
+  const [tags, setTags] = useState(initialTags);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<TagWithCreator | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [sortBy, setSortBy] = useState<SortKey>('created_at');
+  const router = useRouter();
 
   useEffect(() => {
-    setTags(initialTags)
-  }, [initialTags])
+    setTags(initialTags);
+  }, [initialTags]);
 
   const sortedTags = useMemo(() => {
-    const copy = [...tags]
+    const copy = [...tags];
     switch (sortBy) {
       case 'created_at':
-        return copy.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        return copy.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
       case 'post_count':
-        return copy.sort((a, b) => b.post_count - a.post_count)
+        return copy.sort((a, b) => b.post_count - a.post_count);
       case 'created_by':
-        return copy.sort((a, b) => (a.author_name ?? '').localeCompare(b.author_name ?? ''))
+        return copy.sort((a, b) =>
+          (a.author_name ?? '').localeCompare(b.author_name ?? ''),
+        );
       case 'name':
-        return copy.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+        return copy.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
       default:
-        return copy
+        return copy;
     }
-  }, [tags, sortBy])
+  }, [tags, sortBy]);
 
-  const totalPosts = useMemo(() => tags.reduce((sum, t) => sum + t.post_count, 0), [tags])
+  const totalPosts = useMemo(
+    () => tags.reduce((sum, t) => sum + t.post_count, 0),
+    [tags],
+  );
 
   const handleCreate = () => {
-    const name = newTagName.trim()
-    if (!name) { toast.error('请输入标签名'); return }
+    const name = newTagName.trim();
+    if (!name) {
+      toast.error('请输入标签名');
+      return;
+    }
 
     startTransition(async () => {
-      const result = await createTag(name)
+      const result = await createTag(name);
       if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       } else {
-        toast.success('标签已创建')
-        setShowCreateDialog(false)
-        setNewTagName('')
-        router.refresh()
+        toast.success('标签已创建');
+        setShowCreateDialog(false);
+        setNewTagName('');
+        router.refresh();
       }
-    })
-  }
+    });
+  };
 
   const handleDelete = () => {
-    if (!deleteTarget) return
+    if (!deleteTarget) return;
 
     startTransition(async () => {
-      const result = await deleteTag(deleteTarget.id)
+      const result = await deleteTag(deleteTarget.id);
       if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       } else {
-        toast.success('标签已删除')
-        setTags((prev) => prev.filter((t) => t.id !== deleteTarget.id))
-        setDeleteTarget(null)
-        router.refresh()
+        toast.success('标签已删除');
+        setTags((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+        setDeleteTarget(null);
+        router.refresh();
       }
-    })
-  }
+    });
+  };
 
   if (!tags.length) {
     return (
@@ -112,7 +137,7 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
           <p>暂无标签</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -153,11 +178,16 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
       {/* Tag list */}
       <div className="flex flex-wrap gap-3">
         {sortedTags.map((tag) => {
-          const isOwner = tag.created_by !== null && currentUserId === tag.created_by
-          const canDelete = isOwner || isAdmin
-          const creatorLabel = tag.author_name ?? tag.author_email ?? ''
+          const isOwner =
+            tag.created_by !== null && currentUserId === tag.created_by;
+          const canDelete = isOwner || isAdmin;
+          const creatorLabel = tag.author_name ?? tag.author_email ?? '';
           return (
-            <div key={tag.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border hover:shadow-sm transition-shadow" title={creatorLabel ? `创建者: ${creatorLabel}` : undefined}>
+            <div
+              key={tag.id}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border hover:shadow-sm transition-shadow"
+              title={creatorLabel ? `创建者: ${creatorLabel}` : undefined}
+            >
               <Link
                 href={`/tags/${encodeURIComponent(tag.slug)}`}
                 className="text-sm font-medium hover:underline"
@@ -165,7 +195,9 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
               >
                 {tag.name}
               </Link>
-              <span className="text-xs text-muted-foreground">({tag.post_count})</span>
+              <span className="text-xs text-muted-foreground">
+                ({tag.post_count})
+              </span>
               {canDelete && (
                 <button
                   type="button"
@@ -177,7 +209,7 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
                 </button>
               )}
             </div>
-          )
+          );
         })}
       </div>
 
@@ -194,18 +226,25 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleCreate()
-              if (e.key === 'Escape') setShowCreateDialog(false)
+              if (e.key === 'Enter') handleCreate();
+              if (e.key === 'Escape') setShowCreateDialog(false);
             }}
             placeholder="标签名"
             maxLength={50}
             className="w-full px-3 py-2 rounded-md border bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+              disabled={isPending}
+            >
               取消
             </Button>
-            <Button onClick={handleCreate} disabled={isPending || !newTagName.trim()}>
+            <Button
+              onClick={handleCreate}
+              disabled={isPending || !newTagName.trim()}
+            >
               {isPending ? '创建中...' : '创建'}
             </Button>
           </DialogFooter>
@@ -213,24 +252,38 @@ export function TagManager({ initialTags, currentUserId, isAdmin, showCreate = t
       </Dialog>
 
       {/* Delete confirmation dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>删除标签</DialogTitle>
             <DialogDescription>
-              确定删除标签「{deleteTarget?.name}」？此操作将从所有包含此标签的文章中移除该标签，不可撤销。
+              确定删除标签「{deleteTarget?.name}
+              」？此操作将从所有包含此标签的文章中移除该标签，不可撤销。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isPending}
+            >
               取消
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
               {isPending ? '删除中...' : '删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

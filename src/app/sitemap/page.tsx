@@ -1,12 +1,26 @@
-import Link from 'next/link'
-import { DonateButton } from '@/components/donate-button'
-import { routes } from './sitemap-data'
-import { Home, Users, FileText, PenSquare, LogIn, UserPlus, Settings, Shield, Scale, Map, Heart, Tags, AlertTriangle } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import Link from 'next/link';
+import { DonateButton } from '@/components/donate-button';
+import { routes } from './sitemap-data';
+import {
+  Home,
+  Users,
+  FileText,
+  PenSquare,
+  LogIn,
+  UserPlus,
+  Settings,
+  Shield,
+  Scale,
+  Map,
+  Heart,
+  Tags,
+  AlertTriangle,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export const metadata = {
   title: '网站地图',
-}
+};
 
 // 路由 → 图标映射（新增页面时只需在此添加一行）
 const iconMap: Record<string, LucideIcon> = {
@@ -23,7 +37,7 @@ const iconMap: Record<string, LucideIcon> = {
   '/legal': Scale,
   '/tags': Tags,
   '/maintenance': AlertTriangle,
-}
+};
 
 // 路由 → 分类映射
 const categoryMap: Record<string, string> = {
@@ -40,25 +54,25 @@ const categoryMap: Record<string, string> = {
   '/privacy': '关于',
   '/legal': '关于',
   '/maintenance': '系统',
-}
+};
 
 // 按分类分组
-const categoryOrder = ['内容浏览', '文章管理', '账号', '关于', '系统', '支持']
+const categoryOrder = ['内容浏览', '文章管理', '账号', '关于', '系统', '支持'];
 
 const grouped = routes.reduce<Record<string, typeof routes>>((acc, route) => {
-  const cat = categoryMap[route.path] ?? '其他'
-  if (!acc[cat]) acc[cat] = []
-  acc[cat].push(route)
-  return acc
-}, {})
+  const cat = categoryMap[route.path] ?? '其他';
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(route);
+  return acc;
+}, {});
 
 // 添加"支持"分类（非路由项）
-const supportItems = [
-  { title: '给网站作者充电', icon: Heart },
-]
+const supportItems = [{ title: '给网站作者充电', icon: Heart }];
 
 export default async function SitemapPage() {
-  const sortedCategories = categoryOrder.filter((c) => grouped[c] || c === '支持')
+  const sortedCategories = categoryOrder.filter(
+    (c) => grouped[c] || c === '支持',
+  );
 
   return (
     <div className="space-y-6">
@@ -67,36 +81,39 @@ export default async function SitemapPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {sortedCategories.map((category) => (
           <section key={category}>
-            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">{category}</h2>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              {category}
+            </h2>
             <ul className="space-y-1">
-              {category === '支持' ? (
-                supportItems.map((item) => (
-                  <li key={item.title}>
-                    <DonateButton>
-                      <button className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1">
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {item.title}
-                      </button>
-                    </DonateButton>
-                  </li>
-                ))
-              ) : (
-                grouped[category]?.map((route) => {
-                  const Icon = iconMap[route.path] ?? FileText
-                  return (
-                    <li key={route.path}>
-                      <Link href={route.path} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1">
-                        <Icon className="h-4 w-4 shrink-0" />
-                        {route.title}
-                      </Link>
+              {category === '支持'
+                ? supportItems.map((item) => (
+                    <li key={item.title}>
+                      <DonateButton>
+                        <button className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1">
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          {item.title}
+                        </button>
+                      </DonateButton>
                     </li>
-                  )
-                })
-              )}
+                  ))
+                : grouped[category]?.map((route) => {
+                    const Icon = iconMap[route.path] ?? FileText;
+                    return (
+                      <li key={route.path}>
+                        <Link
+                          href={route.path}
+                          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1"
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          {route.title}
+                        </Link>
+                      </li>
+                    );
+                  })}
             </ul>
           </section>
         ))}
       </div>
     </div>
-  )
+  );
 }

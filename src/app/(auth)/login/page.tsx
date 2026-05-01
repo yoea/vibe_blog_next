@@ -1,12 +1,14 @@
-import Link from 'next/link'
-import { LoginForm } from '@/components/auth/login-form'
+import Link from 'next/link';
+import { LoginForm } from '@/components/auth/login-form';
 
 export const metadata = {
   title: '登录',
-}
+};
 
-export default async function LoginPage(props: { searchParams: Promise<{ redirect?: string }> }) {
-  const { redirect: redirectTo } = await props.searchParams
+export default async function LoginPage(props: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect: redirectTo } = await props.searchParams;
 
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -24,5 +26,5 @@ export default async function LoginPage(props: { searchParams: Promise<{ redirec
         </p>
       </div>
     </div>
-  )
+  );
 }

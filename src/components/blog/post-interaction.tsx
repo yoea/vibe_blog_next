@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { LikeButton } from '@/components/blog/like-button'
-import { CommentSection } from '@/components/blog/comment-section'
-import { ShareDialog } from '@/components/blog/share-dialog'
-import { Button } from '@/components/ui/button'
-import { MessageCircle, Share2 } from 'lucide-react'
-import type { CommentWithAuthor } from '@/lib/db/types'
+import { useState, useEffect } from 'react';
+import { LikeButton } from '@/components/blog/like-button';
+import { CommentSection } from '@/components/blog/comment-section';
+import { ShareDialog } from '@/components/blog/share-dialog';
+import { Button } from '@/components/ui/button';
+import { MessageCircle, Share2 } from 'lucide-react';
+import type { CommentWithAuthor } from '@/lib/db/types';
 
 export function PostInteraction({
   postId,
@@ -22,56 +22,71 @@ export function PostInteraction({
   editButton,
   archiveButton,
 }: {
-  postId: string
-  postAuthorId: string
-  currentUserId: string | null
-  initialLikeCount: number
-  isLiked: boolean
-  initialCommentCount: number
-  initialComments: CommentWithAuthor[]
-  initialTotal: number
-  shareUrl?: string
-  published?: boolean
-  editButton?: React.ReactNode
-  archiveButton?: React.ReactNode
+  postId: string;
+  postAuthorId: string;
+  currentUserId: string | null;
+  initialLikeCount: number;
+  isLiked: boolean;
+  initialCommentCount: number;
+  initialComments: CommentWithAuthor[];
+  initialTotal: number;
+  shareUrl?: string;
+  published?: boolean;
+  editButton?: React.ReactNode;
+  archiveButton?: React.ReactNode;
 }) {
-  const [commentCount, setCommentCount] = useState(initialCommentCount)
-  const [focusSignal, setFocusSignal] = useState(0)
-  const [showShare, setShowShare] = useState(false)
-  const [shareCount, setShareCount] = useState(0)
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
+  const [focusSignal, setFocusSignal] = useState(0);
+  const [showShare, setShowShare] = useState(false);
+  const [shareCount, setShareCount] = useState(0);
 
   useEffect(() => {
     fetch(`/api/shares?postId=${postId}`)
-      .then(r => r.json())
-      .then(data => setShareCount(data.count ?? 0))
-      .catch(() => {})
-  }, [postId])
+      .then((r) => r.json())
+      .then((data) => setShareCount(data.count ?? 0))
+      .catch(() => {});
+  }, [postId]);
 
   const handleShareClick = () => {
-    if (published === false) return
+    if (published === false) return;
     // Record share click
     fetch('/api/shares', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ postId }),
-    }).catch(() => {})
-    setShareCount(c => c + 1)
+    }).catch(() => {});
+    setShareCount((c) => c + 1);
 
     // 移动端：调用系统分享接口
-    if ((/Mobi|Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) && navigator.share && shareUrl) {
-      navigator.share({ title: document.title, url: shareUrl }).catch(() => {})
-      return
+    if (
+      /Mobi|Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      ) &&
+      navigator.share &&
+      shareUrl
+    ) {
+      navigator.share({ title: document.title, url: shareUrl }).catch(() => {});
+      return;
     }
 
     // 桌面端：显示分享对话框（复制链接 + 二维码）
-    setShowShare(true)
-  }
+    setShowShare(true);
+  };
 
   return (
     <>
       <div className="flex items-center gap-4 pt-2 mb-6">
-        <LikeButton postId={postId} initialCount={initialLikeCount} isLiked={isLiked} />
-        <Button variant="outline" size="sm" className="gap-1.5 cursor-pointer" onClick={() => setFocusSignal((c) => c + 1)}>
+        <LikeButton
+          postId={postId}
+          initialCount={initialLikeCount}
+          isLiked={isLiked}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 cursor-pointer"
+          onClick={() => setFocusSignal((c) => c + 1)}
+        >
           <MessageCircle className="h-4 w-4" />
           <span>{commentCount}</span>
         </Button>
@@ -83,7 +98,9 @@ export function PostInteraction({
           title={published === false ? '私密文章不可分享' : '分享'}
           onClick={handleShareClick}
         >
-          <Share2 className={`h-4 w-4 ${published === false ? 'opacity-40' : ''}`} />
+          <Share2
+            className={`h-4 w-4 ${published === false ? 'opacity-40' : ''}`}
+          />
           <span>{shareCount}</span>
         </Button>
         {(editButton || archiveButton) && (
@@ -108,9 +125,9 @@ export function PostInteraction({
         currentUserId={currentUserId}
         initialComments={initialComments}
         initialTotal={initialTotal}
-        onCountChange={(delta) => setCommentCount(c => c + delta)}
+        onCountChange={(delta) => setCommentCount((c) => c + delta)}
         focusSignal={focusSignal}
       />
     </>
-  )
+  );
 }

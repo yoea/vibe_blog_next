@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { RotateCcw, Trash2, Search, Archive } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { RotateCcw, Trash2, Search, Archive } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -11,61 +11,68 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { toast } from 'sonner'
-import { restorePost, permanentlyDeleteArchive } from '@/lib/actions/archive-actions'
-import type { ArchivedPostWithAuthor } from '@/lib/db/types'
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import {
+  restorePost,
+  permanentlyDeleteArchive,
+} from '@/lib/actions/archive-actions';
+import type { ArchivedPostWithAuthor } from '@/lib/db/types';
 
 interface Props {
-  archives: ArchivedPostWithAuthor[]
-  total: number
-  page: number
-  search: string
+  archives: ArchivedPostWithAuthor[];
+  total: number;
+  page: number;
+  search: string;
 }
 
 export function ArchiveList({ archives, total, page, search }: Props) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [restoreTarget, setRestoreTarget] = useState<ArchivedPostWithAuthor | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<ArchivedPostWithAuthor | null>(null)
-  const [searchValue, setSearchValue] = useState(search)
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [restoreTarget, setRestoreTarget] =
+    useState<ArchivedPostWithAuthor | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<ArchivedPostWithAuthor | null>(null);
+  const [searchValue, setSearchValue] = useState(search);
 
-  const pageSize = 20
-  const totalPages = Math.ceil(total / pageSize)
+  const pageSize = 20;
+  const totalPages = Math.ceil(total / pageSize);
 
   const handleRestore = () => {
-    if (!restoreTarget) return
+    if (!restoreTarget) return;
     startTransition(async () => {
-      const result = await restorePost(restoreTarget.id)
+      const result = await restorePost(restoreTarget.id);
       if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       } else {
-        toast.success('文章已恢复')
-        setRestoreTarget(null)
-        router.refresh()
+        toast.success('文章已恢复');
+        setRestoreTarget(null);
+        router.refresh();
       }
-    })
-  }
+    });
+  };
 
   const handleDelete = () => {
-    if (!deleteTarget) return
+    if (!deleteTarget) return;
     startTransition(async () => {
-      const result = await permanentlyDeleteArchive(deleteTarget.id)
+      const result = await permanentlyDeleteArchive(deleteTarget.id);
       if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       } else {
-        toast.success('已永久删除')
-        setDeleteTarget(null)
-        router.refresh()
+        toast.success('已永久删除');
+        setDeleteTarget(null);
+        router.refresh();
       }
-    })
-  }
+    });
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const q = searchValue.trim()
-    router.push(q ? `/admin/archive?q=${encodeURIComponent(q)}` : '/admin/archive')
-  }
+    e.preventDefault();
+    const q = searchValue.trim();
+    router.push(
+      q ? `/admin/archive?q=${encodeURIComponent(q)}` : '/admin/archive',
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -81,9 +88,19 @@ export function ArchiveList({ archives, total, page, search }: Props) {
             className="w-full pl-10 pr-3 py-2 rounded-md border bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-        <Button type="submit" variant="outline" size="sm">搜索</Button>
+        <Button type="submit" variant="outline" size="sm">
+          搜索
+        </Button>
         {search && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => { setSearchValue(''); router.push('/admin/archive') }}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchValue('');
+              router.push('/admin/archive');
+            }}
+          >
             清除
           </Button>
         )}
@@ -112,7 +129,10 @@ export function ArchiveList({ archives, total, page, search }: Props) {
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span>作者: {post.author_name ?? '未知'}</span>
                   <span>原 slug: {post.slug}</span>
-                  <span>归档于: {new Date(post.archived_at).toLocaleDateString('zh-CN')}</span>
+                  <span>
+                    归档于:{' '}
+                    {new Date(post.archived_at).toLocaleDateString('zh-CN')}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -147,7 +167,11 @@ export function ArchiveList({ archives, total, page, search }: Props) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => router.push(`/admin/archive?page=${page - 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`)}
+            onClick={() =>
+              router.push(
+                `/admin/archive?page=${page - 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`,
+              )
+            }
           >
             上一页
           </Button>
@@ -158,7 +182,11 @@ export function ArchiveList({ archives, total, page, search }: Props) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => router.push(`/admin/archive?page=${page + 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`)}
+            onClick={() =>
+              router.push(
+                `/admin/archive?page=${page + 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`,
+              )
+            }
           >
             下一页
           </Button>
@@ -166,16 +194,26 @@ export function ArchiveList({ archives, total, page, search }: Props) {
       )}
 
       {/* 恢复确认弹窗 */}
-      <Dialog open={!!restoreTarget} onOpenChange={(o) => { if (!o) setRestoreTarget(null) }}>
+      <Dialog
+        open={!!restoreTarget}
+        onOpenChange={(o) => {
+          if (!o) setRestoreTarget(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>恢复文章</DialogTitle>
             <DialogDescription>
-              确定要恢复「{restoreTarget?.title}」吗？文章将重新出现在公开列表中。
+              确定要恢复「{restoreTarget?.title}
+              」吗？文章将重新出现在公开列表中。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRestoreTarget(null)} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setRestoreTarget(null)}
+              disabled={isPending}
+            >
               取消
             </Button>
             <Button onClick={handleRestore} disabled={isPending}>
@@ -186,24 +224,38 @@ export function ArchiveList({ archives, total, page, search }: Props) {
       </Dialog>
 
       {/* 永久删除确认弹窗 */}
-      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>永久删除</DialogTitle>
             <DialogDescription>
-              确定要永久删除「{deleteTarget?.title}」吗？此操作不可撤销，文章内容将永久丢失。
+              确定要永久删除「{deleteTarget?.title}
+              」吗？此操作不可撤销，文章内容将永久丢失。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isPending}
+            >
               取消
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
               {isPending ? '删除中...' : '永久删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

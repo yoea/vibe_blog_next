@@ -1,81 +1,90 @@
-import { createClient } from '@/lib/supabase/server'
-import { PostCard } from '@/components/blog/post-card'
-import { AuthorCard } from '@/components/blog/author-card'
-import { GuestbookSection } from '@/components/blog/guestbook-section'
-import { getGuestbookMessages } from '@/lib/db/queries'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, Calendar, FileText, MessageCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { linkRefAuthor } from '@/lib/constants'
-import { formatDaysAgo } from '@/lib/utils/time'
-import type { Metadata } from 'next'
-import type { PostWithAuthor } from '@/lib/db/types'
+import { createClient } from '@/lib/supabase/server';
+import { PostCard } from '@/components/blog/post-card';
+import { AuthorCard } from '@/components/blog/author-card';
+import { GuestbookSection } from '@/components/blog/guestbook-section';
+import { getGuestbookMessages } from '@/lib/db/queries';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, Calendar, FileText, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { linkRefAuthor } from '@/lib/constants';
+import { formatDaysAgo } from '@/lib/utils/time';
+import type { Metadata } from 'next';
+import type { PostWithAuthor } from '@/lib/db/types';
 
 interface PageProps {
-  params: Promise<{ authorId: string }>
+  params: Promise<{ authorId: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { authorId } = await params
-  const supabase = await createClient()
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { authorId } = await params;
+  const supabase = await createClient();
   const { data } = await supabase
     .from('user_settings')
     .select('display_name')
     .eq('user_id', authorId)
-    .maybeSingle()
-  const name = data?.display_name ?? authorId.slice(0, 8)
-  return { title: `${name}的文章` }
+    .maybeSingle();
+  const name = data?.display_name ?? authorId.slice(0, 8);
+  return { title: `${name}的文章` };
 }
 
 export default async function AuthorPage({ params }: PageProps) {
-  const { authorId } = await params
+  const { authorId } = await params;
 
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   const { data: authorSettings } = await supabase
     .from('user_settings')
     .select('display_name, avatar_url, created_at, is_deleted')
     .eq('user_id', authorId)
-    .maybeSingle()
+    .maybeSingle();
 
-  const authorName = authorSettings?.display_name ?? authorId.slice(0, 8)
-  const authorAvatarUrl = authorSettings?.avatar_url ?? null
-  const createdAt = authorSettings?.created_at ?? null
-  const isDeleted = authorSettings?.is_deleted ?? false
+  const authorName = authorSettings?.display_name ?? authorId.slice(0, 8);
+  const authorAvatarUrl = authorSettings?.avatar_url ?? null;
+  const createdAt = authorSettings?.created_at ?? null;
+  const isDeleted = authorSettings?.is_deleted ?? false;
 
   // Fetch current user and posts in parallel
-  const [{ data: { user: currentUser } }, { data: posts, error }] = await Promise.all([
+  const [
+    {
+      data: { user: currentUser },
+    },
+    { data: posts, error },
+  ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from('posts')
-      .select(`
+      .select(
+        `
         *,
         like_count:post_likes(count),
         comment_count:post_comments(count)
-      `)
+      `,
+      )
       .eq('author_id', authorId)
       .eq('published', true)
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false }),
-  ])
+  ]);
 
   if (error || !posts) {
-    return notFound()
+    return notFound();
   }
 
   // Check which posts the current user has liked
-  const postIds = posts.map((p: any) => p.id)
-  const likedPostIds = new Set<string>()
+  const postIds = posts.map((p: any) => p.id);
+  const likedPostIds = new Set<string>();
   if (currentUser && postIds.length > 0) {
     const { data: userLikes } = await supabase
       .from('post_likes')
       .select('post_id')
       .in('post_id', postIds)
-      .eq('user_id', currentUser.id)
+      .eq('user_id', currentUser.id);
     if (userLikes) {
-      for (const l of userLikes) likedPostIds.add(l.post_id)
+      for (const l of userLikes) likedPostIds.add(l.post_id);
     }
   }
 
@@ -85,10 +94,14 @@ export default async function AuthorPage({ params }: PageProps) {
     like_count: p.like_count?.[0]?.count ?? 0,
     comment_count: p.comment_count?.[0]?.count ?? 0,
     is_liked_by_current_user: likedPostIds.has(p.id),
-  })) as PostWithAuthor[]
+  })) as PostWithAuthor[];
 
   // Fetch guestbook messages
-  const { data: guestbookMessages, total: guestbookTopLevel, fullTotal: guestbookTotal } = await getGuestbookMessages(authorId, { page: 1, pageSize: 10 })
+  const {
+    data: guestbookMessages,
+    total: guestbookTopLevel,
+    fullTotal: guestbookTotal,
+  } = await getGuestbookMessages(authorId, { page: 1, pageSize: 10 });
 
   return (
     <div className="space-y-6">
@@ -106,16 +119,30 @@ export default async function AuthorPage({ params }: PageProps) {
         displayName={authorName}
         avatarUrl={authorAvatarUrl}
         stats={[
-          { icon: <Calendar className="h-3 w-3" />, label: `注册 ${createdAt ? formatDaysAgo(createdAt) : '-'}` },
-          { icon: <FileText className="h-3 w-3" />, label: `${postsWithAuthor.length} 篇文章` },
-          { icon: <MessageCircle className="h-3 w-3" />, label: `${guestbookTotal ?? 0} 条留言`, href: '#guestbook' },
+          {
+            icon: <Calendar className="h-3 w-3" />,
+            label: `注册 ${createdAt ? formatDaysAgo(createdAt) : '-'}`,
+          },
+          {
+            icon: <FileText className="h-3 w-3" />,
+            label: `${postsWithAuthor.length} 篇文章`,
+          },
+          {
+            icon: <MessageCircle className="h-3 w-3" />,
+            label: `${guestbookTotal ?? 0} 条留言`,
+            href: '#guestbook',
+          },
         ]}
       />
 
       {postsWithAuthor.length > 0 ? (
         <div className="grid gap-4">
           {postsWithAuthor.map((post) => (
-            <PostCard key={post.id} post={post} linkRef={linkRefAuthor(authorName)} />
+            <PostCard
+              key={post.id}
+              post={post}
+              linkRef={linkRefAuthor(authorName)}
+            />
           ))}
         </div>
       ) : (
@@ -134,5 +161,5 @@ export default async function AuthorPage({ params }: PageProps) {
         messagesPublic={false}
       />
     </div>
-  )
+  );
 }
