@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, X, Eye, CheckCheck, Trash2 } from 'lucide-react'
+import { Bell, X, CheckCheck, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   Dialog,
@@ -213,14 +213,6 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
-                        <span
-                          data-action
-                          onClick={(e) => { e.stopPropagation(); handleView(n.id, !n.is_read); setOpen(false) }}
-                          className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                          title="去查看"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </span>
                       </div>
                     </div>
                   </div>
