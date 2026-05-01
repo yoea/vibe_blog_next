@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -59,9 +59,11 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showCurrentPw, setShowCurrentPw] = useState(false)
   const [showNewPw, setShowNewPw] = useState(false)
-  const [stickyHeader, setStickyHeader] = useState(() =>
-    typeof window !== 'undefined' && localStorage.getItem('header_sticky') === 'true'
-  )
+  const [stickyHeader, setStickyHeader] = useState(false)
+
+  useEffect(() => {
+    setStickyHeader(localStorage.getItem('header_sticky') === 'true')
+  }, [])
   const { mode, setMode } = useTheme()
   const router = useRouter()
 
