@@ -24,7 +24,7 @@ import { Sun, Moon, SunMoon, Heart, Wrench, Eye, EyeOff, ShieldCheck, Loader2 } 
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider'
 import { DonateButton } from '@/components/donate-button'
 import { toggleMaintenanceMode, updateAIConfig, updateICPConfig, toggleDeployNotify } from '@/lib/actions/admin-actions'
-import { logger } from '@/lib/utils/logger'
+
 
 interface Props {
   user: User
@@ -69,21 +69,13 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const router = useRouter()
 
   const handleLogout = async () => {
-    logger.info('退出登录按钮被点击')
     const supabase = createClient()
 
-    try {
-      logger.info('调用 signOut')
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        logger.error('[logout] signOut error:', error)
-        toast.error(error.message ?? '退出登录失败')
-        return
-      }
-      logger.info('[logout] signOut ok')
-    } catch (e) {
-      logger.error('[logout] signOut exception:', e)
-    }
+    // 先清除本地 session（不依赖网络，立即生效）
+    await supabase.auth.signOut({ scope: 'local' })
+
+    // 后台尝试撤销 refresh token（不阻塞用户）
+    supabase.auth.signOut({ scope: 'global' }).catch(() => {})
 
     toast.success('已退出登录')
     window.location.href = '/'
