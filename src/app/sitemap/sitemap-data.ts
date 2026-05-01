@@ -12,7 +12,7 @@ export const routes: SitemapRoute[] = [
   { path: '/author', title: '作者列表' },
   { path: '/legal', title: '法律信息' },
   { path: '/login', title: '登录' },
-  { path: '/maintenance', title: '系统维护中' },
+  { path: '/maintenance', title: '系统维护' },
   { path: '/posts/new', title: '写新文章' },
   { path: '/privacy', title: '隐私政策' },
   { path: '/profile', title: '个人中心' },
