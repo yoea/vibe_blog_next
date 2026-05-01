@@ -163,7 +163,7 @@ export function Header({ siteTitle, isMaintenance }: { siteTitle: string; isMain
             <span className="font-bold text-lg">{siteTitle}</span>
           </Link>
           {user && (
-            <Link href="/profile" className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0 hover:ring-2 hover:ring-green-500/30 transition-all" title={user.displayName ? `${user.displayName} · 个人中心` : '在线 · 个人中心'} />
+            <Link href="/profile" className="h-2 w-2 rounded-full bg-green-500 border border-background shrink-0 hover:ring-2 hover:ring-green-500/30 transition-all" title={`${user.displayName || (user.email ? user.email.split('@')[0] : '在线')} · 个人中心`} />
           )}
         </div>
 
