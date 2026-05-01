@@ -2,6 +2,7 @@ import { getPostBySlug, getCommentsForPost } from '@/lib/db/queries'
 import { notFound } from 'next/navigation'
 import { MarkdownPreview } from '@/components/shared/markdown-preview'
 import { PostInteraction } from '@/components/blog/post-interaction'
+import { ArchivePostButton } from '@/components/blog/archive-post-button'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -11,6 +12,7 @@ import { Breadcrumb } from '@/components/layout/breadcrumb'
 import { buildRefBreadcrumb } from '@/lib/constants'
 import { formatTimeAgo } from '@/lib/utils/time'
 import { createClient } from '@/lib/supabase/server'
+import { isSuperAdmin } from '@/lib/utils/admin'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -57,6 +59,7 @@ export default async function PostPage({ params, searchParams }: PageProps) {
   const supabase = await createClient()
   const { data: { user: currentUser } } = await supabase.auth.getUser()
   const currentUserId = currentUser?.id ?? null
+  const isAdmin = await isSuperAdmin(currentUser)
 
   return (
     <div className="space-y-6">
@@ -134,6 +137,9 @@ export default async function PostPage({ params, searchParams }: PageProps) {
                 编辑
               </Link>
             </Button>
+          ) : undefined}
+          archiveButton={isAdmin ? (
+            <ArchivePostButton postId={post.id} postTitle={post.title} />
           ) : undefined}
         />
       </article>

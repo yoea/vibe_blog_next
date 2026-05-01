@@ -20,6 +20,7 @@ export function PostInteraction({
   shareUrl,
   published,
   editButton,
+  archiveButton,
 }: {
   postId: string
   postAuthorId: string
@@ -32,6 +33,7 @@ export function PostInteraction({
   shareUrl?: string
   published?: boolean
   editButton?: React.ReactNode
+  archiveButton?: React.ReactNode
 }) {
   const [commentCount, setCommentCount] = useState(initialCommentCount)
   const [focusSignal, setFocusSignal] = useState(0)
@@ -84,7 +86,12 @@ export function PostInteraction({
           <Share2 className={`h-4 w-4 ${published === false ? 'opacity-40' : ''}`} />
           <span>{shareCount}</span>
         </Button>
-        {editButton && <div className="ml-auto">{editButton}</div>}
+        {(editButton || archiveButton) && (
+          <div className="ml-auto flex items-center gap-2">
+            {editButton}
+            {archiveButton}
+          </div>
+        )}
       </div>
 
       {shareUrl && (

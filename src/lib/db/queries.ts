@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor, Tag, Notification } from '@/lib/db/types'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { PostWithAuthor, CommentWithAuthor, GuestbookMessageWithAuthor, Tag, Notification, ArchivedPost, ArchivedPostWithAuthor } from '@/lib/db/types'
 import { headers } from 'next/headers'
 
 // ── Helper: attach tags to an array of posts ──
@@ -824,4 +825,56 @@ export async function getUnreadNotificationCount(userId: string) {
 
   if (error) return { count: 0, error: error.message }
   return { count: count ?? 0, error: null }
+}
+
+// ── Archive queries (admin client, bypasses RLS) ──
+
+export async function getArchivedPosts(page = 1, limit = 20, search?: string) {
+  const admin = createAdminClient()
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  let query = admin
+    .from('articles_archive')
+    .select('*', { count: 'exact' })
+    .order('archived_at', { ascending: false })
+    .range(from, to)
+
+  if (search?.trim()) {
+    query = query.ilike('title', `%${search.trim()}%`)
+  }
+
+  const { data, error, count } = await query
+  if (error) return { data: [] as ArchivedPostWithAuthor[], count: 0, error: error.message }
+
+  const authorIds = [...new Set((data ?? []).map(p => p.author_id).filter(Boolean))]
+  const authorMap = new Map<string, { name: string | null; avatar: string | null }>()
+  if (authorIds.length > 0) {
+    const { data: settings } = await admin
+      .from('user_settings')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', authorIds)
+    for (const s of settings ?? []) {
+      authorMap.set(s.user_id, { name: s.display_name, avatar: s.avatar_url })
+    }
+  }
+
+  const result = (data ?? []).map(p => ({
+    ...p,
+    author_name: authorMap.get(p.author_id)?.name ?? null,
+    author_avatar: authorMap.get(p.author_id)?.avatar ?? null,
+  })) as ArchivedPostWithAuthor[]
+
+  return { data: result, count: count ?? 0, error: null }
+}
+
+export async function getArchivedPostById(id: string) {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('articles_archive')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error) return { data: null as ArchivedPost | null, error: error.message }
+  return { data: data as ArchivedPost, error: null }
 }
