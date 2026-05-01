@@ -68,17 +68,24 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
   const router = useRouter()
 
   const handleLogout = async () => {
-    console.log('[logout] clicked')
+    console.log('退出登录按钮被点击')
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.signOut()
-      console.log('[logout] signOut result:', error ?? 'ok')
+      if (error) {
+        console.error('[logout] signOut error:', error)
+        toast.error(error.message ?? '退出登录失败')
+        return
+      }
+      console.log('[logout] signOut result: ok')
+      toast.success('已退出登录')
+      window.location.href = '/'
+      return
     } catch (e) {
-      console.error('[logout] signOut error:', e)
+      console.error('[logout] signOut exception:', e)
+      toast.error('退出登录时发生错误')
+      return
     }
-    toast.info('已退出登录')
-    router.push('/')
-    router.refresh()
   }
 
   const handleDeleteAccount = async () => {
