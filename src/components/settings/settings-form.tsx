@@ -442,15 +442,15 @@ export function SettingsForm({ user, isAdmin, maintenanceMode, aiBaseUrl: initia
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <Label htmlFor="delete-confirm-email">
-              请在下方输入 <span className="font-medium select-text">{user.email}</span> 以确认注销
+            <Label htmlFor="delete-confirm-email" className="text-sm select-text">
+              输入您的邮箱 {user.email} 以确认注销
             </Label>
             <Input
               id="delete-confirm-email"
               type="email"
               value={deleteConfirmEmail}
               onChange={(e) => setDeleteConfirmEmail(e.target.value)}
-              placeholder={user.email ?? ''}
+              placeholder={user.email ?? 'you@example.com'}
               autoComplete="off"
             />
           </div>
