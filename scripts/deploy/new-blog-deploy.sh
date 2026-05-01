@@ -119,6 +119,7 @@ EOF
     echo "✓ .env.local 已创建"
 else
     echo "  .env.local 已存在，跳过"
+    SITE_URL=$(grep '^NEXT_PUBLIC_SITE_URL=' "$ENV_FILE" | cut -d'=' -f2- || echo "http://$PUBLIC_IP:$PORT")
 fi
 
 echo ""
@@ -159,7 +160,7 @@ echo ""
 # =========================
 # 健康检查
 # =========================
-echo "健康检查中..."
+echo "健康检查中：访问 http://localhost:$PORT/api/healthz ..."
 HEALTH_URL="http://localhost:$PORT/api/healthz"
 MAX_RETRIES=10
 DELAY=3
