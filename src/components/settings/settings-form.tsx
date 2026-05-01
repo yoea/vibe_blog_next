@@ -311,6 +311,40 @@ export function SettingsForm({
         </Card>
       )}
 
+      {/* 账户操作 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>账户操作</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm"
+            >
+              退出登录
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">
+              退出登录后，你将返回主页
+            </p>
+          </div>
+          <Separator />
+          <div>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full sm:w-auto hover:bg-destructive/30 hover:shadow-sm"
+            >
+              注销账号
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">
+              注销后你的文章和评论将被保留，仅用户信息匿名化
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 支持 */}
       <Card>
         <CardHeader>
@@ -550,40 +584,6 @@ export function SettingsForm({
           </CardContent>
         </Card>
       )}
-
-      {/* 账户操作 (危险操作放最后) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>账户操作</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm"
-            >
-              退出登录
-            </Button>
-            <p className="text-xs text-muted-foreground mt-1">
-              退出登录后，你将返回主页
-            </p>
-          </div>
-          <Separator />
-          <div>
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full sm:w-auto hover:bg-destructive/30 hover:shadow-sm"
-            >
-              注销账号
-            </Button>
-            <p className="text-xs text-muted-foreground mt-1">
-              注销后你的文章和评论将被保留，仅用户信息匿名化
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       <Dialog
         open={showDeleteConfirm}
