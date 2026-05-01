@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.4.1...v0.4.2) (2026-05-01)
+
+
+### 重构
+
+* 移除通知弹窗的眼睛图标，点击通知本身即可查看 ([ff39018](https://git.ewing.top/yoea/vibe_blog_next/commit/ff390180fb75e36e216f577b90c3e066a7505445))
+
+
+### Bug 修复
+
+* 个人中心隐藏标签新建入口，添加 showCreate prop 控制 ([f3e3f0c](https://git.ewing.top/yoea/vibe_blog_next/commit/f3e3f0c25be687c69d6eec45c1203a10e7fcc5eb))
+* 退出登录改为直接清除 cookie，增强设置页按钮 hover 效果 ([5d07d8b](https://git.ewing.top/yoea/vibe_blog_next/commit/5d07d8b9d0d8b3b8d86422f07db328ddb680d565))
+* 退出登录改用 scope:local 确保本地 session 立即清除 ([6f49d85](https://git.ewing.top/yoea/vibe_blog_next/commit/6f49d858194113b323ba705f1148711116f4e4e2))
+* 修复通知弹窗关闭按钮误触导航和退出登录失败的问题 ([ac713d0](https://git.ewing.top/yoea/vibe_blog_next/commit/ac713d0344b9f1e7823d2f8492e6f824d4ddda1b))
+* 优化注销弹窗提示文案和邮箱选择体验 ([4e7d9f6](https://git.ewing.top/yoea/vibe_blog_next/commit/4e7d9f68eadb7f260997c1d60b14aa406317c20f))
+* 注销弹窗邮箱文本从 select-all 改为 select-text 支持逐字选择 ([a849bb9](https://git.ewing.top/yoea/vibe_blog_next/commit/a849bb9041e5e7f95b0029b53711923a1ea0a1e7))
+* 注销账号按钮 hover 改为 bg-destructive/30 避免红底红字不可读 ([9979a19](https://git.ewing.top/yoea/vibe_blog_next/commit/9979a1984f475f65e0cf9eb1dc70cdf82f85c1ff))
+* 注销账号后作者列表未更新，将 revalidatePath 移到 signOut 之前 ([e4d74a0](https://git.ewing.top/yoea/vibe_blog_next/commit/e4d74a0524c81ad19454ba415f72dacdce52b59e))
+* DonateButton 点击区域从整行改为仅包裹子元素 ([edf8c68](https://git.ewing.top/yoea/vibe_blog_next/commit/edf8c68ad5739733a86f48f4bc38f4eb0d39d882))
+
+
+### 新功能
+
+* 个人中心恢复新建标签入口 ([892005c](https://git.ewing.top/yoea/vibe_blog_next/commit/892005c9b5f4483bd709f6f427b0ba4d3d97776c))
+* 文章归档系统 ([a6aae34](https://git.ewing.top/yoea/vibe_blog_next/commit/a6aae341f0fdacb177508698a42477f9cd28b838))
+
 ### [0.4.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.4.0...v0.4.1) (2026-05-01)
 
 
