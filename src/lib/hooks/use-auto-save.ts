@@ -69,7 +69,9 @@ export function useAutoSave({
     // Prevent concurrent saves — the first save creates the post,
     // a second save before it returns would create a duplicate
     if (savingRef.current) return;
-    if (!hasContentRef.current && !postIdRef.current) return;
+    // Skip when all fields are empty (avoids saving empty drafts that
+    // would override published content on next visit)
+    if (!hasContentRef.current) return;
     if (!dirtyRef.current) return;
 
     savingRef.current = true;

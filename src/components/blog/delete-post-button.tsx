@@ -13,8 +13,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { deletePost } from '@/lib/actions/post-actions';
+import { toast } from 'sonner';
 
-export function DeletePostButton({ postId }: { postId: string }) {
+interface Props {
+  postId: string;
+  postTitle: string;
+}
+
+export function DeletePostButton({ postId, postTitle }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -22,28 +28,35 @@ export function DeletePostButton({ postId }: { postId: string }) {
   const handleDelete = () => {
     startTransition(async () => {
       const result = await deletePost(postId);
-      if (!result.error) {
-        router.push('/profile');
+      if (result.error) {
+        toast.error(result.error);
+        return;
       }
+      toast.success('文章已删除');
+      setShowConfirm(false);
+      router.push('/profile');
+      router.refresh();
     });
   };
 
   return (
     <>
       <Button
-        variant="destructive"
+        variant="outline"
         size="sm"
+        className="text-destructive hover:text-destructive hover:border-destructive/50"
         onClick={() => setShowConfirm(true)}
       >
-        <Trash2 className="h-4 w-4 mr-1" />
-        删除文章
+        <Trash2 className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">删除文章</span>
       </Button>
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>删除文章</DialogTitle>
             <DialogDescription>
-              确定删除这篇文章？此操作不可撤销。
+              确定要删除「{postTitle}
+              」吗？此操作不可撤销，文章及其所有评论将永久删除。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -59,7 +72,7 @@ export function DeletePostButton({ postId }: { postId: string }) {
               onClick={handleDelete}
               disabled={isPending}
             >
-              {isPending ? '删除中...' : '删除'}
+              {isPending ? '删除中...' : '确认删除'}
             </Button>
           </DialogFooter>
         </DialogContent>

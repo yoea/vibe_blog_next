@@ -34,8 +34,8 @@ export function ClearContentButton({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setShowConfirm(true)}>
-        <Eraser className="h-4 w-4 mr-1" />
-        清空内容
+        <Eraser className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">清空内容</span>
       </Button>
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent>

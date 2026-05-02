@@ -25,9 +25,10 @@ interface Props {
     color: string | null;
     post_count: number;
   }[];
+  resetKey?: number;
 }
 
-export function PostEditor({ initialData, suggestedTags }: Props) {
+export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
   const [tab, setTab] = useState<'edit' | 'preview'>('edit');
   const [fullscreen, setFullscreen] = useState(false);
   const [fsTab, setFsTab] = useState<'edit' | 'preview'>('edit');
@@ -85,6 +86,18 @@ export function PostEditor({ initialData, suggestedTags }: Props) {
     el.style.height = el.scrollHeight + 120 + 'px';
     window.scrollTo(scrollX, scrollY);
   }, []);
+
+  // Reset all fields when resetKey changes (used by clear-content button)
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) {
+      setTitle('');
+      setContent('');
+      setExcerpt('');
+      setTags([]);
+      setTagInput('');
+      setPublished(false);
+    }
+  }, [resetKey]);
 
   // Cloud auto-save
   const {
@@ -802,6 +815,13 @@ function AutoSaveIndicator({
       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
         {countdown}秒后自动暂存草稿
+        <button
+          type="button"
+          onClick={onRetry}
+          className="underline hover:text-foreground cursor-pointer ml-0.5"
+        >
+          立即暂存
+        </button>
       </span>
     );
   }
@@ -809,8 +829,8 @@ function AutoSaveIndicator({
     status === 'saving'
       ? '暂存草稿中...'
       : status === 'saved'
-        ? '已自动暂存草稿'
-        : '暂存草稿失败';
+        ? '已暂存草稿'
+        : '暂存失败';
   const dotColor =
     status === 'saving'
       ? 'bg-muted-foreground/50'
