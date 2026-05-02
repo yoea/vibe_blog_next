@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PostEditor } from '@/components/blog/post-editor';
-import { getTopTags } from '@/lib/db/queries';
+import { getAllTags } from '@/lib/db/queries';
 
 export default async function NewPostPage() {
   const supabase = await createClient();
@@ -10,7 +10,7 @@ export default async function NewPostPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/unauthorized?reason=login&redirect=/posts/new');
 
-  const suggestedTags = await getTopTags(10);
+  const suggestedTags = await getAllTags();
 
   return (
     <div className="space-y-6 flex flex-col flex-1 min-h-0">

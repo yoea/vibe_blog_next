@@ -68,11 +68,9 @@ export function SiteStats({
   }, []);
 
   const handleLike = async () => {
-    console.log('[SiteStats] handleLike called, isLiking:', isLiking);
     if (isLiking) return;
 
     const check = checkRateLimit();
-    console.log('[SiteStats] checkRateLimit:', check);
     if (!check.allowed) {
       toast.info(check.message!);
       return;
@@ -81,7 +79,6 @@ export function SiteStats({
     setIsLiking(true);
     recordClick();
     setLikes((p) => p + 1);
-    console.log('[SiteStats] liked, new count:', likes + 1);
 
     try {
       const res = await fetch('/api/site-stats', {
@@ -89,7 +86,6 @@ export function SiteStats({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'like', ts: Date.now() }),
       });
-      console.log('[SiteStats] API response:', res.status);
       if (!res.ok) {
         let errMsg = '';
         try {

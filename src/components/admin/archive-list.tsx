@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { RotateCcw, Trash2, Search, Archive } from 'lucide-react';
+import {
+  RotateCcw,
+  Trash2,
+  Search,
+  Archive,
+  User,
+  Calendar,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -75,7 +82,7 @@ export function ArchiveList({ archives, total, page, search }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 搜索栏 */}
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
@@ -118,45 +125,82 @@ export function ArchiveList({ archives, total, page, search }: Props) {
           <p>{search ? '没有找到匹配的归档文章' : '暂无归档文章'}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {archives.map((post) => (
-            <div
-              key={post.id}
-              className="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium truncate">{post.title}</h3>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <span>作者: {post.author_name ?? '未知'}</span>
-                  <span>原 slug: {post.slug}</span>
-                  <span>
-                    归档于:{' '}
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 border-b">
+              <tr>
+                <th className="text-left px-3 py-2.5 font-medium">标题</th>
+                <th className="text-left px-3 py-2.5 font-medium hidden sm:table-cell">
+                  作者
+                </th>
+                <th className="text-left px-3 py-2.5 font-medium hidden md:table-cell">
+                  Slug
+                </th>
+                <th className="text-left px-3 py-2.5 font-medium hidden sm:table-cell">
+                  归档日期
+                </th>
+                <th className="text-right px-3 py-2.5 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {archives.map((post) => (
+                <tr
+                  key={post.id}
+                  className="hover:bg-accent/30 transition-colors"
+                >
+                  <td className="px-3 py-2.5">
+                    <span className="line-clamp-1 font-medium">
+                      {post.title}
+                    </span>
+                    {/* 移动端：内联显示作者和日期 */}
+                    <span className="sm:hidden flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {post.author_name ?? '未知'}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(post.archived_at).toLocaleDateString('zh-CN')}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
+                    {post.author_name ?? '未知'}
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs hidden md:table-cell max-w-[160px] truncate">
+                    {post.slug}
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
                     {new Date(post.archived_at).toLocaleDateString('zh-CN')}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 cursor-pointer"
-                  onClick={() => setRestoreTarget(post)}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  恢复
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 cursor-pointer text-destructive hover:text-destructive"
-                  onClick={() => setDeleteTarget(post)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  删除
-                </Button>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1 cursor-pointer"
+                        onClick={() => setRestoreTarget(post)}
+                        title="恢复"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">恢复</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1 cursor-pointer text-destructive hover:text-destructive"
+                        onClick={() => setDeleteTarget(post)}
+                        title="删除"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">删除</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

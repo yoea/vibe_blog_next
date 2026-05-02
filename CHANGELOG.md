@@ -4,17 +4,15 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.6.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.4...v0.6.0) (2026-05-02)
 
-
 ### Bug 修复
 
-* 改进文章编辑体验，优化删除交互、移动端适配和自动保存稳定性 ([1584dfc](https://git.ewing.top/yoea/vibe_blog_next/commit/1584dfc5230996f735de76b5742df507120fb0de))
-* 修复并发自动保存创建重复草稿的问题 ([d594b64](https://git.ewing.top/yoea/vibe_blog_next/commit/d594b64f71a6349da10c96d324e0df4a200a6675))
-* 修复登出/登录、归档标签丢失、留言板冲突等多个问题 ([0a10716](https://git.ewing.top/yoea/vibe_blog_next/commit/0a107165adba2c2bce4b39a2ef7e32984838c224))
-
+- 改进文章编辑体验，优化删除交互、移动端适配和自动保存稳定性 ([1584dfc](https://git.ewing.top/yoea/vibe_blog_next/commit/1584dfc5230996f735de76b5742df507120fb0de))
+- 修复并发自动保存创建重复草稿的问题 ([d594b64](https://git.ewing.top/yoea/vibe_blog_next/commit/d594b64f71a6349da10c96d324e0df4a200a6675))
+- 修复登出/登录、归档标签丢失、留言板冲突等多个问题 ([0a10716](https://git.ewing.top/yoea/vibe_blog_next/commit/0a107165adba2c2bce4b39a2ef7e32984838c224))
 
 ### 新功能
 
-* 设置页AI模型选择器改用自定义下拉，支持自定义模型新增与删除 ([bfc6bbb](https://git.ewing.top/yoea/vibe_blog_next/commit/bfc6bbb3ade64ab8a1b074698a2e75857bb531b4))
+- 设置页AI模型选择器改用自定义下拉，支持自定义模型新增与删除 ([bfc6bbb](https://git.ewing.top/yoea/vibe_blog_next/commit/bfc6bbb3ade64ab8a1b074698a2e75857bb531b4))
 
 ### [0.5.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.3...v0.5.4) (2026-05-02)
 

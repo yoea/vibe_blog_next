@@ -1,4 +1,4 @@
-import { getPostBySlug, getTopTags } from '@/lib/db/queries';
+import { getPostBySlug, getAllTags } from '@/lib/db/queries';
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
@@ -31,7 +31,7 @@ export default async function EditPostPage({ params }: PageProps) {
 
   if (user.id !== post.author_id) redirect('/unauthorized');
 
-  const suggestedTags = await getTopTags(10);
+  const suggestedTags = await getAllTags();
   const requestHeaders = await headers();
   const referer = requestHeaders.get('referer') ?? '';
   const from = referer.includes('/profile') ? 'profile' : 'post';

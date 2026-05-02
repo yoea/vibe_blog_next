@@ -32,6 +32,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     setError('');
     const formData = new FormData(e.currentTarget);
     const supabase = createClient();
+    let loggedIn = false;
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: formData.get('email') as string,
@@ -45,10 +46,19 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         setError(message);
         toast.error(message);
       } else {
-        await onAuthChange();
+        loggedIn = true;
+        try {
+          await onAuthChange();
+        } catch {
+          // onAuthChange 失败不影响登录流程，继续导航
+        }
         window.location.href = redirectTo || '/';
       }
     } catch (err) {
+      if (loggedIn) {
+        window.location.href = redirectTo || '/';
+        return;
+      }
       const message =
         err instanceof TypeError && err.message === 'Failed to fetch'
           ? '无法连接认证服务，请检查网络或稍后重试'

@@ -101,10 +101,10 @@ export function PostListClient({
         hasMore={hasMore}
         loading={loading}
         onLoadMore={handleLoadMore}
-        remaining={total - posts.length}
-        idleText="加载更多"
+        currentCount={posts.length}
+        totalCount={total}
         loadedAllText={loadedAllText}
-        showLoadedAll={false}
+        textOnly
       />
     </div>
   );

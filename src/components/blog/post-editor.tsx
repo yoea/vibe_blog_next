@@ -281,7 +281,13 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
     formData.set('content', content);
     formData.set('excerpt', excerpt);
     formData.set('published', published ? 'on' : 'off');
-    formData.set('tags', JSON.stringify(tags));
+    // 自动收录已输入但未按回车的标签
+    const finalTags = [...tags];
+    const pendingTag = tagInput.trim();
+    if (pendingTag && !finalTags.includes(pendingTag) && finalTags.length < 7) {
+      finalTags.push(pendingTag.slice(0, 20));
+    }
+    formData.set('tags', JSON.stringify(finalTags));
     formData.set('_slug', slug ?? initialData?.slug ?? '');
     // For new posts that have been auto-saved, pass the post ID
     if (!isEditing && postId && slug) {
