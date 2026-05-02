@@ -57,7 +57,15 @@ const categoryMap: Record<string, string> = {
 };
 
 // 按分类分组
-const categoryOrder = ['内容浏览', '文章管理', '账号', '关于', '系统', '支持'];
+const categoryOrder = [
+  '内容浏览',
+  '文章管理',
+  '账号',
+  '关于',
+  '系统',
+  '其他',
+  '支持',
+];
 
 const grouped = routes.reduce<Record<string, typeof routes>>((acc, route) => {
   const cat = categoryMap[route.path] ?? '其他';
@@ -71,7 +79,7 @@ const supportItems = [{ title: '给网站作者充电', icon: Heart }];
 
 export default async function SitemapPage() {
   const sortedCategories = categoryOrder.filter(
-    (c) => grouped[c] || c === '支持',
+    (category) => grouped[category] || category === '支持',
   );
 
   return (

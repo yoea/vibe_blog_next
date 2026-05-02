@@ -18,6 +18,23 @@ const OUTPUT = join(
   'sitemap-data.ts',
 );
 
+const EXCLUDED_ROUTE_PREFIXES = [
+  '/admin',
+  '/login',
+  '/maintenance',
+  '/posts-edit',
+  '/posts/new',
+  '/profile',
+  '/register',
+  '/settings',
+];
+
+function isPublicRoute(routePath) {
+  return !EXCLUDED_ROUTE_PREFIXES.some(
+    (prefix) => routePath === prefix || routePath.startsWith(`${prefix}/`),
+  );
+}
+
 // 扫描所有 page.tsx 文件，生成路由路径
 function scanRoutes(dir, basePath = '') {
   const routes = [];
@@ -36,12 +53,10 @@ function scanRoutes(dir, basePath = '') {
       if (entry.name.startsWith('[')) continue;
       // 跳过 API 路由
       if (entry.name === 'api') continue;
-      // 跳过 sitemap 自身
-      if (entry.name === 'sitemap') continue;
-
       routes.push(...scanRoutes(fullPath, `${basePath}/${entry.name}`));
     } else if (entry.name === 'page.tsx') {
       const routePath = basePath || '/';
+      if (!isPublicRoute(routePath)) continue;
       // 从文件中提取 metadata title
       const title = extractTitle(fullPath);
       routes.push({ path: routePath, title });
@@ -81,8 +96,8 @@ const lines = [
   '// 运行 `node scripts/build/generate-sitemap.mjs` 重新生成',
   '',
   'export interface SitemapRoute {',
-  '  path: string',
-  '  title: string',
+  '  path: string;',
+  '  title: string;',
   '}',
   '',
   `export const routes: SitemapRoute[] = [`,
@@ -102,7 +117,7 @@ for (const r of routes) {
   );
 }
 
-lines.push(']');
+lines.push('];');
 lines.push('');
 
 writeFileSync(OUTPUT, lines.join('\n'), 'utf-8');
