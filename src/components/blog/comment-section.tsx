@@ -89,7 +89,7 @@ export function CommentSection({
   }, [focusSignal]);
 
   return (
-    <div id="comments" className="space-y-4">
+    <div id="comments" className="space-y-4 scroll-mt-20">
       <CommentForm
         postId={postId}
         onSubmit={handleSubmit}
