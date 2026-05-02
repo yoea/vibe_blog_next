@@ -15,6 +15,7 @@ import {
   Heart,
   Tags,
   AlertTriangle,
+  Archive,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -37,6 +38,7 @@ const iconMap: Record<string, LucideIcon> = {
   '/legal': Scale,
   '/tags': Tags,
   '/maintenance': AlertTriangle,
+  '/admin/archive': Archive,
 };
 
 // 路由 → 分类映射
@@ -54,6 +56,7 @@ const categoryMap: Record<string, string> = {
   '/privacy': '关于',
   '/legal': '关于',
   '/maintenance': '系统',
+  '/admin/archive': '系统',
 };
 
 // 按分类分组

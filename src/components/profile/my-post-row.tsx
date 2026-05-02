@@ -49,9 +49,7 @@ export function MyPostRowList({
 }: {
   initialPosts: PostData[];
   initialTotal: number;
-  onLoadMore: (
-    page: number,
-  ) => Promise<{
+  onLoadMore: (page: number) => Promise<{
     data?: PostData[];
     count?: number | null;
     error?: string | null;

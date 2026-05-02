@@ -68,14 +68,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  const staticEntries: MetadataRoute.Sitemap = routes.map((route) => ({
-    url: `${siteUrl}${route.path === '/' ? '' : route.path}`,
-    lastModified,
-    ...(staticRouteOptions[route.path] ?? {
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    }),
-  }));
+  const staticEntries: MetadataRoute.Sitemap = routes
+    .filter((route) => route.indexable !== false)
+    .map((route) => ({
+      url: `${siteUrl}${route.path === '/' ? '' : route.path}`,
+      lastModified,
+      ...(staticRouteOptions[route.path] ?? {
+        changeFrequency: 'monthly' as const,
+        priority: 0.5,
+      }),
+    }));
 
   return [...staticEntries, ...postEntries, ...tagEntries, ...authorEntries];
 }

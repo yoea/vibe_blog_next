@@ -2,14 +2,6 @@
 
 为 Claude Code (claude.ai/code) 提供的项目指引。
 
-## 开发者信息
-
-使用简体中文，要求回答时保持专业、简洁。
-
-开发者名叫Ethan/伊森。
-
-要求每次claude code启动本项目之后，先运行npm run dev以启动开发服务器运行
-
 ## 常用命令
 
 ```bash
