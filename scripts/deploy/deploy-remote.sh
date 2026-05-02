@@ -16,7 +16,7 @@ PM2_NAME="vibe_blog_next"
 # =========================
 # 健康检查相关配置
 # =========================
-# 从 .env.local 读取 PORT 和 SITE_URL，读不到用 localhost 默认端口
+# 从 .env.local 读取 PORT，读不到用 localhost 默认端口
 ENV_LOCAL="$PROJECT_DIR/.env.local"
 PORT=$(grep -oP '^PORT=\K\d+' "$ENV_LOCAL" 2>/dev/null || echo "8083")
 HEALTH_URL="http://localhost:$PORT/api/healthz"
@@ -208,4 +208,4 @@ if [ -f "$PROJECT_DIR/.next/standalone/.deploy-meta" ]; then
   echo "----------------"
 fi
 
-echo "=== 部署完成 $(date '+%Y-%m-%d %H:%M:%S') ==="
+echo "=== 服务器端部署完成 $(date '+%Y-%m-%d %H:%M:%S') ==="

@@ -372,7 +372,7 @@ if (HEALTH_URL) {
     console.log('  ⚠ 公网不可达');
   }
 }
-// SSH 到服务端执行 localhost 检查（最可靠的验证方式）
+// SSH 到服务端执行 localhost 检查（三重，最可靠的验证方式）
 console.log('SSH 复查服务端 localhost...');
 try {
   const remoteCheck = runSilent(
