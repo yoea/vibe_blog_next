@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.2...v0.5.3) (2026-05-02)
+
+
+### Bug 修复
+
+* 修复 RSS/sitemap/分享链接硬编码 localhost，登录登出缓存刷新 ([074898b](https://git.ewing.top/yoea/vibe_blog_next/commit/074898be1c9d9b148703d0004643a72492bb44a6))
+
 ### [0.5.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.1...v0.5.2) (2026-05-02)
 
 ### Bug 修复
