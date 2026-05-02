@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.3...v0.5.4) (2026-05-02)
+
+
+### Bug 修复
+
+* 彻底弃用 NEXT_PUBLIC_SITE_URL，改为请求头自动推导，部署脚本与文档重构 ([13d6cd1](https://git.ewing.top/yoea/vibe_blog_next/commit/13d6cd1e0dc00d16b5e67af849a40d01957eb921))
+
 ### [0.5.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.2...v0.5.3) (2026-05-02)
 
 ### Bug 修复
