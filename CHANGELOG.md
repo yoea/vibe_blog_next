@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.0...v0.5.1) (2026-05-02)
+
+
+### 文档
+
+* 新增发版流程文档 ([af33b3d](https://git.ewing.top/yoea/vibe_blog_next/commit/af33b3d296f9316ae0d430b129c45fc5c9f32e1f))
+* CLAUDE.md 补充 CHANGELOG 格式兼容和 tag 版本注意事项 ([30682e5](https://git.ewing.top/yoea/vibe_blog_next/commit/30682e58d2471b52da19c6f067c2640d053bc40f))
+
+
+### 其他变更
+
+* 配置 EditorConfig + Prettier 统一代码风格（2空格/LF/单引号） ([eeea8df](https://git.ewing.top/yoea/vibe_blog_next/commit/eeea8df79f4be1929d34cb0b0c1dc5155cf2d863))
+* 全项目 Prettier 格式化（2空格/LF/单引号/尾逗号） ([8422932](https://git.ewing.top/yoea/vibe_blog_next/commit/84229321ad42ca7739f4e3bacb131960de896c55))
+* 添加 .gitattributes 强制 LF 换行符，防止 Git autocrlf 干扰 ([d810180](https://git.ewing.top/yoea/vibe_blog_next/commit/d81018087719a4474caa4f0a7a0fb745c112fae7))
+
+
+### 重构
+
+* 重新排列设置页面卡片顺序，账户相关设置项集中放置 ([5561557](https://git.ewing.top/yoea/vibe_blog_next/commit/5561557183a806a25eaf28a73bef993bb1bb2d66))
+
+
+### Bug 修复
+
+* 登录拦截复用无权访问页面 ([fe7b192](https://git.ewing.top/yoea/vibe_blog_next/commit/fe7b192eb36329a51359aca287e32cf92bf17486))
+* 调整网站地图页面路由展示 ([46ac392](https://git.ewing.top/yoea/vibe_blog_next/commit/46ac392e363670f48e4a16b79219f79c4f49f748))
+* 改用无权访问页面处理权限拦截 ([bf2e847](https://git.ewing.top/yoea/vibe_blog_next/commit/bf2e847948a2cdd9bb78166ed2c9aba5eef41590))
+* 无权限访问时显示提示并返回首页 ([591f652](https://git.ewing.top/yoea/vibe_blog_next/commit/591f652e3f3f2e1b45cc0f56b23de0f2b500d7c7))
+* 修复 header 绿点悬停未显示用户名的问题 ([4441976](https://git.ewing.top/yoea/vibe_blog_next/commit/4441976b608f5a3a35afdce98aa735f6fe80c1b1))
+* 修复 header 绿点悬停无法显示数据库 display_name 的问题 ([3819a31](https://git.ewing.top/yoea/vibe_blog_next/commit/3819a311297d51c9f95568373a538686e4728c0c))
+* 修复生产环境网站地图域名 ([7e85d63](https://git.ewing.top/yoea/vibe_blog_next/commit/7e85d6310b2a31cc81d37be52d6e6a6434e5f264))
+* 修复网站地图自动生成逻辑 ([2f933b5](https://git.ewing.top/yoea/vibe_blog_next/commit/2f933b5602dffaf01b5d2963363112e5277358e8))
+* 修复无权限跳转提示未触发 ([e9b3ba5](https://git.ewing.top/yoea/vibe_blog_next/commit/e9b3ba5050cf59170979de5caf6d5f2f370c01c7))
+
 ## [0.5.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.4.3...v0.5.0) (2026-05-01)
 
 Vibe Blog Next 是一个现代化的个人博客系统，基于 Next.js 16 App Router + Supabase 构建，支持 Markdown 写作、多用户注册、文章互动和完整的部署流水线。
