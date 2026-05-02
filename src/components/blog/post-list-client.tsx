@@ -28,9 +28,7 @@ export function PostListClient({
   initialPosts: PostData[];
   initialTotal: number;
   showActions?: boolean;
-  onLoadMore: (
-    page: number,
-  ) => Promise<{
+  onLoadMore: (page: number) => Promise<{
     data?: PostData[];
     count?: number | null;
     error?: string | null;

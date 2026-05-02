@@ -18,7 +18,7 @@ const OUTPUT = join(
   'sitemap-data.ts',
 );
 
-const EXCLUDED_ROUTE_PREFIXES = [
+const NON_INDEXABLE_ROUTE_PREFIXES = [
   '/admin',
   '/login',
   '/maintenance',
@@ -29,8 +29,8 @@ const EXCLUDED_ROUTE_PREFIXES = [
   '/settings',
 ];
 
-function isPublicRoute(routePath) {
-  return !EXCLUDED_ROUTE_PREFIXES.some(
+function isIndexableRoute(routePath) {
+  return !NON_INDEXABLE_ROUTE_PREFIXES.some(
     (prefix) => routePath === prefix || routePath.startsWith(`${prefix}/`),
   );
 }
@@ -56,10 +56,13 @@ function scanRoutes(dir, basePath = '') {
       routes.push(...scanRoutes(fullPath, `${basePath}/${entry.name}`));
     } else if (entry.name === 'page.tsx') {
       const routePath = basePath || '/';
-      if (!isPublicRoute(routePath)) continue;
       // 从文件中提取 metadata title
       const title = extractTitle(fullPath);
-      routes.push({ path: routePath, title });
+      routes.push({
+        path: routePath,
+        title,
+        indexable: isIndexableRoute(routePath),
+      });
     }
   }
 
@@ -98,6 +101,7 @@ const lines = [
   'export interface SitemapRoute {',
   '  path: string;',
   '  title: string;',
+  '  indexable?: boolean;',
   '}',
   '',
   `export const routes: SitemapRoute[] = [`,
@@ -112,8 +116,9 @@ function deriveTitle(path) {
 
 for (const r of routes) {
   const title = r.title ?? deriveTitle(r.path);
+  const indexable = r.indexable ? '' : ', indexable: false';
   lines.push(
-    `  { path: '${r.path}', title: '${title.replace(/'/g, "\\'")}' },`,
+    `  { path: '${r.path}', title: '${title.replace(/'/g, "\\'")}'${indexable} },`,
   );
 }
 

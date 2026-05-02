@@ -43,9 +43,7 @@ export function AuthorListClient({
 }: {
   initialAuthors: AuthorData[];
   initialHasMore: boolean;
-  onLoadMore: (
-    page: number,
-  ) => Promise<{
+  onLoadMore: (page: number) => Promise<{
     data?: AuthorData[];
     count?: number;
     hasMore?: boolean;
