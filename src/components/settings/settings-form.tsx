@@ -79,6 +79,11 @@ export function SettingsForm({
   const [aiApiKey, setAiApiKey] = useState(initialAiApiKey ?? '');
   const [aiModel, setAiModel] = useState(initialAiModel ?? '');
   const [showAiKey, setShowAiKey] = useState(false);
+  const [customModels, setCustomModels] = useState<string[]>([]);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [newModelInput, setNewModelInput] = useState('');
+
+  const presetModels = ['deepseek-v4-flash', 'deepseek-v4-pro'];
 
   const maskApiKey = (key: string) => {
     if (key.length <= 10) return key;
@@ -102,6 +107,12 @@ export function SettingsForm({
 
   useEffect(() => {
     setStickyHeader(localStorage.getItem('header_sticky') === 'true');
+    // 初始化自定义模型列表：如果当前模型不在预设列表中，加入自定义列表
+    if (initialAiModel && !presetModels.includes(initialAiModel)) {
+      setCustomModels((prev) =>
+        prev.includes(initialAiModel) ? prev : [initialAiModel, ...prev],
+      );
+    }
   }, []);
   const { mode, setMode } = useTheme();
   const router = useRouter();
@@ -520,49 +531,138 @@ export function SettingsForm({
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="ai-model">模型名称</Label>
-                  <select
-                    id="ai-model"
-                    value={aiModel}
-                    onChange={(e) => setAiModel(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    <option value="">自定义...</option>
-                    <option value="gpt-4o">gpt-4o</option>
-                    <option value="gpt-4o-mini">gpt-4o-mini</option>
-                    <option value="gpt-4-turbo">gpt-4-turbo</option>
-                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                    <option value="claude-3.5-sonnet">claude-3.5-sonnet</option>
-                    <option value="claude-3-haiku">claude-3-haiku</option>
-                    <option value="deepseek-chat">deepseek-chat</option>
-                    <option value="deepseek-reasoner">deepseek-reasoner</option>
-                    <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-                    <option value="gemini-2.0-pro">gemini-2.0-pro</option>
-                    <option value="qwen-turbo">qwen-turbo</option>
-                    <option value="qwen-plus">qwen-plus</option>
-                    <option value="glm-4">glm-4</option>
-                    <option value="moonshot-v1">moonshot-v1</option>
-                  </select>
-                  {aiModel &&
-                    ![
-                      'gpt-4o',
-                      'gpt-4o-mini',
-                      'gpt-4-turbo',
-                      'gpt-3.5-turbo',
-                      'claude-3.5-sonnet',
-                      'claude-3-haiku',
-                      'deepseek-chat',
-                      'deepseek-reasoner',
-                      'gemini-2.0-flash',
-                      'gemini-2.0-pro',
-                      'qwen-turbo',
-                      'qwen-plus',
-                      'glm-4',
-                      'moonshot-v1',
-                    ].includes(aiModel) && (
-                      <p className="text-xs text-muted-foreground">
-                        自定义模型: {aiModel}
-                      </p>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowModelDropdown(!showModelDropdown)}
+                      className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <span className={aiModel ? '' : 'text-muted-foreground'}>
+                        {aiModel || '选择模型...'}
+                      </span>
+                      <svg
+                        className="h-4 w-4 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {showModelDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowModelDropdown(false)}
+                        />
+                        <div className="absolute z-20 mt-1 w-full rounded-md border bg-popover shadow-md">
+                          <div className="max-h-48 overflow-y-auto py-1">
+                            {presetModels.map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => {
+                                  setAiModel(m);
+                                  setShowModelDropdown(false);
+                                }}
+                                className={`flex w-full items-center justify-between px-3 py-1.5 text-sm hover:bg-accent ${
+                                  aiModel === m ? 'font-medium' : ''
+                                }`}
+                              >
+                                <span>{m}</span>
+                              </button>
+                            ))}
+                            {customModels.map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => {
+                                  setAiModel(m);
+                                  setShowModelDropdown(false);
+                                }}
+                                className={`flex w-full items-center justify-between px-3 py-1.5 text-sm hover:bg-accent ${
+                                  aiModel === m ? 'font-medium' : ''
+                                }`}
+                              >
+                                <span className="truncate">{m}</span>
+                                <span
+                                  className="ml-2 shrink-0 text-muted-foreground hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCustomModels((prev) =>
+                                      prev.filter((x) => x !== m),
+                                    );
+                                    if (aiModel === m) setAiModel('');
+                                  }}
+                                  title="删除此模型"
+                                >
+                                  ×
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                          <div className="border-t px-2 py-1.5">
+                            {newModelInput !== '' ||
+                            customModels.length === 0 ? (
+                              <input
+                                type="text"
+                                value={newModelInput}
+                                onChange={(e) =>
+                                  setNewModelInput(e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                  if (
+                                    e.key === 'Enter' &&
+                                    newModelInput.trim()
+                                  ) {
+                                    e.preventDefault();
+                                    const name = newModelInput.trim();
+                                    if (
+                                      !presetModels.includes(name) &&
+                                      !customModels.includes(name)
+                                    ) {
+                                      setCustomModels((prev) => [
+                                        ...prev,
+                                        name,
+                                      ]);
+                                      setAiModel(name);
+                                    }
+                                    setNewModelInput('');
+                                    setShowModelDropdown(false);
+                                  }
+                                  if (e.key === 'Escape') {
+                                    setNewModelInput('');
+                                    setShowModelDropdown(false);
+                                  }
+                                }}
+                                placeholder="输入模型名称，按回车添加..."
+                                className="flex h-8 w-full rounded border border-input bg-transparent px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                autoComplete="off"
+                                name="new-model-name"
+                                autoFocus
+                              />
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setNewModelInput(' ')}
+                                className="flex w-full items-center px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent"
+                              >
+                                + 自定义...
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </>
                     )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    当前使用：{initialAiModel || '未设置'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-end gap-2">
