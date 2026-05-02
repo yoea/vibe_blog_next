@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.6.0...v0.7.0) (2026-05-02)
+
+
+### Bug 修复
+
+* 改进登录流程、标签生成、加载更多和归档管理页面 ([42ca2d3](https://git.ewing.top/yoea/vibe_blog_next/commit/42ca2d3aed52e6a03b8c865f6afc576346e5303f))
+
+
+### 新功能
+
+* 发布模态框、MOTD 迁移至用户设置、私密文章友好提示及多项 UI 优化 ([7d1325f](https://git.ewing.top/yoea/vibe_blog_next/commit/7d1325ff7a5eeac356751a1e3f7ca9c6d56f73bf))
+
 ## [0.6.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.4...v0.6.0) (2026-05-02)
 
 ### Bug 修复
