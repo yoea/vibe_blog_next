@@ -10,6 +10,7 @@ import { ProgressBar } from '@/components/layout/progress-bar';
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { LoginToast } from '@/components/auth/login-toast';
+import { AccessDeniedToast } from '@/components/auth/access-denied-toast';
 import { DeployNotifier } from '@/components/deploy-notifier';
 import { createClient } from '@/lib/supabase/server';
 
@@ -104,6 +105,7 @@ export default async function RootLayout({
           <CommandPalette />
           <Header siteTitle={siteTitle} isMaintenance={isMaintenance} />
           <LoginToast />
+          <AccessDeniedToast />
           <DeployNotifier enabled={config.show_deploy_notify === 'true'} />
           <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col">
             {children}
