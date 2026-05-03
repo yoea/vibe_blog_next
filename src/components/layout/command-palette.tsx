@@ -19,9 +19,15 @@ import {
   Settings,
   LogIn,
   Search,
+  Info,
+  BookOpen,
+  Tags,
+  Shield,
+  Map,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { routes as sitemapRoutes } from '@/app/sitemap/sitemap-data';
 
 const STORAGE_KEY = 'command_frequency';
 
@@ -153,56 +159,63 @@ export function CommandPalette() {
   );
 
   // ─── 命令注册表 ─────────────────────────────
-  // 新增命令只需在这里加一项
+  // 核心命令 + sitemap 路由自动合并
+  const routeIconMap: Record<string, LucideIcon> = {
+    '/about': Info,
+    '/author': Users,
+    '/legal': Shield,
+    '/login': LogIn,
+    '/posts/new': FileText,
+    '/privacy': BookOpen,
+    '/profile': User,
+    '/settings': Settings,
+    '/sitemap': Map,
+    '/tags': Tags,
+    '/admin/archive': FileText,
+  };
+  const routeAuthMap: Record<string, 'auth' | 'anon' | null> = {
+    '/posts/new': 'auth',
+    '/profile': 'auth',
+    '/settings': 'auth',
+    '/admin/archive': 'auth',
+    '/login': 'anon',
+  };
+
   const commands: CommandDef[] = useMemo(
-    () => [
-      {
-        id: 'new-post',
-        label: '新建文章',
-        icon: FileText,
-        group: '导航',
-        requiresAuth: true,
-        action: () => router.push('/posts/new'),
-      },
-      {
-        id: 'home',
-        label: '首页',
-        icon: Home,
-        group: '导航',
-        action: () => router.push('/'),
-      },
-      {
-        id: 'profile',
-        label: '个人中心',
-        icon: User,
-        group: '导航',
-        requiresAuth: true,
-        action: () => router.push('/profile'),
-      },
-      {
-        id: 'settings',
-        label: '设置',
-        icon: Settings,
-        group: '导航',
-        requiresAuth: true,
-        action: () => router.push('/settings'),
-      },
-      {
-        id: 'authors',
-        label: '作者列表',
-        icon: Users,
-        group: '导航',
-        action: () => router.push('/author'),
-      },
-      {
-        id: 'login',
-        label: '登录',
-        icon: LogIn,
-        group: '导航',
-        requiresAnon: true,
-        action: () => router.push('/login'),
-      },
-    ],
+    () => {
+      const seen = new Set<string>();
+      const list: CommandDef[] = [
+        {
+          id: 'home',
+          label: '首页',
+          icon: Home,
+          group: '导航',
+          action: () => router.push('/'),
+        },
+      ];
+      seen.add('/');
+
+      for (const route of sitemapRoutes) {
+        if (seen.has(route.path)) continue;
+        if (route.path === '/') continue;
+        // 跳过不可索引的非管理页（如维护页）
+        if (route.indexable === false && !route.path.startsWith('/admin')) continue;
+        seen.add(route.path);
+
+        const authType = routeAuthMap[route.path] ?? null;
+        list.push({
+          id: `route:${route.path}`,
+          label: route.title,
+          icon: routeIconMap[route.path] ?? FileText,
+          group: '导航',
+          requiresAuth: authType === 'auth',
+          requiresAnon: authType === 'anon',
+          action: () => router.push(route.path),
+        });
+      }
+
+      return list;
+    },
     [router],
   );
 
@@ -244,7 +257,7 @@ export function CommandPalette() {
               onValueChange={setSearchQuery}
             />
           </div>
-          <CommandList className="max-h-72">
+          <CommandList className="max-h-60">
             <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
               {searchQuery.trim() && !isSearching
                 ? '未找到相关文章'
