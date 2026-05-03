@@ -11,6 +11,7 @@ import {
   Camera,
   Trash2,
   Unlink,
+  Quote,
 } from 'lucide-react';
 import type { UserIdentity } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
@@ -246,9 +247,7 @@ export function ProfileInfoCard({
             </div>
             {/* MOTD 副标题 */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground shrink-0">
-                副标题
-              </span>
+              <Quote className="h-4 w-4 text-muted-foreground shrink-0" />
               {editingMotd ? (
                 <div className="flex items-center gap-1.5">
                   <input
@@ -260,6 +259,10 @@ export function ProfileInfoCard({
                         setEditingMotd(false);
                       }
                       if (e.key === 'Enter') {
+                        if (motdValue.trim() === (motd ?? '')) {
+                          setEditingMotd(false);
+                          return;
+                        }
                         (async () => {
                           setSavingMotd(true);
                           const res = await updateUserSettings(
@@ -279,7 +282,7 @@ export function ProfileInfoCard({
                     }}
                     maxLength={40}
                     placeholder="介绍你自己或这个网站..."
-                    className="px-1.5 py-0.5 text-xs rounded border bg-transparent focus:outline-none focus:ring-2 focus:ring-ring w-52"
+                    className="px-1.5 py-0.5 text-base sm:text-xs rounded border bg-transparent focus:outline-none focus:ring-2 focus:ring-ring w-52"
                     autoFocus
                   />
                   <span className="text-[10px] text-muted-foreground shrink-0">
@@ -295,6 +298,11 @@ export function ProfileInfoCard({
                 type="button"
                 onClick={async () => {
                   if (editingMotd) {
+                    // 值没变则不写数据库
+                    if (motdValue.trim() === (motd ?? '')) {
+                      setEditingMotd(false);
+                      return;
+                    }
                     setSavingMotd(true);
                     const res = await updateUserSettings(
                       displayName,

@@ -13,6 +13,7 @@ import { CommandPalette } from '@/components/layout/command-palette';
 import { LoginToast } from '@/components/auth/login-toast';
 import { DeployNotifier } from '@/components/deploy-notifier';
 import { createClient } from '@/lib/supabase/server';
+import { getSuperAdminUserIds } from '@/lib/utils/admin';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -26,10 +27,20 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog';
-  const siteDescription =
-    process.env.NEXT_PUBLIC_SITE_DESCRIPTION ??
-    'A blog built with Supabase and Next.js';
   const siteUrl = await getSiteUrl();
+
+  // 读取管理员的 MOTD 作为站点描述
+  const adminIds = await getSuperAdminUserIds();
+  let siteDescription = '';
+  if (adminIds.length > 0) {
+    const supabase = await createClient();
+    const { data: adminSettings } = await supabase
+      .from('user_settings')
+      .select('motd')
+      .eq('user_id', adminIds[0])
+      .maybeSingle();
+    siteDescription = adminSettings?.motd || '';
+  }
   return {
     title: {
       default: siteTitle,

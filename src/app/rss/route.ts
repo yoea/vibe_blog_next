@@ -1,12 +1,24 @@
 import { createClient } from '@/lib/supabase/server';
 import { getSiteUrl } from '@/lib/site-url';
+import { getSuperAdminUserIds } from '@/lib/utils/admin';
 
 export async function GET() {
   const siteUrl = await getSiteUrl();
   const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE ?? 'Blog';
-  const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? '';
 
   const supabase = await createClient();
+
+  // 读取管理员的 MOTD 作为站点描述
+  const adminIds = await getSuperAdminUserIds();
+  let siteDescription = '';
+  if (adminIds.length > 0) {
+    const { data: adminSettings } = await supabase
+      .from('user_settings')
+      .select('motd')
+      .eq('user_id', adminIds[0])
+      .maybeSingle();
+    siteDescription = adminSettings?.motd || '';
+  }
   const { data: posts } = await supabase
     .from('posts')
     .select('title, slug, excerpt, created_at, updated_at')

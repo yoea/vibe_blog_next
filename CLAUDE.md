@@ -133,7 +133,7 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 是   | 客户端+服务端 |
 | `SUPABASE_SERVICE_ROLE_KEY`            | 是   | 仅服务端      |
 | `NEXT_PUBLIC_SITE_TITLE`               | 是   | 客户端+服务端 |
-| `NEXT_PUBLIC_SITE_DESCRIPTION`         | 否   | 客户端+服务端 |
+| (副标题)                              | —    | 管理员在个人中心设置 MOTD，存入数据库 |
 | `NEXT_PUBLIC_BUILD_VERSION`            | 否   | 构建时注入    |
 | `NEXT_PUBLIC_BUILD_COMMIT`             | 否   | 构建时注入    |
 | `NEXT_PUBLIC_BUILD_COMMIT_COUNT`       | 否   | 构建时注入    |
