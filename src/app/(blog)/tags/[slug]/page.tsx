@@ -51,7 +51,6 @@ export default async function TagPage({ params }: PageProps) {
         initialPosts={posts ?? []}
         initialTotal={count ?? 0}
         onLoadMore={loadMorePostsByTag.bind(null, slug)}
-        loadedAllText="已加载全部文章"
         linkRef={linkRefTag(tagName)}
       />
     </div>

@@ -14,7 +14,6 @@ export async function PostList() {
       initialPosts={posts}
       initialTotal={count ?? 0}
       onLoadMore={loadMorePublishedPosts}
-      loadedAllText="已加载全部文章"
     />
   );
 }

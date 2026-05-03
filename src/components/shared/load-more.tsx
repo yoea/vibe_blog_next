@@ -85,7 +85,7 @@ export function LoadMore({
         <span className="text-sm text-muted-foreground">
           {loadedAllText !== '已加载全部'
             ? loadedAllText
-            : `已展示全部 ${totalCount} 条文章`}
+            : `已加载全部${totalCount}篇文章`}
         </span>
       </div>
     );
