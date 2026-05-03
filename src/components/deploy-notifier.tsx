@@ -8,11 +8,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { GitHubIcon } from '@/components/icons/github-icon';
 import {
   BadgeCheck,
   GitCommitHorizontal,
   Calendar,
-  ExternalLink,
   Hash,
   Users,
   Server,
@@ -68,14 +68,15 @@ export function DeployNotifier({ enabled }: Props) {
           {buildVersion && (
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
-                <ExternalLink className="h-4 w-4" />
+                <GitHubIcon className="h-4 w-4 text-foreground" />
                 版本
               </span>
               <a
                 href={`https://github.com/yoea/vibe_blog_next/releases/tag/v${buildVersion}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="font-mono text-xs text-foreground hover:underline select-none"
+                tabIndex={-1}
               >
                 v{buildVersion}
               </a>
