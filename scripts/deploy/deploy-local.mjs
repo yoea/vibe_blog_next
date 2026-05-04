@@ -384,12 +384,12 @@ try {
     console.log(`  ❌ 服务端检查异常: ${remoteCheck.slice(0, 120)}`);
   }
 } catch {
-  console.log('  ❌ 服务端检查也失败了，请手动验证');
+  console.log('  ❌ 服务端检查失败，请手动验证');
 }
 
 const elapsed = Math.floor((Date.now() - startTime) / 1000);
 const min = Math.floor(elapsed / 60);
 const sec = elapsed % 60;
 
-console.log('=== 部署完成 ===');
+console.log('=== 完全部署完成 ===');
 console.log(`耗时: ${min}分${sec}秒`);

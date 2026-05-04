@@ -41,7 +41,7 @@ if ! flock -w 60 200; then
   echo "❌ 无法获取部署锁，可能有其他部署正在进行"
   exit 1
 fi
-echo "✓ 获取部署锁"
+echo "✓ 获取部署锁成功"
 
 trap cleanup EXIT
 
@@ -128,7 +128,7 @@ echo "✓ webhook 服务已重建"
 # =========================
 # 6. 健康检查（通过 /api/healthz 接口验证）
 # =========================
-echo "访问 $HEALTH_URL 进行健康检查..."
+echo "正在访问 $HEALTH_URL 进行健康检查..."
 sleep "$HEALTH_DELAY"
 
 HEALTH_OK=false
@@ -196,7 +196,7 @@ fi
 # 7. 清理旧版本
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
-echo "✓ 服务器上的旧版本项目文件已清理"
+echo "✓ 服务器上的旧版本部署文件已清理"
 
 # =========================
 # 8. 部署报告
@@ -205,6 +205,7 @@ if [ -f "$PROJECT_DIR/.next/standalone/.deploy-meta" ]; then
   echo ""
   echo "--- 构建信息 ---"
   cat "$PROJECT_DIR/.next/standalone/.deploy-meta"
+  echo ""
   echo "----------------"
 fi
 
