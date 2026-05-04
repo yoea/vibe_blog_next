@@ -44,7 +44,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             ? '用户名或密码错误'
             : error.message;
         setError(message);
-        toast.error(message);
       } else {
         loggedIn = true;
         try {
@@ -67,7 +66,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             ? err.message
             : '登录失败，请稍后重试';
       setError(message);
-      toast.error(message);
     }
   }
 
