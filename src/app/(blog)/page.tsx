@@ -5,6 +5,8 @@ export const revalidate = 300;
 
 export const metadata = {
   title: '首页',
+  openGraph: { title: '首页' },
+  twitter: { card: 'summary_large_image', title: '首页' },
 };
 
 export default async function HomePage() {

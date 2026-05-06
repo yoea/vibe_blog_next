@@ -3,6 +3,8 @@ import { RegisterForm } from '@/components/auth/register-form';
 
 export const metadata = {
   title: '注册',
+  openGraph: { title: '注册' },
+  twitter: { card: 'summary_large_image', title: '注册' },
 };
 
 export default function RegisterPage() {

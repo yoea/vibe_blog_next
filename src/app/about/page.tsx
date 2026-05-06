@@ -6,6 +6,8 @@ import { GitHubIcon } from '@/components/icons/github-icon';
 
 export const metadata: Metadata = {
   title: '关于本站',
+  openGraph: { title: '关于本站' },
+  twitter: { card: 'summary_large_image', title: '关于本站' },
 };
 
 export default async function AboutPage() {

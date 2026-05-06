@@ -41,7 +41,7 @@ export async function getPublishedPosts(page = 1, limit = 10) {
     .from('posts')
     .select(
       `
-      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+      id, author_id, title, slug, content, excerpt, cover_image_url, published, is_pinned, created_at, updated_at,
       like_count:post_likes(count),
       comment_count:post_comments(count)
     `,
@@ -491,7 +491,7 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
     .from('posts')
     .select(
       `
-      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+      id, author_id, title, slug, content, excerpt, cover_image_url, published, is_pinned, created_at, updated_at,
       like_count:post_likes(count),
       comment_count:post_comments(count)
     `,
@@ -643,7 +643,7 @@ export async function searchPosts(query: string, page = 1, limit = 20) {
     .from('posts')
     .select(
       `
-      id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+      id, author_id, title, slug, content, excerpt, cover_image_url, published, is_pinned, created_at, updated_at,
       like_count:post_likes(count),
       comment_count:post_comments(count)
     `,
@@ -791,7 +791,7 @@ export async function getPostsByTag(tagSlug: string, page = 1, limit = 10) {
       .from('posts')
       .select(
         `
-        id, author_id, title, slug, content, excerpt, published, is_pinned, created_at, updated_at,
+        id, author_id, title, slug, content, excerpt, cover_image_url, published, is_pinned, created_at, updated_at,
         like_count:post_likes(count),
         comment_count:post_comments(count)
       `,

@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/server';
 
 export const metadata = {
   title: '作者列表',
+  openGraph: { title: '作者列表' },
+  twitter: { card: 'summary_large_image', title: '作者列表' },
 };
 
 export default async function AuthorListPage() {

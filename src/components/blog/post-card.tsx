@@ -37,6 +37,7 @@ interface PostCardData {
   is_pinned?: boolean;
   created_at: string;
   excerpt?: string | null;
+  cover_image_url?: string | null;
   like_count?: number;
   comment_count?: number;
   author?: {
@@ -101,11 +102,11 @@ export function PostCard({
         <Calendar className="h-3 w-3" />
         {new Date(post.created_at).toLocaleDateString('zh-CN')}
       </span>
-      <span className="flex items-center gap-1">
+      <span className="hidden sm:flex items-center gap-1">
         <Heart className="h-3 w-3" />
         {post.like_count ?? 0}
       </span>
-      <span className="flex items-center gap-1">
+      <span className="hidden sm:flex items-center gap-1">
         <MessageSquare className="h-3 w-3" />
         {post.comment_count ?? 0}
       </span>
@@ -172,6 +173,14 @@ export function PostCard({
               <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
                 {post.excerpt}
               </p>
+            )}
+            {post.cover_image_url && (
+              <img
+                src={post.cover_image_url}
+                alt={post.title}
+                className="w-full aspect-video object-cover rounded-md mt-2"
+                loading="lazy"
+              />
             )}
             {metaRow}
           </div>
@@ -262,30 +271,44 @@ export function PostCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 relative z-20">
-            {post.tags.map((tag) => (
-              <Link
-                key={tag.slug}
-                href={`/tags/${tag.slug}`}
-                className="text-xs px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-                style={{
-                  color: tag.color ?? '#3B82F6',
-                  backgroundColor: (tag.color ?? '#3B82F6') + '18',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {tag.name}
-              </Link>
-            ))}
+        <div className="flex gap-3">
+          <div className="flex-1 min-w-0 space-y-3 relative z-20">
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {post.tags.map((tag) => (
+                  <Link
+                    key={tag.slug}
+                    href={`/tags/${tag.slug}`}
+                    className="text-xs px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
+                    style={{
+                      color: tag.color ?? '#3B82F6',
+                      backgroundColor: (tag.color ?? '#3B82F6') + '18',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {tag.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+            {post.excerpt && (
+              <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
+                {post.excerpt}
+              </p>
+            )}
+            {metaRow}
           </div>
-        )}
-        {post.excerpt && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {post.excerpt}
-          </p>
-        )}
-        <div className="relative z-20">{metaRow}</div>
+          {post.cover_image_url && (
+            <div className="hidden sm:block shrink-0 w-32 aspect-[4/3] self-center relative z-20">
+              <img
+                src={post.cover_image_url}
+                alt={post.title}
+                className="w-full h-full object-cover rounded-lg"
+                loading="lazy"
+              />
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

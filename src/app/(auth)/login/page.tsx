@@ -3,6 +3,8 @@ import { LoginForm } from '@/components/auth/login-form';
 
 export const metadata = {
   title: '登录',
+  openGraph: { title: '登录' },
+  twitter: { card: 'summary_large_image', title: '登录' },
 };
 
 export default async function LoginPage(props: {

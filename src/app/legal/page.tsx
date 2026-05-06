@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '法律信息',
+  openGraph: { title: '法律信息' },
+  twitter: { card: 'summary_large_image', title: '法律信息' },
 };
 
 export default function LegalPage() {

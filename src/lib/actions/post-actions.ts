@@ -24,7 +24,8 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
   const mode = formData.get('_mode') as string;
   const title = formData.get('title') as string;
   const content = formData.get('content') as string;
-  const excerpt = formData.get('excerpt') as string | null;
+  const excerpt = (formData.get('excerpt') as string | null) || null;
+  const coverImageUrl = (formData.get('cover_image_url') as string | null) || null;
   const published = formData.get('published') === 'on';
 
   // Parse tags from FormData
@@ -41,7 +42,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     const postId = formData.get('_id') as string;
     const { error } = await supabase
       .from('posts')
-      .update({ title, content, excerpt, published })
+      .update({ title, content, excerpt, cover_image_url: coverImageUrl, published })
       .eq('id', postId)
       .eq('author_id', user.id);
     if (error) return { error: error.message };
@@ -75,6 +76,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       slug: slugId,
       content,
       excerpt,
+      cover_image_url: coverImageUrl,
       published,
     });
     if (error) return { error: error.message };

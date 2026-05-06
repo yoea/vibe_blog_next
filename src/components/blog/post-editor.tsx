@@ -4,7 +4,6 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { MarkdownPreview } from '@/components/shared/markdown-preview';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { savePost } from '@/lib/actions/post-actions';
 import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save';
+import { CoverImageUploader } from '@/components/blog/cover-image-uploader';
 import { toast } from 'sonner';
 import type { PostWithAuthor } from '@/lib/db/types';
 
@@ -81,6 +81,9 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
   >(null);
   const [excerpt, setExcerpt] = useState(
     draftData?.excerpt ?? initialData?.excerpt ?? '',
+  );
+  const [coverUrl, setCoverUrl] = useState<string | null>(
+    (initialData as any)?.cover_image_url ?? null,
   );
   const [tags, setTags] = useState<string[]>(
     initialData && 'tags' in initialData
@@ -305,6 +308,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
     formData.set('content', content);
     formData.set('excerpt', excerpt);
     formData.set('published', shouldPublish ? 'on' : 'off');
+    if (coverUrl) formData.set('cover_image_url', coverUrl);
     const finalTags = [...tags];
     const pendingTag = tagInput.trim();
     if (pendingTag && !finalTags.includes(pendingTag) && finalTags.length < 7) {
@@ -342,18 +346,27 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
         {isEditing && <input type="hidden" name="_mode" value="update" />}
         {isEditing && <input type="hidden" name="_id" value={initialData.id} />}
 
-        <div className="space-y-2 shrink-0">
-          <label htmlFor="title" className="block text-sm font-medium">
-            标题
-          </label>
-          <input
-            id="title"
-            name="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="文章标题"
-            className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 min-w-0 space-y-2">
+            <label htmlFor="title" className="block text-sm font-medium">
+              标题
+            </label>
+            <input
+              id="title"
+              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="文章标题"
+              className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="sm:w-40 shrink-0">
+            <CoverImageUploader
+              postId={postId ?? initialData?.id ?? ''}
+              currentCoverUrl={coverUrl}
+              onCoverChange={setCoverUrl}
+            />
+          </div>
         </div>
 
         <div className="space-y-2 shrink-0">
@@ -442,7 +455,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               }
               placeholder="一句话概括文章..."
               maxLength={SUMMARY_MAX_LENGTH}
-              rows={2}
+              rows={3}
               className="w-full px-3 py-2 rounded-md border bg-transparent text-[16px] sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
             <p className="absolute bottom-2 right-3 text-xs text-muted-foreground pointer-events-none select-none">
@@ -599,8 +612,6 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
             </div>
           )}
         </div>
-
-        <Separator />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">

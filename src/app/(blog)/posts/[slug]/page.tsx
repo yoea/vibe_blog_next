@@ -4,6 +4,7 @@ import { MarkdownPreview } from '@/components/shared/markdown-preview';
 import { PostActionBar } from '@/components/blog/post-interaction';
 import { CommentSection } from '@/components/blog/comment-section';
 import { ArchivePostButton } from '@/components/blog/archive-post-button';
+import { CoverReveal } from '@/components/blog/cover-reveal';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ export async function generateMetadata({
   const { data: post } = await getPostBySlug(slug);
   if (!post) return { title: '文章不存在' };
   const siteUrl = await getSiteUrl();
+  const ogImage = post.cover_image_url || `${siteUrl}/og-image.jpg`;
   return {
     title: post.title,
     openGraph: {
@@ -38,7 +40,13 @@ export async function generateMetadata({
       publishedTime: post.created_at,
       modifiedTime: post.updated_at,
       url: `${siteUrl}/posts/${slug}`,
-      images: [{ url: `${siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt ?? '',
+      images: [{ url: ogImage, width: 1200, height: 630 }],
     },
   };
 }
@@ -164,11 +172,26 @@ export default async function PostPage({ params, searchParams }: PageProps) {
             }
           />
           {post.excerpt && (
-            <p className="text-sm text-muted-foreground max-w-prose leading-relaxed">
+            <p className="text-sm text-muted-foreground max-w-prose leading-relaxed whitespace-pre-line">
               {post.excerpt}
             </p>
           )}
         </header>
+
+        {post.cover_image_url && (
+          <>
+            {/* 移动端：完整显示，不变形 */}
+            <img
+              src={post.cover_image_url}
+              alt={post.title}
+              className="sm:hidden w-full rounded-lg"
+            />
+            {/* PC端：高度为宽度的1/3，随滚动揭示下半部分 */}
+            <div className="hidden sm:block relative w-full aspect-[3/1] overflow-hidden rounded-lg">
+              <CoverReveal src={post.cover_image_url} alt={post.title} />
+            </div>
+          </>
+        )}
 
         <Separator />
 

@@ -229,6 +229,7 @@ try {
     './LICENSE',
     './package-lock.json',
     './package.json',
+    './node_modules',
     './tsconfig.json',
     './tsconfig.tsbuildinfo',
     './eslint.config.mjs',

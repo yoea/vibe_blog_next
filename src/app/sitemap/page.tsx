@@ -21,6 +21,8 @@ import type { LucideIcon } from 'lucide-react';
 
 export const metadata = {
   title: '网站地图',
+  openGraph: { title: '网站地图' },
+  twitter: { card: 'summary_large_image', title: '网站地图' },
 };
 
 // 路由 → 图标映射（新增页面时只需在此添加一行）

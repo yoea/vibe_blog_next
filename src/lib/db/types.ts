@@ -14,6 +14,7 @@ export interface Post {
   slug: string;
   content: string;
   excerpt: string | null;
+  cover_image_url: string | null;
   published: boolean;
   is_pinned: boolean;
   created_at: string;
@@ -103,6 +104,7 @@ export interface ArchivedPost {
   slug: string;
   content: string;
   excerpt: string | null;
+  cover_image_url: string | null;
   published: boolean;
   is_pinned: boolean;
   created_at: string;

@@ -14,9 +14,13 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug: rawSlug } = await params;
   const slug = decodeURIComponent(rawSlug);
-  const { tagName } = await getPostsByTag(slug, 1, 1);
+  const { tagName, data: posts } = await getPostsByTag(slug, 1, 1);
+  const title = tagName ? `标签：${tagName}` : '标签';
+  const description = posts?.[0]?.excerpt || `浏览标签「${tagName}」下的文章`;
   return {
-    title: tagName ? `标签：${tagName}` : '标签',
+    title,
+    openGraph: { title, description },
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 

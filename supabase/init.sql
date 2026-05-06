@@ -13,6 +13,7 @@ create table if not exists posts (
   slug varchar(255) unique not null,
   content text not null,
   excerpt text,
+  cover_image_url text,
   published boolean default false,
   is_pinned boolean default false,
   created_at timestamptz default now(),
@@ -464,6 +465,39 @@ create policy "avatars_owner_delete"
   );
 
 -- ============================================
+-- Covers storage bucket (2MB, 16:9 post covers)
+-- ============================================
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('covers', 'covers', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+create policy "covers_public_read"
+  on storage.objects for select
+  using (bucket_id = 'covers');
+
+create policy "covers_owner_insert"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'covers'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "covers_owner_update"
+  on storage.objects for update
+  using (
+    bucket_id = 'covers'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "covers_owner_delete"
+  on storage.objects for delete
+  using (
+    bucket_id = 'covers'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+-- ============================================
 -- Migration: add github_username column
 -- ============================================
 
@@ -590,6 +624,7 @@ create table if not exists articles_archive (
   slug varchar(255) not null,
   content text not null,
   excerpt text,
+  cover_image_url text,
   published boolean default false,
   is_pinned boolean default false,
   created_at timestamptz not null,

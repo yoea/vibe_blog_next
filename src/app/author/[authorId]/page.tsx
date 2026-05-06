@@ -28,7 +28,13 @@ export async function generateMetadata({
     .eq('user_id', authorId)
     .maybeSingle();
   const name = data?.display_name ?? authorId.slice(0, 8);
-  return { title: `${name}的文章` };
+  const title = `${name}的文章`;
+  const description = `浏览 ${name} 的全部文章`;
+  return {
+    title,
+    openGraph: { title, description },
+    twitter: { card: 'summary_large_image', title, description },
+  };
 }
 
 export default async function AuthorPage({ params }: PageProps) {
