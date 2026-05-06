@@ -110,7 +110,7 @@ export function CommentForm({
         {error ? (
           <p className="text-sm text-destructive">{error}</p>
         ) : (
-          <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+          <p className="hidden sm:block text-xs text-muted-foreground" suppressHydrationWarning>
             键入评论后按 {isMac ? 'Cmd' : 'Ctrl'}+Enter 发送
           </p>
         )}
