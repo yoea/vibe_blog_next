@@ -233,7 +233,7 @@ export async function togglePinPost(
 }
 
 export async function loadMorePublishedPosts(page: number) {
-  return await getPublishedPosts(page, 10);
+  return await getPublishedPosts(page, 5);
 }
 
 export async function loadMoreMyPosts(page: number) {
