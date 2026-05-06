@@ -221,7 +221,7 @@ try {
   const excludes = [
     './src',
     './scripts',
-    './doc',
+    './docs',
     './supabase',
     './CLAUDE.md',
     './CHANGELOG.md',
@@ -235,6 +235,7 @@ try {
     './postcss.config.mjs',
     './components.json',
     './next.config.ts',
+    './deploy-artifact.tar.gz'
   ]
     .map((d) => `--exclude="${d}"`)
     .join(' ');
