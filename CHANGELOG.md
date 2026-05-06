@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.8.0...v0.9.0) (2026-05-06)
+
+
+### Bug 修复
+
+* 登录错误移除重复的 toast 提示 ([29c6fb2](https://git.ewing.top/yoea/vibe_blog_next/commit/29c6fb239485ca875679fe4fbe37b6b68d520389))
+* 修复命令面板滚动和布局问题 ([aaef4dd](https://git.ewing.top/yoea/vibe_blog_next/commit/aaef4dd2450a2faa8205a9253f36283b3ececf56))
+* 移动端隐藏评论表单的 Ctrl+Enter 提示 ([5911784](https://git.ewing.top/yoea/vibe_blog_next/commit/59117845056226e31cb94078c30f29caa142a601))
+
+
+### 新功能
+
+* 首页文章改为每次加载5篇 ([4254622](https://git.ewing.top/yoea/vibe_blog_next/commit/4254622f26cafd7aa2028d150389ce8fcebe2e5e))
+* 文章封面图 + 全站OG标签 + UI优化 ([048f156](https://git.ewing.top/yoea/vibe_blog_next/commit/048f1569e2edbda7451bcf01df89785c8286019d))
+* 优化标签管理页面移动端体验 ([fe9e857](https://git.ewing.top/yoea/vibe_blog_next/commit/fe9e857b52abc51473cacf44b062efed17bba570))
+* 优化网站地图移动端样式 ([47ee05e](https://git.ewing.top/yoea/vibe_blog_next/commit/47ee05e9d2be9c02382172ae7b7bc9b70a2bd5ff))
+
 ## [0.8.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.7.0...v0.8.0) (2026-05-03)
 
 

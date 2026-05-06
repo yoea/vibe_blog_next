@@ -1,6 +1,6 @@
 {
   "name": "vibe_blog_next",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "license": "AGPL-3.0",
   "scripts": {
