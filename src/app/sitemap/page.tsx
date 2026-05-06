@@ -91,16 +91,16 @@ export default async function SitemapPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {sortedCategories.map((category) => (
-          <section key={category}>
-            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <section key={category} className="text-center sm:text-left">
+            <h2 className="text-lg font-semibold mb-3 flex items-center justify-center sm:justify-start gap-2">
               {category}
             </h2>
-            <ul className="space-y-1">
+            <ul className="space-y-2 sm:space-y-1">
               {category === '支持'
                 ? supportItems.map((item) => (
                     <li key={item.title}>
                       <DonateButton>
-                        <button className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1">
+                        <button className="inline-flex items-center gap-2 text-sm text-primary hover:underline py-1.5 sm:py-1">
                           <item.icon className="h-4 w-4 shrink-0" />
                           {item.title}
                         </button>
@@ -113,7 +113,7 @@ export default async function SitemapPage() {
                       <li key={route.path}>
                         <Link
                           href={route.path}
-                          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline py-1"
+                          className="inline-flex items-center gap-2 text-sm text-primary hover:underline py-1.5 sm:py-1"
                         >
                           <Icon className="h-4 w-4 shrink-0" />
                           {route.title}
