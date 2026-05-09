@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
@@ -101,6 +101,11 @@ export function SettingsForm({
     models?: string[];
     error?: string;
   } | null>(null);
+  const [dsBalance, setDsBalance] = useState<{ balance: string; currency: string } | null>(null);
+  const [dsBalanceLoading, setDsBalanceLoading] = useState(false);
+  const [dsBalanceError, setDsBalanceError] = useState(false);
+  const [dsBalanceCooldown, setDsBalanceCooldown] = useState(false);
+  const lastBalanceCheckRef = useRef(0);
   // 掩码本站 API Key（用于显示）
   function maskKeyForDisplay(key: string) {
     if (key.length <= 12) return key;
@@ -210,6 +215,40 @@ export function SettingsForm({
     }
   };
 
+  const fetchDsBalance = async (ignoreCooldown = false) => {
+    if (aiBaseUrl !== 'https://api.deepseek.com' || !aiApiKey) return;
+    if (dsBalanceLoading) return;
+    if (!ignoreCooldown && Date.now() - lastBalanceCheckRef.current < 60000) {
+      setDsBalanceCooldown(true);
+      return;
+    }
+    setDsBalanceCooldown(true);
+    lastBalanceCheckRef.current = Date.now();
+    setDsBalanceLoading(true);
+    setDsBalanceError(false);
+    try {
+      const res = await fetch('/api/check-deepseek-balance');
+      const data = await res.json();
+      if (data.error) {
+        setDsBalanceError(true);
+        setDsBalance(null);
+      } else {
+        setDsBalance(data);
+        setDsBalanceError(false);
+      }
+    } catch {
+      setDsBalanceError(true);
+    }
+    setDsBalanceLoading(false);
+  };
+
+  useEffect(() => {
+    if (aiBaseUrl === 'https://api.deepseek.com' && aiApiKey) {
+      fetchDsBalance(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSaveAIConfig = async () => {
     setAiSaving(true);
     setAiTestResult(null);
@@ -225,6 +264,10 @@ export function SettingsForm({
 
     // 保存成功后发起连通性测试
     await runTestConnection();
+    // DeepSeek 余额查询
+    if (aiBaseUrl === 'https://api.deepseek.com' && aiApiKey) {
+      await fetchDsBalance();
+    }
   };
 
   const handleGenerateApiKey = async () => {
@@ -551,62 +594,6 @@ export function SettingsForm({
 
             <Separator />
 
-            {/* ICP 备案 */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">ICP 备案</h4>
-                <label className="flex items-center gap-2 cursor-pointer shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={icpVisible}
-                    onChange={async (e) => {
-                      const checked = e.target.checked;
-                      setIcpVisible(checked);
-                      const { error } = await updateICPConfig(
-                        icpNumber,
-                        checked,
-                      );
-                      if (error) {
-                        setIcpVisible(!checked);
-                        toast.error(error);
-                      } else {
-                        toast.success(
-                          checked ? '备案号已显示' : '备案号已隐藏',
-                        );
-                        router.refresh();
-                      }
-                    }}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    {icpVisible ? '已展示' : '已隐藏'}
-                  </span>
-                </label>
-              </div>
-              <div className="flex items-end gap-2">
-                <div className="flex-1 space-y-1.5">
-                  <Label htmlFor="icp-number">备案号</Label>
-                  <Input
-                    id="icp-number"
-                    value={icpNumber}
-                    onChange={(e) => setIcpNumber(e.target.value)}
-                    placeholder="浙ICP备XXXXXXXX号-X"
-                  />
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSaveICP}
-                  disabled={icpSaving}
-                  className="shrink-0 mb-px hover:border-foreground/30 hover:shadow-sm"
-                >
-                  {icpSaving ? '保存中...' : '保存'}
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
             {/* AI 大模型 */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">AI 大模型</h4>
@@ -837,6 +824,38 @@ export function SettingsForm({
                   {aiSaving ? '保存中...' : '保存'}
                 </Button>
               </div>
+              {/* DeepSeek 余额查询 */}
+              {aiBaseUrl === 'https://api.deepseek.com' && (
+                <p className="text-xs text-muted-foreground">
+                  Deepseek 余额：
+                  {dsBalanceLoading ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      查询中...
+                    </span>
+                  ) : dsBalance ? (
+                    <button
+                      type="button"
+                      onClick={() => fetchDsBalance()}
+                      disabled={dsBalanceCooldown}
+                      title="当前显示的为可用充值余额，点击刷新"
+                      className="hover:text-foreground transition-colors cursor-pointer disabled:cursor-default"
+                    >
+                      {dsBalance.currency === 'CNY' ? '¥' : '$'}
+                      {dsBalance.balance}{' '}
+                      <span className="text-[10px] opacity-60">{dsBalance.currency}</span>
+                    </button>
+                  ) : dsBalanceError ? (
+                    <button
+                      type="button"
+                      onClick={() => fetchDsBalance(true)}
+                      className="hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      查询失败，点击重试
+                    </button>
+                  ) : null}
+                </p>
+              )}
             </div>
 
             <Separator />
@@ -880,6 +899,62 @@ export function SettingsForm({
                   {apiKeyLoading ? '生成中...' : '立即生成'}
                 </Button>
               )}
+            </div>
+
+            <Separator />
+
+            {/* ICP 备案 */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">ICP 备案</h4>
+                <label className="flex items-center gap-2 cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={icpVisible}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
+                      setIcpVisible(checked);
+                      const { error } = await updateICPConfig(
+                        icpNumber,
+                        checked,
+                      );
+                      if (error) {
+                        setIcpVisible(!checked);
+                        toast.error(error);
+                      } else {
+                        toast.success(
+                          checked ? '备案号已显示' : '备案号已隐藏',
+                        );
+                        router.refresh();
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {icpVisible ? '已展示' : '已隐藏'}
+                  </span>
+                </label>
+              </div>
+              <div className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="icp-number">备案号</Label>
+                  <Input
+                    id="icp-number"
+                    value={icpNumber}
+                    onChange={(e) => setIcpNumber(e.target.value)}
+                    placeholder="浙ICP备XXXXXXXX号-X"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSaveICP}
+                  disabled={icpSaving}
+                  className="shrink-0 mb-px hover:border-foreground/30 hover:shadow-sm"
+                >
+                  {icpSaving ? '保存中...' : '保存'}
+                </Button>
+              </div>
             </div>
 
             <Separator />
