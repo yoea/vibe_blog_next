@@ -862,7 +862,7 @@ export function SettingsForm({
 
             {/* 本站 API KEY — 用于 AI Agent访问 */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">本站Api-Key</h4>
+              <h4 className="text-sm font-medium">本站 API Key</h4>
               <p className="text-xs text-muted-foreground -mt-1">
                 持有此 Key 可用于 AI Agent 通过 RESTful API 访问博客。
               </p>
