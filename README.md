@@ -11,7 +11,9 @@
 
 - 用户注册/登录/密码重置
 - Markdown 文章发布与预览（自动保存草稿）
-- AI 一键生成文章摘要（兼容 OpenAI API）
+- 文章封面图上传与裁剪（16:9，滚动揭示动画）
+- AI 一键生成文章摘要 + 标签推荐（兼容 OpenAI API）
+- 全站 OG/Twitter 社交分享标签
 - 文章点赞与评论（无需登录也可点赞）
 - 评论/留言回复（2 层嵌套，树形展示）
 - Markdown 代码块语法高亮（highlight.js，github-dark-dimmed 主题）
@@ -23,6 +25,10 @@
 - 用户设置：注销账号、主题切换（亮/暗/跟随系统）
 - 匿名操作频率限制（10次/小时）
 - ISR 5 分钟缓存，缓解 Supabase Free Tier 冷启动延迟
+- **AI Agent 友好**：全站 data-testid + aria-label + 语义化 HTML
+- **RESTful API**：Bearer Token 认证，支持文章 CRUD + 评论 + 点赞
+- **错误码标准化**：UNAUTHORIZED / FORBIDDEN / NOT_FOUND / VALIDATION / RATE_LIMITED / CONFLICT / SERVER_ERROR
+- **AI Agent 自发现**：`/llms.txt`（站点说明书） + `/api/v1/openapi.json`（API 规范）
 
 ## 技术栈
 
@@ -161,6 +167,64 @@ pm2 resurrect                                  # 恢复保存的进程列表
 - 发布/编辑/删除文章后，`revalidatePath` 会自动清除相关缓存
 - 点赞/评论等交互通过 Server Actions + 乐观 UI 处理，不受服务端缓存影响
 - 如需调整缓存时间，修改对应页面文件中的 `revalidate` 值即可
+
+---
+
+## AI Agent 编程访问
+
+### 快速开始
+
+AI Agent（Playwright、OpenClaw、Claude Code 等）可通过以下方式操作本网站：
+
+**UI 自动化路径：** 所有交互元素均有 `data-testid` 和 `aria-label`，无需依赖 CSS 类名定位。
+
+**API 路径：** 获取 API Key → 调用 RESTful 端点。
+
+### 获取 API Key
+
+1. 登录 → 设置 → 本站API KEY → 立即生成
+2. 弹窗显示完整 Key（`ew-` 开头），复制保存
+3. 请求时携带：`Authorization: Bearer ew-xxxxxxxx`
+
+### API 端点
+
+| method | path | 说明 |
+|--------|------|------|
+| GET | `/api/v1/posts?page=1&pageSize=10` | 文章列表 |
+| POST | `/api/v1/posts` | 创建文章 |
+| GET | `/api/v1/posts/{slug}` | 获取文章 |
+| PUT | `/api/v1/posts/{slug}` | 更新文章 |
+| DELETE | `/api/v1/posts/{slug}` | 删除文章 |
+| POST | `/api/v1/posts/{slug}/comments` | 添加评论 |
+| DELETE | `/api/v1/comments/{id}` | 删除评论 |
+| POST | `/api/v1/posts/{slug}/like` | 切换点赞 |
+
+### 错误码
+
+所有 API 返回统一格式：
+
+```json
+{ "error": "中文错误描述", "error_code": "UNAUTHORIZED" }
+```
+
+| error_code | HTTP | 含义 |
+|-----------|------|------|
+| UNAUTHORIZED | 401 | 未认证（API Key 缺失或无效） |
+| FORBIDDEN | 403 | 无权限 |
+| NOT_FOUND | 404 | 资源不存在 |
+| VALIDATION | 400 | 参数校验失败 |
+| RATE_LIMITED | 429 | 频率限制 |
+| CONFLICT | 409 | 资源冲突 |
+| SERVER_ERROR | 500 | 服务端错误 |
+
+### AI Agent 自发现文档
+
+| 文件 | 路径 | 用途 |
+|------|------|------|
+| llms.txt | `/llms.txt` | 站点级说明书（页面结构、data-testid 约定、API 列表） |
+| OpenAPI | `/api/v1/openapi.json` | OpenAPI 3.0 规范（请求/响应 schema、错误码枚举） |
+
+> **注意：** AI Agent 不会自动发现这两个文件。调用 Agent 时需提示它先读取 `/llms.txt` 了解站点结构。
 
 ---
 

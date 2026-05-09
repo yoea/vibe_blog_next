@@ -861,6 +861,14 @@ export function SettingsForm({
                   >
                     {apiKeyLoading ? '生成中...' : '重置密钥'}
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteApiKey}
+                    disabled={apiKeyLoading}
+                    className="w-full sm:w-auto text-destructive hover:text-destructive hover:bg-red-50"
+                  >
+                    {apiKeyLoading ? '删除中...' : '删除密钥'}
+                  </Button>
                 </div>
               ) : (
                 <Button
@@ -1106,13 +1114,6 @@ export function SettingsForm({
               {generatedKey}
             </code>
             <DialogFooter>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteApiKey}
-                disabled={apiKeyLoading}
-              >
-                删除密钥
-              </Button>
               <Button
                 onClick={async () => {
                   await copyToClipboard(generatedKey);

@@ -1,0 +1,74 @@
+# 字里行间
+
+> Next.js 16 个人博客，支持人类用户和 AI Agent 操作。所有交互元素具备 data-testid，提供 RESTful API。
+
+## 关键页面
+
+| 路径 | data-testid | 用途 |
+|------|-------------|------|
+| `/` | `site-hero`, post cards | 首页文章列表 |
+| `/login` | `login-form`, `login-email`, `login-password`, `login-submit`, `login-github` | 登录 |
+| `/register` | `register-form`, `register-email`, `register-password`, `register-submit` | 注册 |
+| `/posts/{slug}` | `post-like-btn`, `post-comment-btn`, `post-share-btn`, `comment-form`, `comment-textarea`, `comment-submit` | 文章详情 + 评论 |
+| `/posts/new` | `post-title`, `post-content`, `post-excerpt`, `post-tag-input`, `post-submit`, `ai-generate-summary`, `ai-generate-tags` | 写新文章 |
+| `/posts-edit/{slug}` | 同上 | 编辑文章 |
+| `/profile` | `post-pin-btn`, `post-edit-btn`, `post-delete-btn` | 我的文章管理 |
+| `/settings` | `theme-toggle`, site config admin section | 个人设置 + 管理 |
+| `/tags` | tag links | 标签浏览 |
+| `/author` | author links | 作者列表 |
+| `/author/{id}` | `guestbook-form`, `guestbook-textarea`, `guestbook-submit` | 作者主页 + 留言板 |
+
+**导航栏**: `desktop-nav` / `mobile-nav` / `mobile-menu-btn` / `breadcrumb`
+
+## RESTful API
+
+完整 OpenAPI 规范: `/api/v1/openapi.json`
+
+| method | path | 说明 |
+|--------|------|------|
+| GET | `/api/v1/posts` | 文章列表 (query: page, pageSize) |
+| POST | `/api/v1/posts` | 创建文章 |
+| GET | `/api/v1/posts/{slug}` | 单篇文章 |
+| PUT | `/api/v1/posts/{slug}` | 更新文章 |
+| DELETE | `/api/v1/posts/{slug}` | 删除文章 |
+| POST | `/api/v1/posts/{slug}/comments` | 添加评论 |
+| DELETE | `/api/v1/comments/{id}` | 删除评论 |
+| POST | `/api/v1/posts/{slug}/like` | 切换点赞 |
+
+所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。持有 api_key 即拥有超级管理员权限。
+
+## 认证
+
+1. 登录网站 → 设置 → "本站API KEY" → 点击"立即生成"
+2. 弹窗显示完整 Key（ew- 开头），复制保存
+3. 后续请求中携带: `Authorization: Bearer ew-xxxxxxxx`
+
+## 错误码
+
+所有 API 和 Server Actions 返回统一的 error_code：
+
+| error_code | HTTP | 含义 |
+|-----------|------|------|
+| UNAUTHORIZED | 401 | 未认证 / 未登录 |
+| FORBIDDEN | 403 | 无权限 |
+| NOT_FOUND | 404 | 资源不存在 |
+| VALIDATION | 400 | 参数校验失败 |
+| RATE_LIMITED | 429 | 频率限制 |
+| CONFLICT | 409 | 资源冲突 |
+| SERVER_ERROR | 500 | 服务端错误 |
+
+响应格式: `{ "error": "中文错误描述", "error_code": "ERROR_CODE" }`
+
+## data-testid 命名约定
+
+- 全小写 kebab-case (`login-form`, `post-submit`, `comment-textarea`)
+- 页面级前缀表示归属 (`login-*`, `post-*`, `comment-*`, `thread-*`)
+- AI 操作入口使用 `ai-*` 前缀 (`ai-generate-summary`, `ai-generate-tags`)
+- 动态生成的使用模板: `remove-tag-{name}`, `suggested-tag-{slug}`, `alternative-tag-{name}`
+
+## 技术栈
+
+- Next.js 16 (App Router) + React 19
+- Supabase (PostgreSQL + Auth + Storage)
+- Tailwind CSS v4 + shadcn/ui
+- Lucide React 图标

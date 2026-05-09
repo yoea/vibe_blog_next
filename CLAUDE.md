@@ -164,6 +164,17 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }
 
 **管理**：管理员在设置页 → "本站API KEY" → 点击"立即生成"获取密钥
 
+**完整 API 文档**：`/api/v1/openapi.json`（OpenAPI 3.0 规范，AI Agent 可直接解析）
+
+### AI Agent 自发现文档
+
+| 文件 | 路径 | 用途 |
+|------|------|------|
+| `public/llms.txt` | `/llms.txt` | 站点说明书：页面结构、data-testid 约定、API 端点列表、错误码枚举、认证方式 |
+| `public/api/v1/openapi.json` | `/api/v1/openapi.json` | OpenAPI 3.0 规范：所有 v1 端点的请求/响应 schema、认证 scheme |
+
+> AI Agent 不会自动发现这些文件，需要在系统提示中告知 Agent 先读取 `/llms.txt`。
+
 ### 关键设计模式
 
 - **评论/留言板**: 2 层嵌套, 从扁平 DB 查询结果在客户端构建树结构
