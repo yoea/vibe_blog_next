@@ -109,6 +109,16 @@ export async function createComment(
     }
   }
 
+  // 幂等去重：30 秒内相同内容的评论视为重复（防止双击）
+  const { data: duplicate } = await supabase
+    .from('post_comments')
+    .select('id')
+    .eq('post_id', postId)
+    .eq('content', content.trim())
+    .gte('created_at', new Date(Date.now() - 30000).toISOString())
+    .maybeSingle();
+  if (duplicate) return { data: duplicate };
+
   const { data: comment, error } = await supabase
     .from('post_comments')
     .insert(insertData)

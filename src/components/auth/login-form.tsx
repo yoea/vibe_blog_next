@@ -103,12 +103,14 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           required
           minLength={6}
           autoComplete="current-password"
+          aria-describedby={error ? 'login-error' : undefined}
+          aria-invalid={error ? 'true' : undefined}
           data-testid="login-password"
           className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
       {error && (
-        <p className="text-sm text-destructive" data-testid="login-error">
+        <p id="login-error" role="alert" className="text-sm text-destructive" data-testid="login-error">
           {error}
         </p>
       )}

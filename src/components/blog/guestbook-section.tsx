@@ -114,11 +114,11 @@ export function GuestbookSection({
     : messages.filter((m) => isOwner || currentUserId === m.author_id);
 
   return (
-    <div id="guestbook" className="space-y-4">
+    <section id="guestbook" aria-labelledby="guestbook-title" className="space-y-4">
       <div className="flex items-center gap-2">
         {icon}
         <div>
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 id="guestbook-title" className="text-xl font-bold">{title}</h2>
           <p className="text-xs text-muted-foreground">
             {initialTotal} 条留言
             {!isOwner && !messagesPublic && initialTotal > 0 && (
@@ -138,10 +138,11 @@ export function GuestbookSection({
       )}
 
       {visibleMessages.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3" role="feed" aria-label="留言列表">
           {visibleMessages.map((message) => (
-            <div
+            <article
               key={message.id}
+              role="comment"
               id={`guestbook-msg-${message.id}`}
               className={`border-b border-gray-100 last:border-0 rounded-md ${highlightId === message.id ? 'highlight-flash' : ''}`}
             >
@@ -164,7 +165,7 @@ export function GuestbookSection({
                 highlightId={highlightId}
                 idPrefix="guestbook-msg"
               />
-            </div>
+            </article>
           ))}
         </div>
       ) : (
@@ -182,6 +183,6 @@ export function GuestbookSection({
         loadedAllText="已显示全部留言"
         showLoadedAll={visibleMessages.length > 0}
       />
-    </div>
+    </section>
   );
 }

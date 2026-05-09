@@ -115,11 +115,13 @@ export function CommentForm({
         placeholder={replyTo ? `回复 ${replyTo.name}...` : '写下你的评论...'}
         rows={3}
         maxLength={MAX_COMMENT_LENGTH}
+        aria-describedby={error ? 'comment-form-error' : undefined}
+        aria-invalid={error ? 'true' : undefined}
         data-testid="comment-textarea"
       />
       <div className="flex items-center justify-between gap-2">
         {error ? (
-          <p className="text-sm text-destructive" data-testid="comment-error">
+          <p id="comment-form-error" role="alert" className="text-sm text-destructive" data-testid="comment-error">
             {error}
           </p>
         ) : (
@@ -131,7 +133,7 @@ export function CommentForm({
           </p>
         )}
         <div className="flex items-center gap-2">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground" aria-hidden="true">
             {comment.length}/{MAX_COMMENT_LENGTH}
           </p>
           <Button

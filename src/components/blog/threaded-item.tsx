@@ -84,9 +84,10 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
     }
   };
 
+  const authorLabelId = `${idPrefix}-author-${item.id}`;
   return (
     <>
-      <div className="flex gap-3 pb-3">
+      <div className="flex gap-3 pb-3" role="comment" aria-labelledby={authorLabelId}>
         {!isGuest ? (
           <Avatar
             avatarUrl={avatarUrl}
@@ -106,6 +107,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
             <div className="flex items-center gap-1.5 truncate">
               {isGuest ? (
                 <span
+                  id={authorLabelId}
                   className="font-medium truncate"
                   style={{ color: getUserColor('guest') }}
                 >
@@ -113,6 +115,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 </span>
               ) : (
                 <Link
+                  id={authorLabelId}
                   href={`/author/${item.author_id}`}
                   className="font-medium hover:underline truncate"
                   style={{ color: getUserColor(item.author_id!) }}
@@ -126,9 +129,9 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 </span>
               )}
             </div>
-            <span className="shrink-0 ml-2" suppressHydrationWarning>
+            <time className="shrink-0 ml-2" dateTime={item.created_at} suppressHydrationWarning>
               {formatTimeAgo(item.created_at)}
-            </span>
+            </time>
           </div>
           <p className="text-sm whitespace-pre-wrap break-words">
             {item.content}
@@ -139,6 +142,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
             {onReply && (
               <button
                 onClick={() => onReply(item.id)}
+                aria-label={`回复 ${displayName}`}
                 data-testid="thread-reply-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
               >
@@ -150,6 +154,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
               (currentUserId && currentUserId === item.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
+                aria-label={`删除 ${displayName} 的评论`}
                 data-testid="thread-delete-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
               >
@@ -175,7 +180,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
       </div>
 
       {item.replies && item.replies.length > 0 && (
-        <div className="ml-8 pl-4 border-l-2 border-muted">
+        <div className="ml-8 pl-4 border-l-2 border-muted" role="list" aria-label="回复">
           <ReplyList
             replies={item.replies as unknown as T[]}
             parentAuthorName={displayName}
@@ -279,7 +284,7 @@ function ReplyList<T extends ThreadedItem>({
 
   return (
     <>
-      <div className="space-y-2 pb-2">
+      <div className="space-y-2 pb-2" role="list">
         {/* Always show the first reply */}
         <ReplyItem
           key={replies[0].id}
@@ -396,6 +401,8 @@ function ReplyItem<T extends ThreadedItem>({
     ? ((reply.author as any)?.avatar_url ?? null)
     : null;
 
+  const replyAuthorLabelId = `${idPrefix}-author-${reply.id}`;
+
   const handleConfirmDelete = async () => {
     setDeleting(true);
     const ok = await onDelete(reply.id);
@@ -409,7 +416,7 @@ function ReplyItem<T extends ThreadedItem>({
 
   return (
     <>
-      <div id={`${idPrefix}-${reply.id}`} className="flex gap-3 pb-2 pt-1">
+      <div id={`${idPrefix}-${reply.id}`} className="flex gap-3 pb-2 pt-1" role="comment" aria-labelledby={replyAuthorLabelId}>
         {!isGuest ? (
           <Avatar
             avatarUrl={avatarUrl}
@@ -429,6 +436,7 @@ function ReplyItem<T extends ThreadedItem>({
             <div className="flex items-center gap-1.5 truncate">
               {isGuest ? (
                 <span
+                  id={replyAuthorLabelId}
                   className="font-medium truncate"
                   style={{ color: getUserColor('guest') }}
                 >
@@ -436,6 +444,7 @@ function ReplyItem<T extends ThreadedItem>({
                 </span>
               ) : (
                 <Link
+                  id={replyAuthorLabelId}
                   href={`/author/${reply.author_id}`}
                   className="font-medium hover:underline truncate"
                   style={{ color: getUserColor(reply.author_id!) }}
@@ -444,9 +453,9 @@ function ReplyItem<T extends ThreadedItem>({
                 </Link>
               )}
             </div>
-            <span className="shrink-0 ml-2" suppressHydrationWarning>
+            <time className="shrink-0 ml-2" dateTime={reply.created_at} suppressHydrationWarning>
               {formatTimeAgo(reply.created_at)}
-            </span>
+            </time>
           </div>
           <p className="text-sm whitespace-pre-wrap break-words">
             <span className="text-muted-foreground">
@@ -471,6 +480,7 @@ function ReplyItem<T extends ThreadedItem>({
               (currentUserId && currentUserId === reply.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
+                aria-label={`删除 ${displayName} 的评论`}
                 data-testid="thread-delete-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
               >

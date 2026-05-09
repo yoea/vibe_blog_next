@@ -81,6 +81,16 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
         };
     }
 
+    // 幂等去重：30 秒内相同标题和内容的文章视为重复（防止双击）
+    const { data: duplicate } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('author_id', user.id)
+      .eq('title', title)
+      .gte('created_at', new Date(Date.now() - 30000).toISOString())
+      .maybeSingle();
+    if (duplicate) return {};
+
     const id = crypto.randomUUID();
     const slugId = id.slice(0, 8);
     const { error } = await supabase.from('posts').insert({

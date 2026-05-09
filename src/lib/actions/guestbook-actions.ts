@@ -97,6 +97,16 @@ export async function createGuestbookMessage(
     }
   }
 
+  // 幂等去重：30 秒内相同内容的留言视为重复（防止双击）
+  const { data: duplicate } = await supabase
+    .from('guestbook_messages')
+    .select('id')
+    .eq('to_author_id', toAuthorId)
+    .eq('content', content.trim())
+    .gte('created_at', new Date(Date.now() - 30000).toISOString())
+    .maybeSingle();
+  if (duplicate) return { data: duplicate };
+
   const { data: message, error } = await supabase
     .from('guestbook_messages')
     .insert(insertData)

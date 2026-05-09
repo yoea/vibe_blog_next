@@ -93,8 +93,9 @@ export function CommentSection({
   }, [focusSignal]);
 
   return (
-    <div
+    <section
       id="comments"
+      aria-label="评论区"
       className="space-y-4 scroll-mt-20"
       data-testid="comments-section"
     >
@@ -107,11 +108,13 @@ export function CommentSection({
       />
 
       {comments.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3" role="feed" aria-label="评论列表">
           {comments.map((comment) => (
-            <div
+            <article
               key={comment.id}
               id={`comment-${comment.id}`}
+              role="comment"
+              aria-labelledby={`comment-author-${comment.id}`}
               className={`border-b border-gray-100 last:border-0 rounded-md ${highlightId === comment.id ? 'highlight-flash' : ''}`}
             >
               <ThreadedItemRenderer
@@ -138,7 +141,7 @@ export function CommentSection({
                 )}
                 highlightId={highlightId}
               />
-            </div>
+            </article>
           ))}
         </div>
       )}
@@ -151,7 +154,7 @@ export function CommentSection({
         idleText="加载更多评论"
         loadedAllText="已显示全部评论"
       />
-    </div>
+    </section>
   );
 }
 
