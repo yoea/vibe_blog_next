@@ -50,7 +50,20 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       } else {
         loggedIn = true;
         try {
-          toast.success('登录成功！');
+          const dest = redirectTo || '/';
+          const destLabel =
+            dest === '/profile'
+              ? '个人中心'
+              : dest === '/settings'
+                ? '设置'
+                : dest === '/'
+                  ? '首页'
+                  : '';
+          toast.success(
+            destLabel
+              ? `登录成功，正在跳转到${destLabel}`
+              : '登录成功，正在跳转',
+          );
           await onAuthChange();
         } catch {
           // onAuthChange 失败不影响登录流程，继续导航
