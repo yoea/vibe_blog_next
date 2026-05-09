@@ -99,7 +99,7 @@ export const ErrorCode = {
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 /** Base result type for server actions — { error?: string } on failure, {} on success */
-export type ActionResult<T = {}> = T & {
+export type ActionResult<T = object> = T & {
   error?: string;
   error_code?: ErrorCode;
 };

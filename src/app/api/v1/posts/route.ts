@@ -48,25 +48,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createAdminClient();
 
-    const newSlug =
-      title
-        .trim()
-        .replace(/[^\w一-鿿]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .toLowerCase() +
-      '-' +
-      Date.now().toString(36);
+    const id = crypto.randomUUID();
+    const slug = id.slice(0, 8);
 
     const { data: created, error: insertError } = await supabase
       .from('posts')
       .insert({
+        id,
+        author_id: auth.userId,
         title: title.trim(),
-        slug: newSlug,
+        slug,
         content: content.trim(),
         excerpt: excerpt?.trim() ?? null,
         published: published ?? true,
         cover_image_url: cover_image_url ?? null,
-        author_id: auth.userId,
       })
       .select('slug')
       .single();
@@ -126,7 +121,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ data: { slug: newSlug } }, { status: 201 });
+    return NextResponse.json({ data: { slug } }, { status: 201 });
   } catch {
     return NextResponse.json(
       { error: '请求格式错误', error_code: ErrorCode.VALIDATION },

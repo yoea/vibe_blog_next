@@ -328,7 +328,17 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
       setShowPublishModal(false);
     } else {
       setShowPublishModal(false);
-      router.push('/profile');
+      const isPublic = shouldPublish;
+      toast.success(
+        isPublic
+          ? '发布成功，正在跳转到文章详情页'
+          : '私密保存成功，正在跳转到文章详情页',
+      );
+      if (result.slug) {
+        router.push(`/posts/${result.slug}`);
+      } else {
+        router.push('/profile');
+      }
       router.refresh();
     }
   };

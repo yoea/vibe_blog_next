@@ -15,7 +15,7 @@ import { checkIpRateLimit } from '@/lib/utils/rate-limit';
 import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult, Tag } from '@/lib/db/types';
 
-export async function savePost(formData: FormData): Promise<ActionResult> {
+export async function savePost(formData: FormData): Promise<ActionResult<{ slug?: string }>> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -60,11 +60,11 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     if (tagError)
       return { error: tagError, error_code: ErrorCode.SERVER_ERROR };
     // Revalidate all relevant paths
-    const slug = formData.get('_slug') as string | null;
+    const slug = (formData.get('_slug') as string) || '';
     if (slug) revalidatePath(`/posts-edit/${slug}`);
     revalidatePath('/');
     revalidatePath('/profile');
-    return {};
+    return { slug };
   } else {
     // Rate limit: 10 posts per hour per IP
     const h = await headers();
@@ -111,7 +111,7 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
       return { error: tagError, error_code: ErrorCode.SERVER_ERROR };
     revalidatePath('/');
     revalidatePath('/profile');
-    return {};
+    return { slug: slugId };
   }
 }
 
