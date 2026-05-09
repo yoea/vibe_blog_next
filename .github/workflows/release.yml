@@ -23,6 +23,8 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           NOTES=$(sed -nE "/^#{2,3} \[${VERSION}\]/,/^#{2,3} \[/p" CHANGELOG.md | sed '1d' | sed '$ { /^#{2,3} \[/d; }')
+          # Replace Gitee compare/commit URLs with GitHub for the release notes
+          NOTES=$(echo "$NOTES" | sed 's|git\.ewing\.top/yoea/vibe_blog_next|github.com/yoea/vibe_blog_next|g')
           if [ -z "$NOTES" ]; then
             NOTES="Release ${GITHUB_REF_NAME}"
           fi

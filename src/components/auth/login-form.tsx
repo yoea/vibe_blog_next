@@ -1,6 +1,5 @@
 'use client';
 
-import { useFormStatus } from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
@@ -10,10 +9,12 @@ import { GitHubIcon } from '@/components/icons/github-icon';
 export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(true);
+  const [isPending, setIsPending] = useState(false);
+  const [githubPending, setGithubPending] = useState(false);
   const redirectedRef = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    // 进入登录页时清除标记，确保本次登录能弹出 toast
     sessionStorage.removeItem('login_toast_shown');
 
     const supabase = createClient();
@@ -30,6 +31,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
+    setIsPending(true);
     const formData = new FormData(e.currentTarget);
     const supabase = createClient();
     let loggedIn = false;
@@ -44,6 +46,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             ? '用户名或密码错误'
             : error.message;
         setError(message);
+        setIsPending(false);
       } else {
         loggedIn = true;
         try {
@@ -66,13 +69,17 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             ? err.message
             : '登录失败，请稍后重试';
       setError(message);
+      setIsPending(false);
     }
   }
 
   if (checking) return null;
 
+  const disabled = isPending || githubPending;
+
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
       className="space-y-4"
       data-testid="login-form"
@@ -88,8 +95,9 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           placeholder="you@example.com"
           required
           autoComplete="email"
+          disabled={disabled}
           data-testid="login-email"
-          className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
         />
       </div>
       <div className="space-y-2">
@@ -103,10 +111,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           required
           minLength={6}
           autoComplete="current-password"
+          disabled={disabled}
           aria-describedby={error ? 'login-error' : undefined}
           aria-invalid={error ? 'true' : undefined}
           data-testid="login-password"
-          className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
         />
       </div>
       {error && (
@@ -114,7 +123,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           {error}
         </p>
       )}
-      <SubmitButton />
+      <SubmitButton pending={isPending} />
 
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
@@ -127,7 +136,9 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
       <button
         type="button"
+        disabled={disabled}
         onClick={async () => {
+          setGithubPending(true);
           const supabase = createClient();
           try {
             const siteUrl = window.location.origin;
@@ -142,6 +153,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             });
             if (error) {
               toast.error(error.message);
+              setGithubPending(false);
             }
           } catch (err) {
             const message =
@@ -151,20 +163,20 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
                   ? err.message
                   : 'GitHub 登录失败，请稍后重试';
             toast.error(message);
+            setGithubPending(false);
           }
         }}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#24292f] text-white rounded-md text-sm font-medium hover:bg-[#24292f]/90 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#24292f] text-white rounded-md text-sm font-medium hover:bg-[#24292f]/90 transition-colors cursor-pointer disabled:opacity-50"
         data-testid="login-github"
       >
         <GitHubIcon className="h-4 w-4" />
-        使用 GitHub 登录
+        {githubPending ? 'GitHub 登录中...' : '使用 GitHub 登录'}
       </button>
     </form>
   );
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <button
       type="submit"
