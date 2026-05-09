@@ -3,7 +3,7 @@
   "info": {
     "title": "字里行间 Blog API",
     "description": "AI Agent 编程访问接口。持有 api_key 即拥有超级管理员权限。",
-    "version": "0.11.1"
+    "version": "0.11.2"
   },
   "servers": [
     {

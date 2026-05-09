@@ -98,8 +98,8 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `author/` | 作者列表, author/[authorId] (个人页 + 留言板)                                                             |
 | 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                                 |
 | `admin/`  | archive (归档管理)                                                                                        |
-| `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats    |
-| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes（Bearer Token 认证，持有 api_key 即拥有超级管理员权限） |
+| `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats, check-deepseek-balance, test-ai-config |
+| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes, whoami（Bearer Token 认证，多密钥管理） |
 
 ### 目录结构 (src/)
 
@@ -110,10 +110,12 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `lib/supabase/admin.ts`      | Service Role 客户端 — 管理员操作 (列出用户、删除账号) |
 | `lib/supabase/middleware.ts` | `updateSession()` — 每个请求的 cookie 管理            |
 | `lib/actions/`               | Server Actions — 文章、评论、点赞、认证、设置等       |
-| `lib/api/`                   | API 认证 Helper — `validateApiKey()`                  |
+| `lib/api/`                   | API 认证 Helper — `validateApiKey()` 返回 `{ userId, keyId }` |
 | `lib/db/`                    | 数据库查询 (queries.ts) 与类型定义 (types.ts)         |
 | `lib/utils/`                 | 工具函数 — 剪贴板、颜色、时间、频率限制、日志等       |
 | `lib/hooks/`                 | 客户端 hooks — 自动保存草稿                           |
+| `lib/ai-config.ts`           | AI 配置解析工具                                       |
+| `lib/utils.ts`               | 通用工具函数                                          |
 | `lib/build-info.ts`          | 构建元数据（版本、commit、时间等）                    |
 | `lib/constants.ts`           | 常量定义                                              |
 | `lib/site-url.ts`            | 站点 URL 解析工具                                     |
@@ -152,7 +154,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 ### Bot RESTful API（`src/app/api/v1/`）
 
-提供基于 API Key 的编程访问接口，持有 `api_key` 即拥有超级管理员权限。
+提供基于 API Key 的编程访问接口，每个管理员可生成多个独立密钥，`author_id` 由密钥自动确定。
 
 | 方法     | 路径                           | 功能                                    |
 | -------- | ------------------------------ | --------------------------------------- |
@@ -164,10 +166,11 @@ if (result.error_code === 'UNAUTHORIZED') {
 | `POST`   | `/api/v1/posts/:slug/comments` | 添加评论                                |
 | `DELETE` | `/api/v1/comments/:id`         | 删除评论                                |
 | `POST`   | `/api/v1/posts/:slug/like`     | 切换点赞                                |
+| `GET`    | `/api/v1/whoami`               | 获取当前 key 拥有者的用户信息           |
 
 **认证方式**：`Authorization: Bearer <api_key>`
 
-**管理**：管理员在设置页 → "本站API KEY" → 点击"立即生成"获取密钥
+**管理**：管理员在设置页 → "本站API KEY" → 点击"生成密钥"，可为每个密钥命名方便区分用途。
 
 **完整 API 文档**：`/api/v1/openapi.json`（OpenAPI 3.0 规范，AI Agent 可直接解析）
 
@@ -190,7 +193,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 ### 部署架构
 
 - **双远程推送**: `git push` 同时推送到 GitHub 和 Gitee，两个远程都会触发 webhook
-- **自动部署**: 本地构建 + 上传方式（`npm run deploy:local`），详见 `doc/deploy.md`
+- **自动部署**: 本地构建 + 上传方式（`npm run deploy:local`），详见 `docs/deploy-tips.md`
 - **deploy-local.mjs 流程**: 本地 `next build` → 组装 standalone → tar 打包（--exclude 开发文件）→ scp 上传 → ssh 触发 `deploy-remote.sh`（成功后保留 tar 包供下次覆盖）
   - Windows 兼容: 临时脚本使用进程 ID 避免并行冲突，tarball 验证处理换行符
 - **deploy-remote.sh 流程**: flock 加锁 → 校验产物 → 原子替换文件 → pm2 delete + start（重建主应用 + webhook）→ 健康检查（严格验证 commit hash）→ 清理
@@ -204,7 +207,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 ### 数据库 (supabase/init.sql)
 
-**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages, site_config
+**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages, site_config, api_keys, notifications, post_tags
 
 **触发器**: 自动更新 `updated_at`; 注册时自动创建 `user_settings` 行
 
