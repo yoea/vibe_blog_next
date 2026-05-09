@@ -15,7 +15,9 @@ import { checkIpRateLimit } from '@/lib/utils/rate-limit';
 import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult, Tag } from '@/lib/db/types';
 
-export async function savePost(formData: FormData): Promise<ActionResult<{ slug?: string }>> {
+export async function savePost(
+  formData: FormData,
+): Promise<ActionResult<{ slug?: string }>> {
   const supabase = await createClient();
   const {
     data: { user },

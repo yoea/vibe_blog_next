@@ -38,9 +38,18 @@ const agentFeatures = [
   { label: 'data-testid', desc: '所有交互元素均包含 data-testid 属性' },
   { label: 'aria-label', desc: '仅图标按钮提供 aria-label 文本描述' },
   { label: '语义化 HTML', desc: '使用 nav、main、section、button 等标准元素' },
-  { label: 'llms.txt', desc: '站点说明书：页面结构、data-testid 约定、API 端点列表' },
-  { label: 'OpenAPI 3.0', desc: '/api/v1/openapi.json — 完整 API 请求/响应 schema' },
-  { label: '错误码标准化', desc: '所有 API 返回统一错误码，方便 Agent 分支处理' },
+  {
+    label: 'llms.txt',
+    desc: '站点说明书：页面结构、data-testid 约定、API 端点列表',
+  },
+  {
+    label: 'OpenAPI 3.0',
+    desc: '/api/v1/openapi.json — 完整 API 请求/响应 schema',
+  },
+  {
+    label: '错误码标准化',
+    desc: '所有 API 返回统一错误码，方便 Agent 分支处理',
+  },
 ];
 
 const apiEndpoints = [
@@ -71,7 +80,10 @@ const techStack = [
   { label: '样式', value: 'Tailwind CSS v4 + shadcn/ui' },
   { label: '数据库', value: 'Supabase (PostgreSQL + RLS)' },
   { label: '认证', value: 'Supabase Auth (PKCE 流程)' },
-  { label: 'Markdown', value: 'react-markdown + remark-gfm + rehype-highlight' },
+  {
+    label: 'Markdown',
+    value: 'react-markdown + remark-gfm + rehype-highlight',
+  },
   { label: '图标', value: 'Lucide React' },
   { label: '部署', value: 'PM2 + Nginx 反向代理' },
   { label: '许可证', value: 'AGPL-3.0' },
@@ -102,11 +114,13 @@ export default async function AboutPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">字里行间</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          「字里行间」是一个基于 Next.js + Supabase 构建的开源博客平台。从设计之初就同时面向
-          人类用户与 AI Agent——不止是写作工具，更是读者与作者交流的空间。
+          「字里行间」是一个基于 Next.js + Supabase
+          构建的开源博客平台。从设计之初就同时面向 人类用户与 AI
+          Agent——不止是写作工具，更是读者与作者交流的空间。
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          项目以 AGPL-3.0 协议开源，代码完全透明。你可以自由部署、修改和参与贡献。
+          项目以 AGPL-3.0
+          协议开源，代码完全透明。你可以自由部署、修改和参与贡献。
         </p>
       </section>
 
@@ -136,7 +150,9 @@ export default async function AboutPage() {
           核心理念：AI Agent 友好
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          本项目是全球首个从设计之初即面向 AI Agent 操作的博客系统。AI Agent（如 Claude Code、OpenClaw、Hermes-agent 等基于 Playwright 的自动化 Agent）可以通过 UI 自动化或 RESTful API 两种方式操作本网站。
+          本项目是全球首个从设计之初即面向 AI Agent 操作的博客系统。AI Agent（如
+          Claude Code、OpenClaw、Hermes-agent 等基于 Playwright 的自动化
+          Agent）可以通过 UI 自动化或 RESTful API 两种方式操作本网站。
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {agentFeatures.map((f) => (
@@ -152,8 +168,13 @@ export default async function AboutPage() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          AI Agent 使用前应先读取 <code className="font-mono bg-muted px-1 rounded">/llms.txt</code> 了解站点结构，
-          通过 <code className="font-mono bg-muted px-1 rounded">/api/v1/openapi.json</code> 获取完整 API 规范。
+          AI Agent 使用前应先读取{' '}
+          <code className="font-mono bg-muted px-1 rounded">/llms.txt</code>{' '}
+          了解站点结构， 通过{' '}
+          <code className="font-mono bg-muted px-1 rounded">
+            /api/v1/openapi.json
+          </code>{' '}
+          获取完整 API 规范。
         </p>
       </section>
 
@@ -174,9 +195,16 @@ export default async function AboutPage() {
           RESTful API
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          提供基于 API Key 的编程访问接口。管理员在设置页生成独立密钥（ew- 开头），
-          <code className="font-mono text-xs bg-muted px-1 rounded">author_id</code> 由密钥自动确定。
-          请求时携带 <code className="font-mono text-xs bg-muted px-1 rounded">Authorization: Bearer ew-xxxxxxxx</code>。
+          提供基于 API Key 的编程访问接口。管理员在设置页生成独立密钥（ew-
+          开头），
+          <code className="font-mono text-xs bg-muted px-1 rounded">
+            author_id
+          </code>{' '}
+          由密钥自动确定。 请求时携带{' '}
+          <code className="font-mono text-xs bg-muted px-1 rounded">
+            Authorization: Bearer ew-xxxxxxxx
+          </code>
+          。
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border">
@@ -196,7 +224,9 @@ export default async function AboutPage() {
                     </span>
                   </td>
                   <td className="px-3 py-1.5 font-mono">{ep.path}</td>
-                  <td className="px-3 py-1.5 text-muted-foreground">{ep.desc}</td>
+                  <td className="px-3 py-1.5 text-muted-foreground">
+                    {ep.desc}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -211,14 +241,20 @@ export default async function AboutPage() {
           错误码系统
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          所有 Server Actions 和 API Routes 返回统一的错误码枚举，方便 AI Agent 按
-          <code className="font-mono text-xs bg-muted px-1 rounded">error_code</code> 分支处理：
+          所有 Server Actions 和 API Routes 返回统一的错误码枚举，方便 AI Agent
+          按
+          <code className="font-mono text-xs bg-muted px-1 rounded">
+            error_code
+          </code>{' '}
+          分支处理：
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border">
             <thead>
               <tr className="bg-muted">
-                <th className="px-3 py-1.5 text-left font-medium">error_code</th>
+                <th className="px-3 py-1.5 text-left font-medium">
+                  error_code
+                </th>
                 <th className="px-3 py-1.5 text-left font-medium w-16">HTTP</th>
                 <th className="px-3 py-1.5 text-left font-medium">含义</th>
               </tr>
@@ -228,7 +264,9 @@ export default async function AboutPage() {
                 <tr key={ec.code}>
                   <td className="px-3 py-1.5 font-mono">{ec.code}</td>
                   <td className="px-3 py-1.5">{ec.http}</td>
-                  <td className="px-3 py-1.5 text-muted-foreground">{ec.desc}</td>
+                  <td className="px-3 py-1.5 text-muted-foreground">
+                    {ec.desc}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -236,7 +274,7 @@ export default async function AboutPage() {
         </div>
         <div className="rounded-md border bg-muted/30 px-3 py-2">
           <pre className="text-xs font-mono text-muted-foreground overflow-x-auto">
-{`const result = await savePost(formData);
+            {`const result = await savePost(formData);
 if (result.error_code === 'RATE_LIMITED') { /* 等待后重试 */ }
 if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
           </pre>
@@ -251,7 +289,8 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
         </h2>
         <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
           <p>
-            文章编辑器内置 AI 辅助功能，可一键生成摘要和推荐标签。兼容 OpenAI API，支持任意兼容的模型服务。
+            文章编辑器内置 AI 辅助功能，可一键生成摘要和推荐标签。兼容 OpenAI
+            API，支持任意兼容的模型服务。
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>
@@ -260,7 +299,8 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
             </li>
             <li>
               <span className="font-medium text-foreground">标签推荐</span> —
-              分析文章主题输出 4 个主标签 + 6 个备选标签，匹配站点常用标签的自动填入。
+              分析文章主题输出 4 个主标签 + 6
+              个备选标签，匹配站点常用标签的自动填入。
             </li>
           </ul>
           <p>
@@ -281,8 +321,12 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
               key={item.label}
               className="flex items-center justify-between px-3 py-2 rounded-md border bg-card"
             >
-              <span className="text-muted-foreground text-xs">{item.label}</span>
-              <span className="text-xs font-medium text-right ml-2">{item.value}</span>
+              <span className="text-muted-foreground text-xs">
+                {item.label}
+              </span>
+              <span className="text-xs font-medium text-right ml-2">
+                {item.value}
+              </span>
             </div>
           ))}
         </div>
@@ -293,7 +337,8 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
         <h2 className="text-lg font-semibold">缓存与性能</h2>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-1.5">
           <p>
-            为缓解 Supabase Free Tier 冷启动延迟，公开页面启用 ISR（增量静态再生成）：
+            为缓解 Supabase Free Tier 冷启动延迟，公开页面启用
+            ISR（增量静态再生成）：
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-xs border">
@@ -311,7 +356,9 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
                   <td className="px-3 py-1.5">revalidate = 300</td>
                 </tr>
                 <tr>
-                  <td className="px-3 py-1.5 font-mono">文章详情 /posts/[slug]</td>
+                  <td className="px-3 py-1.5 font-mono">
+                    文章详情 /posts/[slug]
+                  </td>
                   <td className="px-3 py-1.5">5 分钟</td>
                   <td className="px-3 py-1.5">revalidate = 300</td>
                 </tr>
@@ -325,8 +372,11 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }`}
           </div>
           <p>
             发布或修改文章后，
-            <code className="font-mono text-xs bg-muted px-1 rounded">revalidatePath</code>{' '}
-            自动清除相关缓存。点赞与评论通过 Server Actions + 乐观 UI 处理，不受服务端缓存影响。
+            <code className="font-mono text-xs bg-muted px-1 rounded">
+              revalidatePath
+            </code>{' '}
+            自动清除相关缓存。点赞与评论通过 Server Actions + 乐观 UI
+            处理，不受服务端缓存影响。
           </p>
         </div>
       </section>

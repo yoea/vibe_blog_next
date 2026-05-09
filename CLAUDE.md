@@ -91,34 +91,34 @@ npm run deploy:local    # 本地构建 + 上传部署
 
 ### 路由结构
 
-| 路由分组  | 页面                                                                                                      |
-| --------- | --------------------------------------------------------------------------------------------------------- |
-| `(auth)/` | login, register, settings (需登录)                                                                        |
-| `(blog)/` | 首页, posts/[slug] (详情), posts/new, posts-edit/[slug], profile, tags, tags/[slug]                       |
-| `author/` | 作者列表, author/[authorId] (个人页 + 留言板)                                                             |
-| 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                                 |
-| `admin/`  | archive (归档管理)                                                                                        |
+| 路由分组  | 页面                                                                                                                                           |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `(auth)/` | login, register, settings (需登录)                                                                                                             |
+| `(blog)/` | 首页, posts/[slug] (详情), posts/new, posts-edit/[slug], profile, tags, tags/[slug]                                                            |
+| `author/` | 作者列表, author/[authorId] (个人页 + 留言板)                                                                                                  |
+| 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                                                                      |
+| `admin/`  | archive (归档管理)                                                                                                                             |
 | `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats, check-deepseek-balance, test-ai-config |
-| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes, whoami（Bearer Token 认证，多密钥管理） |
+| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes, whoami（Bearer Token 认证，多密钥管理）                                                     |
 
 ### 目录结构 (src/)
 
-| 路径                         | 用途                                                  |
-| ---------------------------- | ----------------------------------------------------- |
-| `lib/supabase/client.ts`     | `createBrowserClient` — 浏览器端 (client components)  |
-| `lib/supabase/server.ts`     | `createServerClient` — 服务端组件 & Server Actions    |
-| `lib/supabase/admin.ts`      | Service Role 客户端 — 管理员操作 (列出用户、删除账号) |
-| `lib/supabase/middleware.ts` | `updateSession()` — 每个请求的 cookie 管理            |
-| `lib/actions/`               | Server Actions — 文章、评论、点赞、认证、设置等       |
+| 路径                         | 用途                                                          |
+| ---------------------------- | ------------------------------------------------------------- |
+| `lib/supabase/client.ts`     | `createBrowserClient` — 浏览器端 (client components)          |
+| `lib/supabase/server.ts`     | `createServerClient` — 服务端组件 & Server Actions            |
+| `lib/supabase/admin.ts`      | Service Role 客户端 — 管理员操作 (列出用户、删除账号)         |
+| `lib/supabase/middleware.ts` | `updateSession()` — 每个请求的 cookie 管理                    |
+| `lib/actions/`               | Server Actions — 文章、评论、点赞、认证、设置等               |
 | `lib/api/`                   | API 认证 Helper — `validateApiKey()` 返回 `{ userId, keyId }` |
-| `lib/db/`                    | 数据库查询 (queries.ts) 与类型定义 (types.ts)         |
-| `lib/utils/`                 | 工具函数 — 剪贴板、颜色、时间、频率限制、日志等       |
-| `lib/hooks/`                 | 客户端 hooks — 自动保存草稿                           |
-| `lib/ai-config.ts`           | AI 配置解析工具                                       |
-| `lib/utils.ts`               | 通用工具函数                                          |
-| `lib/build-info.ts`          | 构建元数据（版本、commit、时间等）                    |
-| `lib/constants.ts`           | 常量定义                                              |
-| `lib/site-url.ts`            | 站点 URL 解析工具                                     |
+| `lib/db/`                    | 数据库查询 (queries.ts) 与类型定义 (types.ts)                 |
+| `lib/utils/`                 | 工具函数 — 剪贴板、颜色、时间、频率限制、日志等               |
+| `lib/hooks/`                 | 客户端 hooks — 自动保存草稿                                   |
+| `lib/ai-config.ts`           | AI 配置解析工具                                               |
+| `lib/utils.ts`               | 通用工具函数                                                  |
+| `lib/build-info.ts`          | 构建元数据（版本、commit、时间等）                            |
+| `lib/constants.ts`           | 常量定义                                                      |
+| `lib/site-url.ts`            | 站点 URL 解析工具                                             |
 
 ### 数据流
 
