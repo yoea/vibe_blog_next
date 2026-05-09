@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sun, Moon, SunMoon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -8,9 +8,12 @@ import { useTheme, type ThemeMode } from '@/components/layout/theme-provider';
 
 export function ThemeSection() {
   const { mode, setMode } = useTheme();
-  const [stickyHeader, setStickyHeader] = useState(
-    () => localStorage.getItem('header_sticky') === 'true',
-  );
+  const [stickyHeader, setStickyHeader] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStickyHeader(localStorage.getItem('header_sticky') === 'true');
+  }, []);
 
   return (
     <Card>
