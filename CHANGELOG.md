@@ -2,52 +2,64 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.11.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.1...v0.11.2) (2026-05-09)
-
-
-### 重构
-
-* 设置页面拆分为独立模块 ([0dc0654](https://git.ewing.top/yoea/vibe_blog_next/commit/0dc0654a654e15f2cd78dba0ae2d0e18d8318001))
-
-
-### 新功能
-
-* API Key 多密钥管理 ([4f3c4d8](https://git.ewing.top/yoea/vibe_blog_next/commit/4f3c4d826b009e71f8add84c5163c468321ed4e8))
-* API v1 新增 /whoami 端点，认证返回用户信息 ([d5b7d82](https://git.ewing.top/yoea/vibe_blog_next/commit/d5b7d826ea2ca6a0b3113ebc0797cc77b7ef00b8))
-
-
-### 文档
-
-* 更新 API 文档（whoami 端点、多密钥认证） ([379e9f5](https://git.ewing.top/yoea/vibe_blog_next/commit/379e9f5b9d29c1834cb7ca701a8818732912eedb))
-
-### [0.11.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.0...v0.11.1) (2026-05-09)
+### [0.11.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.2...v0.11.3) (2026-05-09)
 
 
 ### Bug 修复
 
-* 登录按钮增加 loading 反馈，修复 GitHub Release compare 链接域名 ([ee98e77](https://git.ewing.top/yoea/vibe_blog_next/commit/ee98e778d7f7808405ac35611cf604f79e15622f))
-
-## [0.11.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.10.0...v0.11.0) (2026-05-09)
+* 文章发布后跳转到详情页，savePost 返回 slug，增加 toast 提示 ([947b859](https://git.ewing.top/yoea/vibe_blog_next/commit/947b859c47267d642b207a930ed0c484b3220444))
+* 修复设置页 sticky header SSR hydration 不匹配 ([dc96351](https://git.ewing.top/yoea/vibe_blog_next/commit/dc9635180d4d86337426b80f245dd0c5081d5fda))
 
 
 ### 新功能
 
-* AI Agent 自发现文档 + 文档全面更新 + API KEY 交互优化 ([fa34e53](https://git.ewing.top/yoea/vibe_blog_next/commit/fa34e53b2186807913ff2e88e913f4c18544f048))
-* DeepSeek 余额查询 + 设置页分类整理 ([e2a8e1d](https://git.ewing.top/yoea/vibe_blog_next/commit/e2a8e1d1b32137fb106c79e4a3eeb6301b147733))
-* P2 写操作幂等键 + 评论区语义化 + 表单无障碍 ([2ff821d](https://git.ewing.top/yoea/vibe_blog_next/commit/2ff821d4a128b4757b6bfdb9026f63c1247d3716))
+* 登录成功 toast 显示跳转目标页面 ([1e2b6f1](https://git.ewing.top/yoea/vibe_blog_next/commit/1e2b6f1942701d487d04aa44a675e3c8eeef62ba))
 
 
 ### 文档
 
-* README 和设置页文案微调 ([eb68f00](https://git.ewing.top/yoea/vibe_blog_next/commit/eb68f009e8e44cb45cc8e4fb60a512c1c4422806))
+* 更新 CLAUDE.md/README.md/OpenAPI 文档 ([181353f](https://git.ewing.top/yoea/vibe_blog_next/commit/181353f7f031c9fbbd8d1930c60e1541a9745f29))
+* 更新关于页面，新增 AI Agent 友好/API/错误码章节 ([a5bb8a1](https://git.ewing.top/yoea/vibe_blog_next/commit/a5bb8a196022525dea67b8bbce92c9c5a4942a5d))
 
-## [0.10.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.9.0...v0.10.0) (2026-05-09)
+### [0.11.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.1...v0.11.2) (2026-05-09)
 
+### 重构
+
+- 设置页面拆分为独立模块 ([0dc0654](https://git.ewing.top/yoea/vibe_blog_next/commit/0dc0654a654e15f2cd78dba0ae2d0e18d8318001))
 
 ### 新功能
 
-* 错误码标准化 + Bot RESTful API + 本站API KEY交互重构 ([1361289](https://git.ewing.top/yoea/vibe_blog_next/commit/136128978bfbf884109e251734550e68f94c8b88))
-* 全站交互元素增加 data-testid + aria-label，面向 AI Agent 可操作性优化 ([62a2051](https://git.ewing.top/yoea/vibe_blog_next/commit/62a2051f11e6114abe9481dc85fc70954979c4db))
+- API Key 多密钥管理 ([4f3c4d8](https://git.ewing.top/yoea/vibe_blog_next/commit/4f3c4d826b009e71f8add84c5163c468321ed4e8))
+- API v1 新增 /whoami 端点，认证返回用户信息 ([d5b7d82](https://git.ewing.top/yoea/vibe_blog_next/commit/d5b7d826ea2ca6a0b3113ebc0797cc77b7ef00b8))
+
+### 文档
+
+- 更新 API 文档（whoami 端点、多密钥认证） ([379e9f5](https://git.ewing.top/yoea/vibe_blog_next/commit/379e9f5b9d29c1834cb7ca701a8818732912eedb))
+
+### [0.11.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.0...v0.11.1) (2026-05-09)
+
+### Bug 修复
+
+- 登录按钮增加 loading 反馈，修复 GitHub Release compare 链接域名 ([ee98e77](https://git.ewing.top/yoea/vibe_blog_next/commit/ee98e778d7f7808405ac35611cf604f79e15622f))
+
+## [0.11.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.10.0...v0.11.0) (2026-05-09)
+
+### 新功能
+
+- AI Agent 自发现文档 + 文档全面更新 + API KEY 交互优化 ([fa34e53](https://git.ewing.top/yoea/vibe_blog_next/commit/fa34e53b2186807913ff2e88e913f4c18544f048))
+- DeepSeek 余额查询 + 设置页分类整理 ([e2a8e1d](https://git.ewing.top/yoea/vibe_blog_next/commit/e2a8e1d1b32137fb106c79e4a3eeb6301b147733))
+- P2 写操作幂等键 + 评论区语义化 + 表单无障碍 ([2ff821d](https://git.ewing.top/yoea/vibe_blog_next/commit/2ff821d4a128b4757b6bfdb9026f63c1247d3716))
+
+### 文档
+
+- README 和设置页文案微调 ([eb68f00](https://git.ewing.top/yoea/vibe_blog_next/commit/eb68f009e8e44cb45cc8e4fb60a512c1c4422806))
+
+## [0.10.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.9.0...v0.10.0) (2026-05-09)
+
+### 新功能
+
+- 错误码标准化 + Bot RESTful API + 本站API KEY交互重构 ([1361289](https://git.ewing.top/yoea/vibe_blog_next/commit/136128978bfbf884109e251734550e68f94c8b88))
+- 全站交互元素增加 data-testid + aria-label，面向 AI Agent 可操作性优化 ([62a2051](https://git.ewing.top/yoea/vibe_blog_next/commit/62a2051f11e6114abe9481dc85fc70954979c4db))
 
 ## [0.9.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.8.0...v0.9.0) (2026-05-06)
 
