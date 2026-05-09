@@ -27,21 +27,23 @@
 | method | path | 说明 |
 |--------|------|------|
 | GET | `/api/v1/posts` | 文章列表 (query: page, pageSize) |
-| POST | `/api/v1/posts` | 创建文章 |
+| POST | `/api/v1/posts` | 创建文章（author_id 由 API key 自动确定） |
 | GET | `/api/v1/posts/{slug}` | 单篇文章 |
 | PUT | `/api/v1/posts/{slug}` | 更新文章 |
 | DELETE | `/api/v1/posts/{slug}` | 删除文章 |
-| POST | `/api/v1/posts/{slug}/comments` | 添加评论 |
+| POST | `/api/v1/posts/{slug}/comments` | 添加评论（author_id 由 API key 自动确定） |
 | DELETE | `/api/v1/comments/{id}` | 删除评论 |
 | POST | `/api/v1/posts/{slug}/like` | 切换点赞 |
+| GET | `/api/v1/whoami` | 获取当前 API key 拥有者的用户信息 |
 
-所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。持有 api_key 即拥有超级管理员权限。
+所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。每个管理员可生成多个独立密钥。
 
 ## 认证
 
-1. 登录网站 → 设置 → "本站API KEY" → 点击"立即生成"
-2. 弹窗显示完整 Key（ew- 开头），复制保存
+1. 登录网站 → 设置 → "本站API KEY" → 点击"生成密钥"
+2. 为密钥命名（可选），弹窗显示完整 Key（ew- 开头），复制保存
 3. 后续请求中携带: `Authorization: Bearer ew-xxxxxxxx`
+4. 可通过 `GET /api/v1/whoami` 验证密钥有效性并获取用户信息
 
 ## 错误码
 

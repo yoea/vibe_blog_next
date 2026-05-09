@@ -3,7 +3,7 @@
   "info": {
     "title": "字里行间 Blog API",
     "description": "AI Agent 编程访问接口。持有 api_key 即拥有超级管理员权限。",
-    "version": "0.10.0"
+    "version": "0.11.1"
   },
   "servers": [
     {
@@ -21,7 +21,7 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "在设置页 → 本站API KEY → 立即生成 获取密钥"
+        "description": "在设置页 → 本站API KEY → 生成密钥。每个管理员可管理多个独立密钥，author_id 由密钥自动确定。"
       }
     },
     "schemas": {
@@ -99,6 +99,16 @@
         "type": "object",
         "properties": {
           "liked": { "type": "boolean" }
+        }
+      },
+      "WhoAmI": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "email": { "type": "string", "nullable": true },
+          "displayName": { "type": "string", "nullable": true },
+          "avatarUrl": { "type": "string", "nullable": true },
+          "isAdmin": { "type": "boolean" }
         }
       },
       "ErrorCode": {
@@ -234,6 +244,15 @@
           "401": { "description": "未认证", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "文章不存在", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "500": { "description": "服务端错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/whoami": {
+      "get": {
+        "summary": "获取当前 API key 拥有者的用户信息",
+        "responses": {
+          "200": { "description": "成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/WhoAmI" } } } } } },
+          "401": { "description": "未认证", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     }

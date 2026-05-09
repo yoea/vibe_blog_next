@@ -91,15 +91,15 @@ npm run deploy:local    # 本地构建 + 上传部署
 
 ### 路由结构
 
-| 路由分组  | 页面                                                                                                   |
-| --------- | ------------------------------------------------------------------------------------------------------ |
-| `(auth)/` | login, register, settings (需登录)                                                                     |
-| `(blog)/` | 首页, posts/[slug] (详情), posts/new, posts-edit/[slug], profile, tags, tags/[slug]                    |
-| `author/` | 作者列表, author/[authorId] (个人页 + 留言板)                                                          |
-| 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                              |
-| `admin/`  | archive (归档管理)                                                                                     |
-| `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats |
-| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes（Bearer Token 认证，持有 api_key 即拥有超级管理员权限）|
+| 路由分组  | 页面                                                                                                      |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `(auth)/` | login, register, settings (需登录)                                                                        |
+| `(blog)/` | 首页, posts/[slug] (详情), posts/new, posts-edit/[slug], profile, tags, tags/[slug]                       |
+| `author/` | 作者列表, author/[authorId] (个人页 + 留言板)                                                             |
+| 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                                 |
+| `admin/`  | archive (归档管理)                                                                                        |
+| `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats    |
+| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes（Bearer Token 认证，持有 api_key 即拥有超级管理员权限） |
 
 ### 目录结构 (src/)
 
@@ -110,7 +110,7 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `lib/supabase/admin.ts`      | Service Role 客户端 — 管理员操作 (列出用户、删除账号) |
 | `lib/supabase/middleware.ts` | `updateSession()` — 每个请求的 cookie 管理            |
 | `lib/actions/`               | Server Actions — 文章、评论、点赞、认证、设置等       |
-| `lib/api/`                   | API 认证 Helper — `validateApiKey()`                   |
+| `lib/api/`                   | API 认证 Helper — `validateApiKey()`                  |
 | `lib/db/`                    | 数据库查询 (queries.ts) 与类型定义 (types.ts)         |
 | `lib/utils/`                 | 工具函数 — 剪贴板、颜色、时间、频率限制、日志等       |
 | `lib/hooks/`                 | 客户端 hooks — 自动保存草稿                           |
@@ -128,37 +128,42 @@ npm run deploy:local    # 本地构建 + 上传部署
 
 所有 Server Actions 和 API Routes 返回统一的错误码枚举 (`src/lib/db/types.ts`)：
 
-| error_code | 含义 | 触发条件 |
-|-----------|------|----------|
-| `UNAUTHORIZED` | 未登录 | 需要登录的操作被匿名访问 |
-| `FORBIDDEN` | 无权限 | 非作者删除文章、非管理员操作等 |
-| `NOT_FOUND` | 资源不存在 | 文章/评论/标签/留言 未找到 |
-| `VALIDATION` | 参数校验失败 | 空内容、超长度、格式错误 |
-| `RATE_LIMITED` | 频率限制 | 发布/评论/点赞 过于频繁 |
-| `CONFLICT` | 冲突 | 标签已存在等 |
-| `SERVER_ERROR` | 服务端错误 | 数据库异常、配置错误等 |
+| error_code     | 含义         | 触发条件                       |
+| -------------- | ------------ | ------------------------------ |
+| `UNAUTHORIZED` | 未登录       | 需要登录的操作被匿名访问       |
+| `FORBIDDEN`    | 无权限       | 非作者删除文章、非管理员操作等 |
+| `NOT_FOUND`    | 资源不存在   | 文章/评论/标签/留言 未找到     |
+| `VALIDATION`   | 参数校验失败 | 空内容、超长度、格式错误       |
+| `RATE_LIMITED` | 频率限制     | 发布/评论/点赞 过于频繁        |
+| `CONFLICT`     | 冲突         | 标签已存在等                   |
+| `SERVER_ERROR` | 服务端错误   | 数据库异常、配置错误等         |
 
 **使用示例**（AI Agent 可按 `error_code` 分支处理）：
+
 ```typescript
 const result = await savePost(formData);
-if (result.error_code === 'RATE_LIMITED') { /* 等待后重试 */ }
-if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }
+if (result.error_code === 'RATE_LIMITED') {
+  /* 等待后重试 */
+}
+if (result.error_code === 'UNAUTHORIZED') {
+  /* 重新登录 */
+}
 ```
 
 ### Bot RESTful API（`src/app/api/v1/`）
 
 提供基于 API Key 的编程访问接口，持有 `api_key` 即拥有超级管理员权限。
 
-| 方法 | 路径 | 功能 |
-|------|------|------|
-| `GET` | `/api/v1/posts` | 列出文章（分页：`?page=1&pageSize=10`） |
-| `GET` | `/api/v1/posts/:slug` | 获取单篇文章 |
-| `POST` | `/api/v1/posts` | 创建文章 |
-| `PUT` | `/api/v1/posts/:slug` | 更新文章 |
-| `DELETE` | `/api/v1/posts/:slug` | 删除文章 |
-| `POST` | `/api/v1/posts/:slug/comments` | 添加评论 |
-| `DELETE` | `/api/v1/comments/:id` | 删除评论 |
-| `POST` | `/api/v1/posts/:slug/like` | 切换点赞 |
+| 方法     | 路径                           | 功能                                    |
+| -------- | ------------------------------ | --------------------------------------- |
+| `GET`    | `/api/v1/posts`                | 列出文章（分页：`?page=1&pageSize=10`） |
+| `GET`    | `/api/v1/posts/:slug`          | 获取单篇文章                            |
+| `POST`   | `/api/v1/posts`                | 创建文章                                |
+| `PUT`    | `/api/v1/posts/:slug`          | 更新文章                                |
+| `DELETE` | `/api/v1/posts/:slug`          | 删除文章                                |
+| `POST`   | `/api/v1/posts/:slug/comments` | 添加评论                                |
+| `DELETE` | `/api/v1/comments/:id`         | 删除评论                                |
+| `POST`   | `/api/v1/posts/:slug/like`     | 切换点赞                                |
 
 **认证方式**：`Authorization: Bearer <api_key>`
 
@@ -168,10 +173,10 @@ if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }
 
 ### AI Agent 自发现文档
 
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| `public/llms.txt` | `/llms.txt` | 站点说明书：页面结构、data-testid 约定、API 端点列表、错误码枚举、认证方式 |
-| `public/api/v1/openapi.json` | `/api/v1/openapi.json` | OpenAPI 3.0 规范：所有 v1 端点的请求/响应 schema、认证 scheme |
+| 文件                         | 路径                   | 用途                                                                       |
+| ---------------------------- | ---------------------- | -------------------------------------------------------------------------- |
+| `public/llms.txt`            | `/llms.txt`            | 站点说明书：页面结构、data-testid 约定、API 端点列表、错误码枚举、认证方式 |
+| `public/api/v1/openapi.json` | `/api/v1/openapi.json` | OpenAPI 3.0 规范：所有 v1 端点的请求/响应 schema、认证 scheme              |
 
 > AI Agent 不会自动发现这些文件，需要在系统提示中告知 Agent 先读取 `/llms.txt`。
 
