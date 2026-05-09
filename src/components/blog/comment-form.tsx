@@ -57,7 +57,7 @@ export function CommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-2" data-testid="comment-form">
       {replyTo && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
@@ -66,6 +66,7 @@ export function CommentForm({
           <button
             type="button"
             onClick={onCancelReply}
+            data-testid="comment-cancel-reply"
             className="text-primary hover:underline"
           >
             取消回复
@@ -74,10 +75,11 @@ export function CommentForm({
       )}
       {!currentUserId && (
         <div className="space-y-1">
-          <label className="text-[11px] text-muted-foreground">
+          <label htmlFor="guest-name" className="text-[11px] text-muted-foreground">
             昵称（设置后将自动保存）
           </label>
           <input
+            id="guest-name"
             type="text"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
@@ -87,6 +89,7 @@ export function CommentForm({
             }}
             placeholder="输入昵称（可选）"
             maxLength={50}
+            data-testid="comment-guest-name"
             className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-[16px] sm:text-xs focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -105,10 +108,11 @@ export function CommentForm({
         placeholder={replyTo ? `回复 ${replyTo.name}...` : '写下你的评论...'}
         rows={3}
         maxLength={MAX_COMMENT_LENGTH}
+        data-testid="comment-textarea"
       />
       <div className="flex items-center justify-between gap-2">
         {error ? (
-          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-sm text-destructive" data-testid="comment-error">{error}</p>
         ) : (
           <p className="hidden sm:block text-xs text-muted-foreground" suppressHydrationWarning>
             键入评论后按 {isMac ? 'Cmd' : 'Ctrl'}+Enter 发送
@@ -126,6 +130,7 @@ export function CommentForm({
               comment.trim().length > MAX_COMMENT_LENGTH
             }
             size="sm"
+            data-testid="comment-submit"
           >
             {submitting ? '提交中...' : replyTo ? '回复' : '发表'}
           </Button>

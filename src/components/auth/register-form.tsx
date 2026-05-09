@@ -101,6 +101,7 @@ export function RegisterForm() {
             variant="outline"
             onClick={() => (window.location.href = '/login')}
             className="mt-2"
+            data-testid="register-go-login"
           >
             去登录
           </Button>
@@ -111,7 +112,7 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-6 max-w-sm">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" data-testid="register-form">
         <div className="space-y-2">
           <Label htmlFor="email">邮箱</Label>
           <Input
@@ -121,6 +122,7 @@ export function RegisterForm() {
             placeholder="you@example.com"
             required
             autoComplete="email"
+            data-testid="register-email"
           />
         </div>
 
@@ -136,11 +138,14 @@ export function RegisterForm() {
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="register-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? '隐藏密码' : '显示密码'}
+              data-testid="register-password-toggle"
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -198,11 +203,14 @@ export function RegisterForm() {
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="register-confirm-password"
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showConfirm ? '隐藏确认密码' : '显示确认密码'}
+              data-testid="register-confirm-toggle"
             >
               {showConfirm ? (
                 <EyeOff className="h-4 w-4" />
@@ -216,7 +224,7 @@ export function RegisterForm() {
           )}
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-destructive" data-testid="register-error">{error}</p>}
 
         <Button
           type="submit"
@@ -224,6 +232,7 @@ export function RegisterForm() {
             loading || password.length < 8 || password !== confirmPassword
           }
           className="w-full"
+          data-testid="register-submit"
         >
           {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {loading ? '注册中...' : '注册'}

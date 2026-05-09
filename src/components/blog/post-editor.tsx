@@ -342,6 +342,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
         method="post"
         className="flex flex-col flex-1 gap-4 min-h-0"
         noValidate
+        data-testid="post-editor-form"
       >
         {isEditing && <input type="hidden" name="_mode" value="update" />}
         {isEditing && <input type="hidden" name="_id" value={initialData.id} />}
@@ -357,6 +358,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="文章标题"
+              data-testid="post-title"
               className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -391,6 +393,8 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                       ? 'text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary cursor-pointer'
                       : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
+                aria-label="AI 生成摘要"
+                data-testid="ai-generate-summary"
                 title={
                   summaryCooldown
                     ? '冷却中，请稍后再试'
@@ -456,6 +460,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               placeholder="一句话概括文章..."
               maxLength={SUMMARY_MAX_LENGTH}
               rows={3}
+              data-testid="post-excerpt"
               className="w-full px-3 py-2 rounded-md border bg-transparent text-[16px] sm:text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
             <p className="absolute bottom-2 right-3 text-xs text-muted-foreground pointer-events-none select-none">
@@ -484,6 +489,8 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                       ? 'text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary cursor-pointer'
                       : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
+                aria-label="AI 推荐标签"
+                data-testid="ai-generate-tags"
                 title={
                   tagCooldown
                     ? '冷却中，请稍后再试'
@@ -543,6 +550,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                       type="button"
                       onClick={() => addTag(tag.name)}
                       disabled={tags.length >= 7}
+                      data-testid={`suggested-tag-${tag.slug}`}
                       className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
                         color: tag.color ?? '#3B82F6',
@@ -565,6 +573,8 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                   type="button"
                   onClick={() => setTags(tags.filter((_, j) => j !== i))}
                   className="hover:text-destructive transition-colors cursor-pointer"
+                  aria-label={`移除标签 ${tag}`}
+                  data-testid={`remove-tag-${tag}`}
                 >
                   ×
                 </button>
@@ -586,6 +596,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                   }
                 }}
                 placeholder={tags.length === 0 ? '添加标签...' : ''}
+                data-testid="post-tag-input"
                 className="flex-1 min-w-[80px] bg-transparent text-base sm:text-sm focus:outline-none"
               />
             )}
@@ -604,6 +615,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                     setAiAlternative((prev) => prev.filter((t) => t !== tag));
                   }}
                   disabled={tags.includes(tag) || tags.length >= 7}
+                  data-testid={`alternative-tag-${tag}`}
                   className="text-xs px-2 py-0.5 rounded border border-dashed text-muted-foreground hover:text-foreground hover:border-solid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {tag}
@@ -654,6 +666,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                 }}
                 maxLength={CONTENT_MAX_LENGTH}
                 placeholder="# 开始写作...\n支持 Markdown 语法"
+                data-testid="post-content"
                 className={`font-mono text-base md:text-sm p-4 w-full rounded-md border bg-muted/60 focus:outline-none focus:ring-2 overflow-hidden resize-none ${
                   contentLength >= CONTENT_MAX_ALERT
                     ? 'focus:ring-red-500 border-red-400'
@@ -664,6 +677,8 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                 type="button"
                 onClick={() => setFullscreen(true)}
                 className="absolute top-1.5 right-1.5 p-1.5 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors z-10"
+                aria-label="全屏编辑"
+                data-testid="editor-fullscreen-enter"
                 title="全屏编辑"
               >
                 <svg
@@ -719,6 +734,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               className="flex-1"
               disabled={publishSaving !== null}
               onClick={() => confirmPublish(false)}
+              data-testid="publish-private"
             >
               {publishSaving === 'private' ? '保存中...' : '自己可见'}
             </Button>
@@ -726,6 +742,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               className="flex-1"
               disabled={publishSaving !== null}
               onClick={() => confirmPublish(true)}
+              data-testid="publish-public"
             >
               {publishSaving === 'public' ? '保存中...' : '公开发布'}
             </Button>
@@ -765,6 +782,8 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
                 type="button"
                 onClick={() => setFullscreen(false)}
                 className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                aria-label="退出全屏"
+                data-testid="editor-fullscreen-exit"
                 title="退出全屏 (Esc)"
               >
                 <svg
@@ -821,7 +840,7 @@ function SubmitButton({ isEditing }: { isEditing: boolean }) {
       ? '保存修改'
       : '创建文章';
   return (
-    <Button type="submit" disabled={pending} size="sm">
+    <Button type="submit" disabled={pending} size="sm" data-testid="post-submit">
       {label}
     </Button>
   );
@@ -846,6 +865,8 @@ function Switch({
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label="切换编辑/预览"
+      data-testid="editor-switch-mode"
       onClick={() => onChange(!checked)}
       className={`relative ${width} ${height} rounded-full transition-colors cursor-pointer ${
         checked ? 'bg-primary' : 'bg-gray-300'

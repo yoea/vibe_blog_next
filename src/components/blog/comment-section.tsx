@@ -93,7 +93,7 @@ export function CommentSection({
   }, [focusSignal]);
 
   return (
-    <div id="comments" className="space-y-4 scroll-mt-20">
+    <div id="comments" className="space-y-4 scroll-mt-20" data-testid="comments-section">
       <CommentForm
         postId={postId}
         onSubmit={handleSubmit}
@@ -186,6 +186,7 @@ function LikeButton({
     <button
       onClick={handleLike}
       disabled={likeLoading}
+      data-testid="comment-like-btn"
       className={`flex items-center gap-1 text-xs transition-colors ${
         liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-400'
       }`}

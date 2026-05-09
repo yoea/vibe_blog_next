@@ -47,7 +47,7 @@ export function ShareDialog({ open, onOpenChange, url }: ShareDialogProps) {
             </div>
           </div>
 
-          <Button className="w-full gap-2" onClick={copyLink}>
+          <Button className="w-full gap-2" onClick={copyLink} data-testid="share-copy-btn">
             {copied ? (
               <Check className="h-4 w-4" />
             ) : (

@@ -30,7 +30,7 @@ export function Footer({
               </span>
             )}
           </p>
-          <nav className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground">
+          <nav className="flex items-center gap-2 text-[10px] sm:text-[11px] text-muted-foreground" aria-label="页脚导航" data-testid="footer-nav">
             {icpNumber && (
               <>
                 <a

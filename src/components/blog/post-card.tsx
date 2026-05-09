@@ -190,6 +190,7 @@ export function PostCard({
               size="sm"
               onClick={handleTogglePin}
               disabled={pinning}
+              data-testid="post-pin-btn"
             >
               {pinned ? (
                 <PinOff className="h-3.5 w-3.5" />
@@ -201,7 +202,7 @@ export function PostCard({
               </span>
             </Button>
             <Link href={`/posts-edit/${post.slug}`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" data-testid="post-edit-btn">
                 <Edit2 className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline ml-1">编辑</span>
               </Button>
@@ -211,6 +212,7 @@ export function PostCard({
               size="sm"
               className="text-destructive hover:text-destructive hover:bg-red-50"
               onClick={() => setShowConfirm(true)}
+              data-testid="post-delete-btn"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline ml-1">删除</span>
@@ -231,6 +233,7 @@ export function PostCard({
                 variant="outline"
                 onClick={() => setShowConfirm(false)}
                 disabled={isPending}
+                data-testid="post-delete-cancel"
               >
                 取消
               </Button>
@@ -238,6 +241,7 @@ export function PostCard({
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={isPending}
+                data-testid="post-delete-confirm"
               >
                 {isPending ? '删除中...' : '删除'}
               </Button>

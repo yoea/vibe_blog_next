@@ -77,6 +77,7 @@ export function Avatar({
       onClick={showPreview ? () => setPreviewOpen(true) : undefined}
       role={showPreview ? 'button' : undefined}
       tabIndex={showPreview ? 0 : undefined}
+      aria-label={showPreview ? '查看头像大图' : undefined}
       onKeyDown={
         showPreview
           ? (e) => {

@@ -139,6 +139,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
             {onReply && (
               <button
                 onClick={() => onReply(item.id)}
+                data-testid="thread-reply-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
@@ -149,6 +150,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
               (currentUserId && currentUserId === item.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
+                data-testid="thread-delete-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -210,6 +212,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
               variant="outline"
               onClick={() => setShowConfirm(false)}
               disabled={deleting}
+              data-testid="thread-delete-cancel"
             >
               取消
             </Button>
@@ -217,6 +220,7 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleting}
+              data-testid="thread-delete-confirm"
             >
               {deleting ? '删除中...' : '确认删除'}
             </Button>
@@ -299,6 +303,7 @@ function ReplyList<T extends ThreadedItem>({
           (collapsed ? (
             <button
               onClick={() => setCollapsed(false)}
+              data-testid="thread-expand-replies"
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors py-1"
             >
               <ChevronDown className="h-3.5 w-3.5" />
@@ -328,6 +333,7 @@ function ReplyList<T extends ThreadedItem>({
               ))}
               <button
                 onClick={() => setCollapsed(true)}
+                data-testid="thread-collapse-replies"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pb-1"
               >
                 <ChevronUp className="h-3.5 w-3.5" />
@@ -454,6 +460,7 @@ function ReplyItem<T extends ThreadedItem>({
             {onReply && (
               <button
                 onClick={() => onReply(reply.id)}
+                data-testid="thread-reply-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
@@ -464,6 +471,7 @@ function ReplyItem<T extends ThreadedItem>({
               (currentUserId && currentUserId === reply.author_id)) && (
               <button
                 onClick={() => setShowConfirm(true)}
+                data-testid="thread-delete-btn"
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -503,6 +511,7 @@ function ReplyItem<T extends ThreadedItem>({
               variant="outline"
               onClick={() => setShowConfirm(false)}
               disabled={deleting}
+              data-testid="thread-delete-cancel"
             >
               取消
             </Button>
@@ -510,6 +519,7 @@ function ReplyItem<T extends ThreadedItem>({
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleting}
+              data-testid="thread-delete-confirm"
             >
               {deleting ? '删除中...' : '确认删除'}
             </Button>

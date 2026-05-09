@@ -62,6 +62,7 @@ export function LikeButton({
       size="sm"
       onClick={handleToggle}
       disabled={isPending || !ip || !ready}
+      data-testid="post-like-btn"
       className={`gap-1.5 active:scale-95 transition-transform ${liked ? 'text-red-500 hover:text-red-600' : ''}`}
     >
       <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />

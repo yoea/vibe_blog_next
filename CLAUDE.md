@@ -1,10 +1,35 @@
 # CLAUDE.md
 
 为 Claude Code (claude.ai/code) 提供的项目指引。
+这是一个基于 Next.js + Supabase 的个人博客系统，设计目标是同时支持人类用户和 AI Agent（例如OpenClaw、Hermes-agent等基于 Playwright 的自动化 Agent）操作。
 
 ## 语言偏好
 
 - 使用简体中文回复。
+
+## 核心原则
+
+本项目从设计之初就面向 AI Agent 友好。
+在新增或修改功能时，必须默认考虑：
+- 人类用户通过 UI 使用系统
+- AI Agent 可能通过 UI 自动化或 API 使用系统
+
+### UI 规范（面向 Agent 的可操作 UI）
+
+#### 所有 UI 必须具备机器可识别能力：
+
+- 所有交互元素必须包含 data-testid
+- 仅图标按钮必须提供 aria-label
+- 使用语义化 HTML（如 button、nav、main、section）
+- 避免模糊或动态生成的选择器
+
+#### 每个页面必须具备清晰的层级结构：
+- header（头部）
+- navigation（导航）
+- content area（内容区）
+- editor area（编辑区，如适用）
+- 避免深层嵌套或不稳定的 DOM 结构
+- 保持关键区域结构稳定，便于自动化操作
 
 ## 常用命令
 

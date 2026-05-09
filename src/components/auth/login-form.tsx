@@ -72,7 +72,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   if (checking) return null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="login-form">
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium">
           邮箱
@@ -84,6 +84,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           placeholder="you@example.com"
           required
           autoComplete="email"
+          data-testid="login-email"
           className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
@@ -98,10 +99,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           required
           minLength={6}
           autoComplete="current-password"
+          data-testid="login-password"
           className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-destructive" data-testid="login-error">{error}</p>}
       <SubmitButton />
 
       <div className="relative my-4">
@@ -142,6 +144,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           }
         }}
         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#24292f] text-white rounded-md text-sm font-medium hover:bg-[#24292f]/90 transition-colors cursor-pointer"
+        data-testid="login-github"
       >
         <GitHubIcon className="h-4 w-4" />
         使用 GitHub 登录
@@ -156,6 +159,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
+      data-testid="login-submit"
       className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
     >
       {pending ? '登录中...' : '登录'}

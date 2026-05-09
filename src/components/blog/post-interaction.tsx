@@ -76,6 +76,7 @@ export function PostActionBar({
           variant="outline"
           size="sm"
           className="gap-1.5 cursor-pointer"
+          data-testid="post-comment-btn"
           onClick={() => {
             if (onCommentClick) {
               onCommentClick();
@@ -98,6 +99,7 @@ export function PostActionBar({
           className="gap-1.5 cursor-pointer"
           disabled={published === false}
           title={published === false ? '私密文章不可分享' : '分享'}
+          data-testid="post-share-btn"
           onClick={handleShareClick}
         >
           <Share2

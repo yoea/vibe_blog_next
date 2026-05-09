@@ -239,6 +239,7 @@ export function Header({
           <Link
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            data-testid="site-logo"
           >
             <img src="/logo.svg" alt={siteTitle} className="h-6 w-6" />
             <span className="font-bold text-lg">{siteTitle}</span>
@@ -253,7 +254,7 @@ export function Header({
         </div>
 
         {/* Desktop nav */}
-        <nav className="hidden sm:flex items-center gap-2">
+        <nav className="hidden sm:flex items-center gap-2" aria-label="主导航" data-testid="desktop-nav">
           {navLinks}
           {!isMaintenance && (
             <button
@@ -262,6 +263,7 @@ export function Header({
               }
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
               title={`搜索 (${isMac ? '⌘K' : 'Ctrl+K'})`}
+              data-testid="desktop-search-btn"
             >
               <Search className="h-4 w-4" />
               <span>搜索</span>
@@ -272,6 +274,7 @@ export function Header({
             className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
             title={themeLabel}
             aria-label={themeLabel}
+            data-testid="theme-toggle"
           >
             <ThemeIcon className="h-4 w-4" />
           </button>
@@ -285,7 +288,8 @@ export function Header({
                 document.dispatchEvent(new CustomEvent('open-command-palette'))
               }
               className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
-              title="搜索"
+              aria-label="搜索"
+              data-testid="mobile-search-btn"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -295,6 +299,7 @@ export function Header({
             className="p-2 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
             title={themeLabel}
             aria-label={themeLabel}
+            data-testid="theme-toggle"
           >
             <ThemeIcon className="h-4 w-4" />
           </button>
@@ -303,6 +308,7 @@ export function Header({
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={menuOpen ? '关闭菜单' : '打开菜单'}
+              data-testid="mobile-menu-btn"
             >
               {menuOpen ? (
                 <X className="h-5 w-5" />
@@ -316,7 +322,7 @@ export function Header({
 
       {/* Mobile dropdown menu */}
       {menuOpen && !isMaintenance && (
-        <div className="sm:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-lg z-50 px-4 py-3 space-y-2">
+        <div className="sm:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-lg z-50 px-4 py-3 space-y-2" role="navigation" aria-label="移动端导航" data-testid="mobile-nav">
           {navLinks}
           <button
             onClick={() => {
