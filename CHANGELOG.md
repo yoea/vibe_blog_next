@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.1...v0.11.2) (2026-05-09)
+
+
+### 重构
+
+* 设置页面拆分为独立模块 ([0dc0654](https://git.ewing.top/yoea/vibe_blog_next/commit/0dc0654a654e15f2cd78dba0ae2d0e18d8318001))
+
+
+### 新功能
+
+* API Key 多密钥管理 ([4f3c4d8](https://git.ewing.top/yoea/vibe_blog_next/commit/4f3c4d826b009e71f8add84c5163c468321ed4e8))
+* API v1 新增 /whoami 端点，认证返回用户信息 ([d5b7d82](https://git.ewing.top/yoea/vibe_blog_next/commit/d5b7d826ea2ca6a0b3113ebc0797cc77b7ef00b8))
+
+
+### 文档
+
+* 更新 API 文档（whoami 端点、多密钥认证） ([379e9f5](https://git.ewing.top/yoea/vibe_blog_next/commit/379e9f5b9d29c1834cb7ca701a8818732912eedb))
+
 ### [0.11.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.0...v0.11.1) (2026-05-09)
 
 
