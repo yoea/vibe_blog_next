@@ -551,7 +551,6 @@ insert into site_config (key, value, description) values
   ('maintenance_mode', 'false', '维护模式开关'),
   ('ai_base_url', 'https://api.openai.com', 'AI API 基础地址'),
   ('ai_api_key', '', 'AI API 密钥'),
-  ('api_key', '', 'API 密钥（用于 AI Agent 编程访问，持有即拥有超级管理员权限）'),
   ('ai_model', 'gpt-4o-mini', 'AI 模型名称'),
   ('icp_number', '', 'ICP备案号'),
   ('icp_visible', 'false', '是否显示ICP备案号'),
@@ -564,6 +563,30 @@ do $$ begin
     for each row execute function update_updated_at_column();
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================
+-- API Keys（多管理员各自管理自己的 key）
+-- ============================================
+create table if not exists public.api_keys (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) on delete cascade not null,
+  name text not null default '默认密钥',
+  key_value text not null unique,
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz
+);
+
+alter table public.api_keys enable row level security;
+
+do $$ begin
+  create policy "manage_own_api_keys" on api_keys
+    for all using (auth.uid() = owner_id)
+    with check (auth.uid() = owner_id);
+exception when duplicate_object then null;
+end $$;
+
+create index if not exists idx_api_keys_owner on api_keys(owner_id);
+create index if not exists idx_api_keys_value on api_keys(key_value);
 
 -- ============================================
 -- Notifications（消息通知）
