@@ -1,6 +1,6 @@
 # 字里行间-博文
 
-基于 Next.js 16 + Supabase 的个人博客系统。
+一个专门为 AI Agent 操作优化开发的基于 Next.js 16 + Supabase 的个人博客系统。
 
 ## 仓库地址
 
@@ -174,7 +174,7 @@ pm2 resurrect                                  # 恢复保存的进程列表
 
 ### 快速开始
 
-AI Agent（Playwright、OpenClaw、Claude Code 等）可通过以下方式操作本网站：
+AI Agent（OpenClaw、Hermes-Agent、Claude Code 等）可通过以下方式操作本网站：
 
 **UI 自动化路径：** 所有交互元素均有 `data-testid` 和 `aria-label`，无需依赖 CSS 类名定位。
 
@@ -182,7 +182,7 @@ AI Agent（Playwright、OpenClaw、Claude Code 等）可通过以下方式操作
 
 ### 获取 API Key
 
-1. 登录 → 设置 → 本站API KEY → 立即生成
+1. 管理员登录 → 设置 → 本站API KEY → 立即生成
 2. 弹窗显示完整 Key（`ew-` 开头），复制保存
 3. 请求时携带：`Authorization: Bearer ew-xxxxxxxx`
 

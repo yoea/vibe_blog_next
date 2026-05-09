@@ -602,7 +602,7 @@ export function SettingsForm({
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="ai-base-url">API 地址</Label>
+                  <Label htmlFor="ai-base-url">Base Url</Label>
                   <Input
                     id="ai-base-url"
                     value={aiBaseUrl}
@@ -782,7 +782,7 @@ export function SettingsForm({
               </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-1.5">
-                  <Label htmlFor="ai-api-key">API 密钥</Label>
+                  <Label htmlFor="ai-api-key">大模型 API 密钥</Label>
                   <div className="relative">
                     <Input
                       id="ai-api-key"
@@ -851,7 +851,7 @@ export function SettingsForm({
                       onClick={() => fetchDsBalance(true)}
                       className="hover:text-foreground transition-colors cursor-pointer"
                     >
-                      查询失败，点击重试
+                      查询失败，请稍后重试
                     </button>
                   ) : null}
                 </p>
@@ -860,11 +860,11 @@ export function SettingsForm({
 
             <Separator />
 
-            {/* 本站 API KEY — 用于 AI Agent 编程访问 */}
+            {/* 本站 API KEY — 用于 AI Agent访问 */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">本站API KEY</h4>
+              <h4 className="text-sm font-medium">本站Api-Key</h4>
               <p className="text-xs text-muted-foreground -mt-1">
-                持有此 Key 即拥有超级管理员权限，可用于 AI Agent 通过 RESTful API 编程访问博客。
+                持有此 Key 可用于 AI Agent 通过 RESTful API 访问博客。
               </p>
 
               {apiKeyMasked ? (
