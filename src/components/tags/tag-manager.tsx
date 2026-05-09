@@ -14,12 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import {
-  Plus,
-  Trash2,
-  Hash,
-  TrendingUp,
-} from 'lucide-react';
+import { Plus, Trash2, Hash, TrendingUp } from 'lucide-react';
 import type { TagWithCreator } from '@/lib/db/queries';
 
 type SortKey = 'name' | 'post_count';
@@ -147,14 +142,14 @@ export function TagManager({
               <button
                 key={key}
                 onClick={() => setSortBy(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm sm:text-xs transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm sm:text-xs transition-colors cursor-pointer ${
                   sortBy === key
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-accent text-accent-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Icon className="h-4 w-4 sm:h-3 sm:w-3" />
-                <span>{label}</span>
+                <span className="hidden sm:inline">{label}</span>
               </button>
             ))}
           </div>

@@ -47,7 +47,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       } else {
         loggedIn = true;
         try {
-          toast.success("登录成功！");
+          toast.success('登录成功！');
           await onAuthChange();
         } catch {
           // onAuthChange 失败不影响登录流程，继续导航
@@ -72,7 +72,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   if (checking) return null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="login-form">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4"
+      data-testid="login-form"
+    >
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium">
           邮箱
@@ -103,7 +107,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
-      {error && <p className="text-sm text-destructive" data-testid="login-error">{error}</p>}
+      {error && (
+        <p className="text-sm text-destructive" data-testid="login-error">
+          {error}
+        </p>
+      )}
       <SubmitButton />
 
       <div className="relative my-4">

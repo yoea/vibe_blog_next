@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getNotificationsForUser } from '@/lib/db/queries';
+import { ErrorCode } from '@/lib/db/types';
 import type {
   ActionResult,
   Notification,
@@ -61,10 +62,11 @@ export async function getNotifications(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const result = await getNotificationsForUser(user.id, { page, pageSize: 5 });
-  if (result.error) return { error: result.error };
+  if (result.error)
+    return { error: result.error, error_code: ErrorCode.SERVER_ERROR };
   return { data: result.data, total: result.total };
 }
 
@@ -75,7 +77,7 @@ export async function markAsRead(ids: string[]): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { error } = await supabase
     .from('notifications')
@@ -84,7 +86,8 @@ export async function markAsRead(ids: string[]): Promise<ActionResult> {
     .in('id', ids)
     .eq('is_read', false);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   return {};
 }
 
@@ -93,7 +96,7 @@ export async function dismissNotification(id: string): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { error } = await supabase
     .from('notifications')
@@ -101,7 +104,8 @@ export async function dismissNotification(id: string): Promise<ActionResult> {
     .eq('id', id)
     .eq('recipient_id', user.id);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   return {};
 }
 
@@ -110,7 +114,7 @@ export async function markAllAsRead(): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { error } = await supabase
     .from('notifications')
@@ -119,7 +123,8 @@ export async function markAllAsRead(): Promise<ActionResult> {
     .eq('is_read', false)
     .eq('is_dismissed', false);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   return {};
 }
 
@@ -128,7 +133,7 @@ export async function dismissAllNotifications(): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { error } = await supabase
     .from('notifications')
@@ -136,7 +141,8 @@ export async function dismissAllNotifications(): Promise<ActionResult> {
     .eq('recipient_id', user.id)
     .eq('is_dismissed', false);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   return {};
 }
 
@@ -147,7 +153,7 @@ export async function getUnreadCount(): Promise<
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { count, error } = await supabase
     .from('notifications')
@@ -156,6 +162,7 @@ export async function getUnreadCount(): Promise<
     .eq('is_read', false)
     .eq('is_dismissed', false);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   return { count: count ?? 0 };
 }

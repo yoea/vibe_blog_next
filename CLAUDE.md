@@ -11,6 +11,7 @@
 
 本项目从设计之初就面向 AI Agent 友好。
 在新增或修改功能时，必须默认考虑：
+
 - 人类用户通过 UI 使用系统
 - AI Agent 可能通过 UI 自动化或 API 使用系统
 
@@ -24,6 +25,7 @@
 - 避免模糊或动态生成的选择器
 
 #### 每个页面必须具备清晰的层级结构：
+
 - header（头部）
 - navigation（导航）
 - content area（内容区）
@@ -97,6 +99,7 @@ npm run deploy:local    # 本地构建 + 上传部署
 | 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                              |
 | `admin/`  | archive (归档管理)                                                                                     |
 | `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats |
+| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes（Bearer Token 认证，持有 api_key 即拥有超级管理员权限）|
 
 ### 目录结构 (src/)
 
@@ -107,6 +110,7 @@ npm run deploy:local    # 本地构建 + 上传部署
 | `lib/supabase/admin.ts`      | Service Role 客户端 — 管理员操作 (列出用户、删除账号) |
 | `lib/supabase/middleware.ts` | `updateSession()` — 每个请求的 cookie 管理            |
 | `lib/actions/`               | Server Actions — 文章、评论、点赞、认证、设置等       |
+| `lib/api/`                   | API 认证 Helper — `validateApiKey()`                   |
 | `lib/db/`                    | 数据库查询 (queries.ts) 与类型定义 (types.ts)         |
 | `lib/utils/`                 | 工具函数 — 剪贴板、颜色、时间、频率限制、日志等       |
 | `lib/hooks/`                 | 客户端 hooks — 自动保存草稿                           |
@@ -117,8 +121,48 @@ npm run deploy:local    # 本地构建 + 上传部署
 ### 数据流
 
 1. **读取**: 服务端组件直接查询 Supabase, 将数据通过 props 传给客户端组件
-2. **写入**: Server Actions (`'use server'` in `src/lib/actions/`) 统一返回 `ActionResult = { error?: string }`
+2. **写入**: Server Actions (`'use server'` in `src/lib/actions/`) 统一返回 `ActionResult<T = {}> = T & { error?: string; error_code?: ErrorCode }`
 3. **缓存**: 公开页面用 `revalidate = 300`; 修改后调用 `revalidatePath()` 清除缓存
+
+### 错误码系统
+
+所有 Server Actions 和 API Routes 返回统一的错误码枚举 (`src/lib/db/types.ts`)：
+
+| error_code | 含义 | 触发条件 |
+|-----------|------|----------|
+| `UNAUTHORIZED` | 未登录 | 需要登录的操作被匿名访问 |
+| `FORBIDDEN` | 无权限 | 非作者删除文章、非管理员操作等 |
+| `NOT_FOUND` | 资源不存在 | 文章/评论/标签/留言 未找到 |
+| `VALIDATION` | 参数校验失败 | 空内容、超长度、格式错误 |
+| `RATE_LIMITED` | 频率限制 | 发布/评论/点赞 过于频繁 |
+| `CONFLICT` | 冲突 | 标签已存在等 |
+| `SERVER_ERROR` | 服务端错误 | 数据库异常、配置错误等 |
+
+**使用示例**（AI Agent 可按 `error_code` 分支处理）：
+```typescript
+const result = await savePost(formData);
+if (result.error_code === 'RATE_LIMITED') { /* 等待后重试 */ }
+if (result.error_code === 'UNAUTHORIZED') { /* 重新登录 */ }
+```
+
+### Bot RESTful API（`src/app/api/v1/`）
+
+提供基于 API Key 的编程访问接口，持有 `api_key` 即拥有超级管理员权限。
+
+| 方法 | 路径 | 功能 |
+|------|------|------|
+| `GET` | `/api/v1/posts` | 列出文章（分页：`?page=1&pageSize=10`） |
+| `GET` | `/api/v1/posts/:slug` | 获取单篇文章 |
+| `POST` | `/api/v1/posts` | 创建文章 |
+| `PUT` | `/api/v1/posts/:slug` | 更新文章 |
+| `DELETE` | `/api/v1/posts/:slug` | 删除文章 |
+| `POST` | `/api/v1/posts/:slug/comments` | 添加评论 |
+| `DELETE` | `/api/v1/comments/:id` | 删除评论 |
+| `POST` | `/api/v1/posts/:slug/like` | 切换点赞 |
+
+**认证方式**：`Authorization: Bearer <api_key>`
+
+**管理**：管理员在设置页 → "本站API KEY" → 点击"立即生成"获取密钥
 
 ### 关键设计模式
 
@@ -152,19 +196,19 @@ npm run deploy:local    # 本地构建 + 上传部署
 
 ## 环境变量
 
-| 变量                                   | 必填 | 范围          |
-| -------------------------------------- | ---- | ------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`             | 是   | 客户端+服务端 |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 是   | 客户端+服务端 |
-| `SUPABASE_SERVICE_ROLE_KEY`            | 是   | 仅服务端      |
-| `NEXT_PUBLIC_SITE_TITLE`               | 是   | 客户端+服务端 |
-| (副标题)                              | —    | 管理员在个人中心设置 MOTD，存入数据库 |
-| `NEXT_PUBLIC_BUILD_VERSION`            | 否   | 构建时注入    |
-| `NEXT_PUBLIC_BUILD_COMMIT`             | 否   | 构建时注入    |
-| `NEXT_PUBLIC_BUILD_COMMIT_COUNT`       | 否   | 构建时注入    |
-| `NEXT_PUBLIC_BUILD_CONTRIBUTORS`       | 否   | 构建时注入    |
-| `NEXT_PUBLIC_BUILD_TIME`               | 否   | 构建时注入    |
-| `NEXT_PUBLIC_BUILD_HOST`               | 否   | 构建时注入    |
+| 变量                                   | 必填 | 范围                                  |
+| -------------------------------------- | ---- | ------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | 是   | 客户端+服务端                         |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 是   | 客户端+服务端                         |
+| `SUPABASE_SERVICE_ROLE_KEY`            | 是   | 仅服务端                              |
+| `NEXT_PUBLIC_SITE_TITLE`               | 是   | 客户端+服务端                         |
+| (副标题)                               | —    | 管理员在个人中心设置 MOTD，存入数据库 |
+| `NEXT_PUBLIC_BUILD_VERSION`            | 否   | 构建时注入                            |
+| `NEXT_PUBLIC_BUILD_COMMIT`             | 否   | 构建时注入                            |
+| `NEXT_PUBLIC_BUILD_COMMIT_COUNT`       | 否   | 构建时注入                            |
+| `NEXT_PUBLIC_BUILD_CONTRIBUTORS`       | 否   | 构建时注入                            |
+| `NEXT_PUBLIC_BUILD_TIME`               | 否   | 构建时注入                            |
+| `NEXT_PUBLIC_BUILD_HOST`               | 否   | 构建时注入                            |
 
 > AI 配置（API Key、Base URL、Model）已迁移到数据库 `site_config` 表，通过管理后台设置页面管理，不再使用环境变量。
 

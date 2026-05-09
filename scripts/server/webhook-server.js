@@ -36,7 +36,6 @@ loadEnvFile();
 const SECRET = process.env.WEBHOOK_SECRET || null;
 const DEPLOY_DIR = process.env.SERVER_DIR || process.cwd();
 
-
 function pullOnly() {
   console.log('执行 git pull 拉取最新代码...');
   const proc = spawn(
@@ -68,13 +67,9 @@ function pullOnly() {
           env: { ...process.env },
         });
         hook.on('error', (err) =>
-          console.error(
-            `post-pull 钩子执行失败: ${err.message}`,
-          ),
+          console.error(`post-pull 钩子执行失败: ${err.message}`),
         );
-        hook.on('exit', (hc) =>
-          console.log(`post-pull 钩子退出 (exit ${hc})`),
-        );
+        hook.on('exit', (hc) => console.log(`post-pull 钩子退出 (exit ${hc})`));
       }
     } else {
       console.error(`git pull 失败 (exit ${code})`);
@@ -156,9 +151,7 @@ const server = http.createServer((req, res) => {
 
     // Tag 推送不再触发自动部署（已改为本地构建上传），仅记录日志
     if (isTagPush) {
-      console.log(
-        `Tag 推送: ${ref}（已改为本地部署，不触发自动构建）`,
-      );
+      console.log(`Tag 推送: ${ref}（已改为本地部署，不触发自动构建）`);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify({

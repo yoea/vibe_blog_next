@@ -4,7 +4,10 @@ import { useState, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Point, Area } from 'react-easy-crop';
 import browserImageCompression from 'browser-image-compression';
-import { uploadCoverImage, removeCoverImage } from '@/lib/actions/cover-actions';
+import {
+  uploadCoverImage,
+  removeCoverImage,
+} from '@/lib/actions/cover-actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -67,6 +70,7 @@ export function CoverImageUploader({
   const [croppedPixels, setCroppedPixels] = useState<Area | null>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
 
@@ -78,8 +82,8 @@ export function CoverImageUploader({
       toast.error('请选择图片文件');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('封面图不能超过 2MB');
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('封面图不能超过 20MB');
       return;
     }
 
@@ -156,30 +160,44 @@ export function CoverImageUploader({
       />
 
       {currentCoverUrl ? (
-        <div className="relative rounded-md overflow-hidden w-40 aspect-video bg-muted shrink-0">
-          <img
-            src={currentCoverUrl}
-            alt="文章封面"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 hover:opacity-100">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div
+            className="relative rounded-md overflow-hidden w-40 aspect-video bg-muted shrink-0 cursor-pointer"
+            onClick={() => setPreviewOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label="查看封面大图"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setPreviewOpen(true);
+            }}
+          >
+            <img
+              src={currentCoverUrl}
+              alt="文章封面"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
-              <ImagePlus className="h-3 w-3" />
+              <ImagePlus className="h-3.5 w-3.5" />
+              <span className="ml-1">替换封面</span>
             </Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="outline"
               size="sm"
+              className="text-destructive hover:text-destructive"
               onClick={handleRemove}
               disabled={removing}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="ml-1">移除封面</span>
             </Button>
           </div>
         </div>
@@ -201,6 +219,18 @@ export function CoverImageUploader({
       {uploading && (
         <p className="text-xs text-muted-foreground text-center">上传中...</p>
       )}
+
+      {/* Preview dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="sm:max-w-3xl p-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={currentCoverUrl!}
+            alt="文章封面"
+            className="object-contain rounded-lg max-h-[80vh] w-full h-auto"
+          />
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={cropOpen} onOpenChange={setCropOpen}>
         <DialogContent className="max-w-2xl">

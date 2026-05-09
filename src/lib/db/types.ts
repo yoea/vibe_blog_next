@@ -85,8 +85,24 @@ export interface GuestbookMessageWithAuthor extends GuestbookMessage {
   replies?: GuestbookMessageWithAuthor[];
 }
 
+/** 错误码枚举 — 供 AI Agent / 客户端代码按类别判断错误类型 */
+export const ErrorCode = {
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  VALIDATION: 'VALIDATION',
+  RATE_LIMITED: 'RATE_LIMITED',
+  CONFLICT: 'CONFLICT',
+  SERVER_ERROR: 'SERVER_ERROR',
+} as const;
+
+export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+
 /** Base result type for server actions — { error?: string } on failure, {} on success */
-export type ActionResult = { error?: string };
+export type ActionResult<T = {}> = T & {
+  error?: string;
+  error_code?: ErrorCode;
+};
 
 /** Extended post data for the editor, includes cloud draft if one exists */
 export interface PostEditorData extends Post {

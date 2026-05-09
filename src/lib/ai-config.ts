@@ -73,8 +73,7 @@ export async function testAIConnection(config: AIConfig): Promise<{
       }
       return { success: false, error: 'API 返回了空响应' };
     } catch (chatErr: unknown) {
-      const message =
-        chatErr instanceof Error ? chatErr.message : '未知错误';
+      const message = chatErr instanceof Error ? chatErr.message : '未知错误';
       return { success: false, error: message };
     }
   }

@@ -4,59 +4,51 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.9.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.8.0...v0.9.0) (2026-05-06)
 
-
 ### Bug 修复
 
-* 登录错误移除重复的 toast 提示 ([29c6fb2](https://git.ewing.top/yoea/vibe_blog_next/commit/29c6fb239485ca875679fe4fbe37b6b68d520389))
-* 修复命令面板滚动和布局问题 ([aaef4dd](https://git.ewing.top/yoea/vibe_blog_next/commit/aaef4dd2450a2faa8205a9253f36283b3ececf56))
-* 移动端隐藏评论表单的 Ctrl+Enter 提示 ([5911784](https://git.ewing.top/yoea/vibe_blog_next/commit/59117845056226e31cb94078c30f29caa142a601))
-
+- 登录错误移除重复的 toast 提示 ([29c6fb2](https://git.ewing.top/yoea/vibe_blog_next/commit/29c6fb239485ca875679fe4fbe37b6b68d520389))
+- 修复命令面板滚动和布局问题 ([aaef4dd](https://git.ewing.top/yoea/vibe_blog_next/commit/aaef4dd2450a2faa8205a9253f36283b3ececf56))
+- 移动端隐藏评论表单的 Ctrl+Enter 提示 ([5911784](https://git.ewing.top/yoea/vibe_blog_next/commit/59117845056226e31cb94078c30f29caa142a601))
 
 ### 新功能
 
-* 首页文章改为每次加载5篇 ([4254622](https://git.ewing.top/yoea/vibe_blog_next/commit/4254622f26cafd7aa2028d150389ce8fcebe2e5e))
-* 文章封面图 + 全站OG标签 + UI优化 ([048f156](https://git.ewing.top/yoea/vibe_blog_next/commit/048f1569e2edbda7451bcf01df89785c8286019d))
-* 优化标签管理页面移动端体验 ([fe9e857](https://git.ewing.top/yoea/vibe_blog_next/commit/fe9e857b52abc51473cacf44b062efed17bba570))
-* 优化网站地图移动端样式 ([47ee05e](https://git.ewing.top/yoea/vibe_blog_next/commit/47ee05e9d2be9c02382172ae7b7bc9b70a2bd5ff))
+- 首页文章改为每次加载5篇 ([4254622](https://git.ewing.top/yoea/vibe_blog_next/commit/4254622f26cafd7aa2028d150389ce8fcebe2e5e))
+- 文章封面图 + 全站OG标签 + UI优化 ([048f156](https://git.ewing.top/yoea/vibe_blog_next/commit/048f1569e2edbda7451bcf01df89785c8286019d))
+- 优化标签管理页面移动端体验 ([fe9e857](https://git.ewing.top/yoea/vibe_blog_next/commit/fe9e857b52abc51473cacf44b062efed17bba570))
+- 优化网站地图移动端样式 ([47ee05e](https://git.ewing.top/yoea/vibe_blog_next/commit/47ee05e9d2be9c02382172ae7b7bc9b70a2bd5ff))
 
 ## [0.8.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.7.0...v0.8.0) (2026-05-03)
 
-
 ### Bug 修复
 
-* 部署通知弹窗版本号取消默认选中，GitHub 图标改为黑白随主题 ([555bce6](https://git.ewing.top/yoea/vibe_blog_next/commit/555bce6fd9913695ab091ac0d473f945b744a92a))
-* 评论按钮自动滚动到输入框并聚焦，防导航栏遮挡 ([f1beac9](https://git.ewing.top/yoea/vibe_blog_next/commit/f1beac9e259f6931870b25afbfaab2d8df444fe5))
-* 评论输入框滚动到导航栏后方的问题 ([52e0b9d](https://git.ewing.top/yoea/vibe_blog_next/commit/52e0b9dea0c8e2a08886853df215937010d94c34))
-* 手机端文章编辑页布局优化 ([f85d4a9](https://git.ewing.top/yoea/vibe_blog_next/commit/f85d4a9f6d049834e413b108fd5135bdd44bdac2))
-* 首页和标签页底部"已加载全部"文案改为显示文章总数 ([eeda467](https://git.ewing.top/yoea/vibe_blog_next/commit/eeda4672854b168977f2e0923b5fca7a5a465d7b))
-
+- 部署通知弹窗版本号取消默认选中，GitHub 图标改为黑白随主题 ([555bce6](https://git.ewing.top/yoea/vibe_blog_next/commit/555bce6fd9913695ab091ac0d473f945b744a92a))
+- 评论按钮自动滚动到输入框并聚焦，防导航栏遮挡 ([f1beac9](https://git.ewing.top/yoea/vibe_blog_next/commit/f1beac9e259f6931870b25afbfaab2d8df444fe5))
+- 评论输入框滚动到导航栏后方的问题 ([52e0b9d](https://git.ewing.top/yoea/vibe_blog_next/commit/52e0b9dea0c8e2a08886853df215937010d94c34))
+- 手机端文章编辑页布局优化 ([f85d4a9](https://git.ewing.top/yoea/vibe_blog_next/commit/f85d4a9f6d049834e413b108fd5135bdd44bdac2))
+- 首页和标签页底部"已加载全部"文案改为显示文章总数 ([eeda467](https://git.ewing.top/yoea/vibe_blog_next/commit/eeda4672854b168977f2e0923b5fca7a5a465d7b))
 
 ### 重构
 
-* 弃用 NEXT_PUBLIC_SITE_DESCRIPTION，副标题改用管理员 MOTD ([db51586](https://git.ewing.top/yoea/vibe_blog_next/commit/db51586de11a8d8d2ffe3ea377efb1a8f3669926))
-
+- 弃用 NEXT_PUBLIC_SITE_DESCRIPTION，副标题改用管理员 MOTD ([db51586](https://git.ewing.top/yoea/vibe_blog_next/commit/db51586de11a8d8d2ffe3ea377efb1a8f3669926))
 
 ### 新功能
 
-* 集成 OpenAI SDK，重构 AI 生成 + 配置测试连接 + 模型列表持久化 ([18bffbe](https://git.ewing.top/yoea/vibe_blog_next/commit/18bffbef8380f4d198b506c2db2f09860f3acfaa))
-* 命令面板整合 sitemap 路由数据，自动生成导航命令 ([7aa9a24](https://git.ewing.top/yoea/vibe_blog_next/commit/7aa9a2401acc0f6f0c6736a38d8a2e6098fa8621))
-
+- 集成 OpenAI SDK，重构 AI 生成 + 配置测试连接 + 模型列表持久化 ([18bffbe](https://git.ewing.top/yoea/vibe_blog_next/commit/18bffbef8380f4d198b506c2db2f09860f3acfaa))
+- 命令面板整合 sitemap 路由数据，自动生成导航命令 ([7aa9a24](https://git.ewing.top/yoea/vibe_blog_next/commit/7aa9a2401acc0f6f0c6736a38d8a2e6098fa8621))
 
 ### 其他变更
 
-* webhook 日志移除手动时间戳，避免 PM2 自动时间戳重复 ([a0f2376](https://git.ewing.top/yoea/vibe_blog_next/commit/a0f237632911a7304ea35059144beb7b1706c3c6))
+- webhook 日志移除手动时间戳，避免 PM2 自动时间戳重复 ([a0f2376](https://git.ewing.top/yoea/vibe_blog_next/commit/a0f237632911a7304ea35059144beb7b1706c3c6))
 
 ## [0.7.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.6.0...v0.7.0) (2026-05-02)
 
-
 ### Bug 修复
 
-* 改进登录流程、标签生成、加载更多和归档管理页面 ([42ca2d3](https://git.ewing.top/yoea/vibe_blog_next/commit/42ca2d3aed52e6a03b8c865f6afc576346e5303f))
-
+- 改进登录流程、标签生成、加载更多和归档管理页面 ([42ca2d3](https://git.ewing.top/yoea/vibe_blog_next/commit/42ca2d3aed52e6a03b8c865f6afc576346e5303f))
 
 ### 新功能
 
-* 发布模态框、MOTD 迁移至用户设置、私密文章友好提示及多项 UI 优化 ([7d1325f](https://git.ewing.top/yoea/vibe_blog_next/commit/7d1325ff7a5eeac356751a1e3f7ca9c6d56f73bf))
+- 发布模态框、MOTD 迁移至用户设置、私密文章友好提示及多项 UI 优化 ([7d1325f](https://git.ewing.top/yoea/vibe_blog_next/commit/7d1325ff7a5eeac356751a1e3f7ca9c6d56f73bf))
 
 ## [0.6.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.5.4...v0.6.0) (2026-05-02)
 

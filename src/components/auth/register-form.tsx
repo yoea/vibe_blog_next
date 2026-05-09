@@ -88,15 +88,13 @@ export function RegisterForm() {
             <CheckCircle className="h-5 w-5 text-green-600" />
             注册成功！
           </p>
-          <p className="text-sm text-green-700">
-            您现在可以直接登录。
-          </p>
+          <p className="text-sm text-green-700">您现在可以直接登录。</p>
           <p className="text-sm text-green-700">
             如果无法登录，请检查邮箱完成验证后即可登录。
           </p>
           <p className="text-sm text-green-700">
             若未收到邮件，请联系网站管理员。
-            </p>
+          </p>
           <Button
             variant="outline"
             onClick={() => (window.location.href = '/login')}
@@ -112,7 +110,11 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-6 max-w-sm">
-      <form onSubmit={handleSubmit} className="space-y-4" data-testid="register-form">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        data-testid="register-form"
+      >
         <div className="space-y-2">
           <Label htmlFor="email">邮箱</Label>
           <Input
@@ -224,7 +226,11 @@ export function RegisterForm() {
           )}
         </div>
 
-        {error && <p className="text-sm text-destructive" data-testid="register-error">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive" data-testid="register-error">
+            {error}
+          </p>
+        )}
 
         <Button
           type="submit"

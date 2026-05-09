@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function updateUserSettings(
@@ -12,7 +13,7 @@ export async function updateUserSettings(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const updateData: Record<string, unknown> = {
     user_id: user.id,
@@ -26,7 +27,8 @@ export async function updateUserSettings(
     .from('user_settings')
     .upsert(updateData, { onConflict: 'user_id' });
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   revalidatePath('/settings');
   return {};
 }

@@ -8,7 +8,11 @@ export interface BreadcrumbItem {
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground overflow-hidden whitespace-nowrap" aria-label="面包屑导航" data-testid="breadcrumb">
+    <nav
+      className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground overflow-hidden whitespace-nowrap"
+      aria-label="面包屑导航"
+      data-testid="breadcrumb"
+    >
       {items.map((item, i) => (
         <span key={i} className="flex items-center gap-1 shrink-0">
           {i > 0 && (

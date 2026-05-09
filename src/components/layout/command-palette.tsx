@@ -181,43 +181,41 @@ export function CommandPalette() {
     '/login': 'anon',
   };
 
-  const commands: CommandDef[] = useMemo(
-    () => {
-      const seen = new Set<string>();
-      const list: CommandDef[] = [
-        {
-          id: 'home',
-          label: '首页',
-          icon: Home,
-          group: '导航',
-          action: () => router.push('/'),
-        },
-      ];
-      seen.add('/');
+  const commands: CommandDef[] = useMemo(() => {
+    const seen = new Set<string>();
+    const list: CommandDef[] = [
+      {
+        id: 'home',
+        label: '首页',
+        icon: Home,
+        group: '导航',
+        action: () => router.push('/'),
+      },
+    ];
+    seen.add('/');
 
-      for (const route of sitemapRoutes) {
-        if (seen.has(route.path)) continue;
-        if (route.path === '/') continue;
-        // 跳过不可索引的非管理页（如维护页）
-        if (route.indexable === false && !route.path.startsWith('/admin')) continue;
-        seen.add(route.path);
+    for (const route of sitemapRoutes) {
+      if (seen.has(route.path)) continue;
+      if (route.path === '/') continue;
+      // 跳过不可索引的非管理页（如维护页）
+      if (route.indexable === false && !route.path.startsWith('/admin'))
+        continue;
+      seen.add(route.path);
 
-        const authType = routeAuthMap[route.path] ?? null;
-        list.push({
-          id: `route:${route.path}`,
-          label: route.title,
-          icon: routeIconMap[route.path] ?? FileText,
-          group: '导航',
-          requiresAuth: authType === 'auth',
-          requiresAnon: authType === 'anon',
-          action: () => router.push(route.path),
-        });
-      }
+      const authType = routeAuthMap[route.path] ?? null;
+      list.push({
+        id: `route:${route.path}`,
+        label: route.title,
+        icon: routeIconMap[route.path] ?? FileText,
+        group: '导航',
+        requiresAuth: authType === 'auth',
+        requiresAnon: authType === 'anon',
+        action: () => router.push(route.path),
+      });
+    }
 
-      return list;
-    },
-    [router],
-  );
+    return list;
+  }, [router]);
 
   // 过滤 + 排序
   const visible = useMemo(() => {

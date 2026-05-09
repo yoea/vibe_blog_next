@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 async function getClientIp(): Promise<string> {
@@ -33,7 +34,11 @@ export async function toggleLike(
 
   if (user) {
     const { allowed } = await checkUserRateLimit(user.id, 'post_likes', 20, 1);
-    if (!allowed) return { error: '操作过于频繁，请稍后再试' };
+    if (!allowed)
+      return {
+        error: '操作过于频繁，请稍后再试',
+        error_code: ErrorCode.RATE_LIMITED,
+      };
 
     // Authenticated: track by user_id
     const { data: existing } = await supabase
@@ -49,12 +54,14 @@ export async function toggleLike(
         .delete()
         .eq('post_id', postId)
         .eq('user_id', user.id);
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
     } else {
       const { error } = await supabase
         .from('post_likes')
         .insert({ post_id: postId, user_id: user.id });
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
       // 插入通知（跳过自己给自己点赞）
       if (post && post.author_id !== user.id) {
@@ -78,10 +85,15 @@ export async function toggleLike(
   } else {
     // Unauthenticated: track by IP
     const ip = clientIp ?? (await getClientIp());
-    if (ip === 'unknown') return { error: '无法获取IP' };
+    if (ip === 'unknown')
+      return { error: '无法获取IP', error_code: ErrorCode.SERVER_ERROR };
 
     const { allowed } = await checkIpRateLimit(ip, 'post_likes', 10, 60);
-    if (!allowed) return { error: '操作过于频繁，请稍后再试' };
+    if (!allowed)
+      return {
+        error: '操作过于频繁，请稍后再试',
+        error_code: ErrorCode.RATE_LIMITED,
+      };
 
     const { data: existing } = await supabase
       .from('post_likes')
@@ -96,12 +108,14 @@ export async function toggleLike(
         .delete()
         .eq('post_id', postId)
         .eq('ip', ip);
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
     } else {
       const { error } = await supabase
         .from('post_likes')
         .insert({ post_id: postId, ip });
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
       // 匿名点赞也插入通知
       if (post) {

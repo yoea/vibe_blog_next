@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -14,16 +15,19 @@ export async function uploadAvatar(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const file = formData.get('avatar') as File;
-  if (!file) return { error: '未选择文件' };
+  if (!file) return { error: '未选择文件', error_code: ErrorCode.VALIDATION };
 
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return { error: '仅支持 JPG, PNG, WebP 格式' };
+    return {
+      error: '仅支持 JPG, PNG, WebP 格式',
+      error_code: ErrorCode.VALIDATION,
+    };
   }
   if (file.size > MAX_FILE_SIZE) {
-    return { error: '文件大小不能超过 20MB' };
+    return { error: '文件大小不能超过 20MB', error_code: ErrorCode.VALIDATION };
   }
 
   const bytes = await file.arrayBuffer();
@@ -49,7 +53,11 @@ export async function uploadAvatar(
     .from('avatars')
     .upload(fileName, bytes, { contentType: file.type });
 
-  if (uploadError) return { error: `上传失败: ${uploadError.message}` };
+  if (uploadError)
+    return {
+      error: `上传失败: ${uploadError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   const { data: urlData } = supabase.storage
     .from('avatars')
@@ -64,7 +72,11 @@ export async function uploadAvatar(
       { onConflict: 'user_id' },
     );
 
-  if (dbError) return { error: `保存失败: ${dbError.message}` };
+  if (dbError)
+    return {
+      error: `保存失败: ${dbError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   revalidatePath('/settings');
   revalidatePath('/profile');
@@ -77,7 +89,7 @@ export async function deleteAvatar(): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { data: settings } = await supabase
     .from('user_settings')
@@ -104,7 +116,8 @@ export async function deleteAvatar(): Promise<ActionResult> {
     .update({ avatar_url: null })
     .eq('user_id', user.id);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   revalidatePath('/settings');
   revalidatePath('/profile');

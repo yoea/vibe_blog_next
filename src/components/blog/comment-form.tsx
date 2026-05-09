@@ -57,7 +57,11 @@ export function CommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2" data-testid="comment-form">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-2"
+      data-testid="comment-form"
+    >
       {replyTo && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
@@ -75,7 +79,10 @@ export function CommentForm({
       )}
       {!currentUserId && (
         <div className="space-y-1">
-          <label htmlFor="guest-name" className="text-[11px] text-muted-foreground">
+          <label
+            htmlFor="guest-name"
+            className="text-[11px] text-muted-foreground"
+          >
             昵称（设置后将自动保存）
           </label>
           <input
@@ -112,9 +119,14 @@ export function CommentForm({
       />
       <div className="flex items-center justify-between gap-2">
         {error ? (
-          <p className="text-sm text-destructive" data-testid="comment-error">{error}</p>
+          <p className="text-sm text-destructive" data-testid="comment-error">
+            {error}
+          </p>
         ) : (
-          <p className="hidden sm:block text-xs text-muted-foreground" suppressHydrationWarning>
+          <p
+            className="hidden sm:block text-xs text-muted-foreground"
+            suppressHydrationWarning
+          >
             键入评论后按 {isMac ? 'Cmd' : 'Ctrl'}+Enter 发送
           </p>
         )}

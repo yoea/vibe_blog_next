@@ -4,18 +4,20 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isSuperAdmin } from '@/lib/utils/admin';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function deleteUserAsAdmin(
   targetUserId: string,
 ): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   let admin;
   try {
     admin = createAdminClient();
   } catch {
-    return { error: '服务器未配置' };
+    return { error: '服务器未配置', error_code: ErrorCode.SERVER_ERROR };
   }
 
   // Mark user_settings as deleted
@@ -45,7 +47,8 @@ export async function deleteUserAsAdmin(
 }
 
 export async function toggleMaintenanceMode(): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
 
@@ -64,7 +67,8 @@ export async function toggleMaintenanceMode(): Promise<ActionResult> {
     .update({ value: newValue, updated_at: new Date().toISOString() })
     .eq('key', 'maintenance_mode');
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   revalidatePath('/');
   return {};
@@ -75,7 +79,8 @@ export async function updateAIConfig(
   apiKey: string,
   model: string,
 ): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
 
@@ -91,15 +96,58 @@ export async function updateAIConfig(
       .update({ value, updated_at: new Date().toISOString() })
       .eq('key', key);
 
-    if (error) return { error: `更新 ${key} 失败: ${error.message}` };
+    if (error)
+      return {
+        error: `更新 ${key} 失败: ${error.message}`,
+        error_code: ErrorCode.SERVER_ERROR,
+      };
   }
 
   revalidatePath('/settings');
   return {};
 }
 
+// 生成新 API Key（ew- 前缀 + 32 位随机字符），返回完整 key 供弹窗显示
+export async function generateApiKey(): Promise<ActionResult & { apiKey?: string }> {
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
+
+  const newKey = 'ew-' + crypto.randomUUID().replace(/-/g, '').slice(0, 32);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('site_config')
+    .update({ value: newKey, updated_at: new Date().toISOString() })
+    .eq('key', 'api_key');
+
+  if (error)
+    return { error: `生成失败: ${error.message}`, error_code: ErrorCode.SERVER_ERROR };
+
+  revalidatePath('/settings');
+  return { apiKey: newKey };
+}
+
+// 删除 API Key（置空）
+export async function deleteApiKey(): Promise<ActionResult> {
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('site_config')
+    .update({ value: '', updated_at: new Date().toISOString() })
+    .eq('key', 'api_key');
+
+  if (error)
+    return { error: `删除失败: ${error.message}`, error_code: ErrorCode.SERVER_ERROR };
+
+  revalidatePath('/settings');
+  return {};
+}
+
 export async function toggleDeployNotify(): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
 
@@ -116,25 +164,33 @@ export async function toggleDeployNotify(): Promise<ActionResult> {
     .update({ value: newValue, updated_at: new Date().toISOString() })
     .eq('key', 'show_deploy_notify');
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   revalidatePath('/settings');
   return {};
 }
 
 export async function saveAIModels(models: string[]): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
 
   // 先尝试 update
   const { error: updateErr } = await supabase
     .from('site_config')
-    .update({ value: JSON.stringify(models), updated_at: new Date().toISOString() })
+    .update({
+      value: JSON.stringify(models),
+      updated_at: new Date().toISOString(),
+    })
     .eq('key', 'ai_models');
 
   if (updateErr) {
-    return { error: `保存模型列表失败: ${updateErr.message}` };
+    return {
+      error: `保存模型列表失败: ${updateErr.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   }
 
   // update 成功但可能行不存在（affected rows = 0），尝试 insert
@@ -149,7 +205,11 @@ export async function saveAIModels(models: string[]): Promise<ActionResult> {
       .from('site_config')
       .insert({ key: 'ai_models', value: JSON.stringify(models) });
 
-    if (insertErr) return { error: `保存模型列表失败: ${insertErr.message}` };
+    if (insertErr)
+      return {
+        error: `保存模型列表失败: ${insertErr.message}`,
+        error_code: ErrorCode.SERVER_ERROR,
+      };
   }
 
   return {};
@@ -159,7 +219,8 @@ export async function updateICPConfig(
   number: string,
   visible: boolean,
 ): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
 
@@ -174,7 +235,11 @@ export async function updateICPConfig(
       .update({ value, updated_at: new Date().toISOString() })
       .eq('key', key);
 
-    if (error) return { error: `更新 ${key} 失败: ${error.message}` };
+    if (error)
+      return {
+        error: `更新 ${key} 失败: ${error.message}`,
+        error_code: ErrorCode.SERVER_ERROR,
+      };
   }
 
   revalidatePath('/settings');

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function deleteAccount(): Promise<ActionResult> {
@@ -10,13 +11,16 @@ export async function deleteAccount(): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   let admin;
   try {
     admin = createAdminClient();
   } catch {
-    return { error: '服务器未配置注销功能' };
+    return {
+      error: '服务器未配置注销功能',
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   }
 
   // Keep posts and comments - mark user as deleted instead of removing

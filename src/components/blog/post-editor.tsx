@@ -132,8 +132,6 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
     onPostCreated: useCallback((newPostId: string, newSlug: string) => {
       setPostId(newPostId);
       setSlug(newSlug);
-      // Update the URL so refresh goes to the edit page
-      window.history.replaceState(null, '', `/posts-edit/${newSlug}`);
     }, []),
   });
 
@@ -362,7 +360,7 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               className="w-full px-3 py-2 rounded-md border bg-transparent text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
-          <div className="sm:w-40 shrink-0">
+          <div className="shrink-0">
             <CoverImageUploader
               postId={postId ?? initialData?.id ?? ''}
               currentCoverUrl={coverUrl}
@@ -545,21 +543,21 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               {suggestedTags
                 .filter((t) => !tags.includes(t.name))
                 .map((tag) => (
-                    <button
-                      key={tag.slug}
-                      type="button"
-                      onClick={() => addTag(tag.name)}
-                      disabled={tags.length >= 7}
-                      data-testid={`suggested-tag-${tag.slug}`}
-                      className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        color: tag.color ?? '#3B82F6',
-                        backgroundColor: (tag.color ?? '#3B82F6') + '18',
-                      }}
-                    >
-                      {tag.name}
-                    </button>
-              ))}
+                  <button
+                    key={tag.slug}
+                    type="button"
+                    onClick={() => addTag(tag.name)}
+                    disabled={tags.length >= 7}
+                    data-testid={`suggested-tag-${tag.slug}`}
+                    className="text-xs px-1.5 py-0.5 rounded ml-1 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      color: tag.color ?? '#3B82F6',
+                      backgroundColor: (tag.color ?? '#3B82F6') + '18',
+                    }}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
             </p>
           )}
           <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-md border bg-transparent min-h-[2.25rem] focus-within:ring-2 focus-within:ring-ring">
@@ -840,7 +838,12 @@ function SubmitButton({ isEditing }: { isEditing: boolean }) {
       ? '保存修改'
       : '创建文章';
   return (
-    <Button type="submit" disabled={pending} size="sm" data-testid="post-submit">
+    <Button
+      type="submit"
+      disabled={pending}
+      size="sm"
+      data-testid="post-submit"
+    >
       {label}
     </Button>
   );

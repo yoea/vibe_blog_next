@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 /**
@@ -17,6 +18,7 @@ export async function getOAuthIdentities() {
   if (error || !user)
     return {
       error: '未登录',
+      error_code: ErrorCode.UNAUTHORIZED,
       identities: [] as {
         provider: string;
         id: string;
@@ -50,7 +52,8 @@ export async function unlinkGitHubIdentity(): Promise<ActionResult> {
     .update({ github_id: null, github_username: null })
     .eq('user_id', user.id);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   revalidatePath('/profile');
   revalidatePath('/settings');

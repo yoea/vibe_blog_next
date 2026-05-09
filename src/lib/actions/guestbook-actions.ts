@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function createGuestbookMessage(
@@ -20,8 +21,13 @@ export async function createGuestbookMessage(
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!content.trim()) return { error: '内容不能为空' };
-  if (content.trim().length > 500) return { error: '内容不能超过 500 个字符' };
+  if (!content.trim())
+    return { error: '内容不能为空', error_code: ErrorCode.VALIDATION };
+  if (content.trim().length > 500)
+    return {
+      error: '内容不能超过 500 个字符',
+      error_code: ErrorCode.VALIDATION,
+    };
 
   const insertData: any = {
     to_author_id: toAuthorId,
@@ -36,21 +42,30 @@ export async function createGuestbookMessage(
       1,
       'author_id',
     );
-    if (!allowed) return { error: '留言过于频繁，请稍后再试' };
+    if (!allowed)
+      return {
+        error: '留言过于频繁，请稍后再试',
+        error_code: ErrorCode.RATE_LIMITED,
+      };
 
     insertData.author_id = user.id;
     insertData.author_email = user.email;
   } else {
     const name = guestName?.trim();
-    if (!name) return { error: '请填写昵称' };
-    if (name.length > 50) return { error: '昵称不能超过 50 个字符' };
+    if (!name) return { error: '请填写昵称', error_code: ErrorCode.VALIDATION };
+    if (name.length > 50)
+      return {
+        error: '昵称不能超过 50 个字符',
+        error_code: ErrorCode.VALIDATION,
+      };
 
     const h = await headers();
     const ip =
       h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       h.get('x-real-ip') ??
       null;
-    if (!ip || ip === 'unknown') return { error: '无法获取 IP 地址' };
+    if (!ip || ip === 'unknown')
+      return { error: '无法获取 IP 地址', error_code: ErrorCode.SERVER_ERROR };
 
     const { allowed, remaining } = await checkIpRateLimit(
       ip,
@@ -61,6 +76,7 @@ export async function createGuestbookMessage(
     if (!allowed)
       return {
         error: `留言过于频繁，请 ${remaining > 0 ? `${remaining} 分钟后再试` : '稍后再试'}`,
+        error_code: ErrorCode.RATE_LIMITED,
       };
 
     insertData.guest_name = name;
@@ -87,7 +103,8 @@ export async function createGuestbookMessage(
     .select('*')
     .single();
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   revalidatePath(`/author/${toAuthorId}`);
 
@@ -159,13 +176,13 @@ export async function deleteGuestbookMessage(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '请先登录' };
+  if (!user) return { error: '请先登录', error_code: ErrorCode.UNAUTHORIZED };
 
   let admin;
   try {
     admin = createAdminClient();
   } catch {
-    return { error: '服务器配置错误' };
+    return { error: '服务器配置错误', error_code: ErrorCode.SERVER_ERROR };
   }
 
   // 先验证留言存在且当前用户有权限删除
@@ -175,9 +192,9 @@ export async function deleteGuestbookMessage(
     .eq('id', messageId)
     .single();
 
-  if (!message) return { error: '留言不存在' };
+  if (!message) return { error: '留言不存在', error_code: ErrorCode.NOT_FOUND };
   if (message.author_id !== user.id && message.to_author_id !== user.id)
-    return { error: '无权限删除' };
+    return { error: '无权限删除', error_code: ErrorCode.FORBIDDEN };
 
   // ON DELETE CASCADE 自动删除子回复
   const { error } = await admin
@@ -185,7 +202,8 @@ export async function deleteGuestbookMessage(
     .delete()
     .eq('id', messageId);
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   revalidatePath(`/author/${toAuthorId}`);
   return {};
 }

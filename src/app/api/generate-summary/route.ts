@@ -59,6 +59,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ summary, modelName: config.model });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : '服务器内部错误';
-    return NextResponse.json({ error: `AI API 请求失败: ${message}` }, { status: 502 });
+    return NextResponse.json(
+      { error: `AI API 请求失败: ${message}` },
+      { status: 502 },
+    );
   }
 }

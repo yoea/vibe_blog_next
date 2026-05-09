@@ -236,7 +236,7 @@ try {
     './postcss.config.mjs',
     './components.json',
     './next.config.ts',
-    './deploy-artifact.tar.gz'
+    './deploy-artifact.tar.gz',
   ]
     .map((d) => `--exclude="${d}"`)
     .join(' ');

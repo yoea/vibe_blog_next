@@ -24,6 +24,7 @@ export default async function SettingsPage() {
   let icpNumber = '';
   let icpVisible = false;
   let showDeployNotify = false;
+  let apiKey = '';
   if (isAdmin) {
     const { data } = await supabase
       .from('site_config')
@@ -37,6 +38,7 @@ export default async function SettingsPage() {
         'icp_number',
         'icp_visible',
         'show_deploy_notify',
+        'api_key',
       ]);
 
     const config = Object.fromEntries(
@@ -46,10 +48,15 @@ export default async function SettingsPage() {
     aiBaseUrl = config.ai_base_url ?? '';
     aiApiKey = config.ai_api_key ?? '';
     aiModel = config.ai_model ?? '';
-    try { aiModels = JSON.parse(config.ai_models || '[]'); } catch { aiModels = []; }
+    try {
+      aiModels = JSON.parse(config.ai_models || '[]');
+    } catch {
+      aiModels = [];
+    }
     icpNumber = config.icp_number ?? '';
     icpVisible = config.icp_visible === 'true';
     showDeployNotify = config.show_deploy_notify === 'true';
+    apiKey = config.api_key ?? '';
   }
 
   return (
@@ -66,6 +73,7 @@ export default async function SettingsPage() {
         icpNumber={icpNumber}
         icpVisible={icpVisible}
         showDeployNotify={showDeployNotify}
+        initialApiKey={apiKey}
       />
     </div>
   );

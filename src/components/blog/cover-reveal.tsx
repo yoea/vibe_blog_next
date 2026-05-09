@@ -2,13 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 
-export function CoverReveal({
-  src,
-  alt,
-}: {
-  src: string;
-  alt: string;
-}) {
+export function CoverReveal({ src, alt }: { src: string; alt: string }) {
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function autoSaveDraft(data: {
@@ -13,7 +14,7 @@ export async function autoSaveDraft(data: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   let postId = data.postId;
 
@@ -47,7 +48,8 @@ export async function autoSaveDraft(data: {
     .eq('id', postId)
     .eq('author_id', user.id)
     .maybeSingle();
-  if (!post) return { error: '文章不存在或无权操作' };
+  if (!post)
+    return { error: '文章不存在或无权操作', error_code: ErrorCode.FORBIDDEN };
 
   // Upsert draft (post_id is unique, so onConflict handles the upsert correctly)
   const { error: upsertError } = await supabase.from('post_drafts').upsert(
@@ -69,7 +71,7 @@ export async function deleteDraft(postId: string): Promise<ActionResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   // Verify ownership
   const { data: post } = await supabase
@@ -78,13 +80,15 @@ export async function deleteDraft(postId: string): Promise<ActionResult> {
     .eq('id', postId)
     .eq('author_id', user.id)
     .maybeSingle();
-  if (!post) return { error: '文章不存在或无权操作' };
+  if (!post)
+    return { error: '文章不存在或无权操作', error_code: ErrorCode.FORBIDDEN };
 
   const { error } = await supabase
     .from('post_drafts')
     .delete()
     .eq('post_id', postId);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   return {};
 }

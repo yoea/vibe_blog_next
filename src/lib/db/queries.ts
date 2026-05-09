@@ -9,6 +9,7 @@ import type {
   ArchivedPost,
   ArchivedPostWithAuthor,
 } from '@/lib/db/types';
+import { ErrorCode } from '@/lib/db/types';
 import { headers } from 'next/headers';
 
 // ── Helper: attach tags to an array of posts ──
@@ -52,7 +53,13 @@ export async function getPublishedPosts(page = 1, limit = 10) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], count: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      count: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   const authorIds = [...new Set(data.map((item: any) => item.author_id))];
   const { data: userSettings } = await supabase
@@ -115,16 +122,24 @@ export async function getPostBySlug(slug: string) {
       }
     }
     if ((postError as any).code !== 'PGRST116') {
-      return { data: null, error: postError.message };
+      return {
+        data: null,
+        error: postError.message,
+        error_code: ErrorCode.SERVER_ERROR,
+      };
     }
   }
   if (!post) {
-    return { data: null, error: '文章不存在' };
+    return { data: null, error: '文章不存在', error_code: ErrorCode.NOT_FOUND };
   }
 
   // Allow viewing own draft posts
   if (!post.published && (!user || user.id !== post.author_id)) {
-    return { data: post, error: 'PERMISSION_DENIED' };
+    return {
+      data: post,
+      error: 'PERMISSION_DENIED',
+      error_code: ErrorCode.FORBIDDEN,
+    };
   }
 
   // Fetch author settings, like count, comment count, user/IP like check, draft, and tags in parallel
@@ -250,7 +265,13 @@ export async function getCommentsForPost(
     error: null,
   };
 
-  if (error) return { data: [], total: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      total: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   if (!topLevelComments?.length) return { data: [], total, error: null };
 
   // Fetch direct replies (1 level) for these top-level comments
@@ -401,7 +422,14 @@ export async function getGuestbookMessages(
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], total: 0, fullTotal: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      total: 0,
+      fullTotal: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   if (!topLevel?.length) return { data: [], total: total ?? 0, error: null };
 
   // Fetch direct replies (1 level) for these top-level messages
@@ -502,7 +530,13 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], count: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      count: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   const mapped = (data ?? []).map((p: any) => ({
     ...p,
     like_count: p.like_count?.[0]?.count ?? 0,
@@ -515,7 +549,8 @@ export async function getPostsByAuthor(authorId: string, page = 1, limit = 10) {
 export async function getUserSettings(userId?: string) {
   const supabase = await createClient();
   const uid = userId ?? (await supabase.auth.getUser()).data.user?.id;
-  if (!uid) return { data: null, error: '未登录' };
+  if (!uid)
+    return { data: null, error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const { data, error } = await supabase
     .from('user_settings')
@@ -523,7 +558,12 @@ export async function getUserSettings(userId?: string) {
     .eq('user_id', uid)
     .maybeSingle();
 
-  if (error) return { data: null, error: error.message };
+  if (error)
+    return {
+      data: null,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   return { data, error: null };
 }
 
@@ -572,7 +612,13 @@ export async function getAllUsers(page = 1, limit = 20) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], count: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      count: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   // Fetch post counts for these users
   const userIds = (settings ?? []).map((s) => s.user_id);
@@ -654,7 +700,13 @@ export async function searchPosts(query: string, page = 1, limit = 20) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], count: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      count: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   const authorIds = [...new Set(data.map((item: any) => item.author_id))];
   const { data: userSettings } = await supabase
@@ -996,7 +1048,13 @@ export async function getNotificationsForUser(
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (error) return { data: [], total: 0, error: error.message };
+  if (error)
+    return {
+      data: [],
+      total: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   return {
     data: (data ?? []) as Notification[],
     total: total ?? 0,
@@ -1014,7 +1072,12 @@ export async function getUnreadNotificationCount(userId: string) {
     .eq('is_read', false)
     .eq('is_dismissed', false);
 
-  if (error) return { count: 0, error: error.message };
+  if (error)
+    return {
+      count: 0,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   return { count: count ?? 0, error: null };
 }
 
@@ -1041,6 +1104,7 @@ export async function getArchivedPosts(page = 1, limit = 20, search?: string) {
       data: [] as ArchivedPostWithAuthor[],
       count: 0,
       error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
     };
 
   const authorIds = [
@@ -1076,6 +1140,11 @@ export async function getArchivedPostById(id: string) {
     .select('*')
     .eq('id', id)
     .single();
-  if (error) return { data: null as ArchivedPost | null, error: error.message };
+  if (error)
+    return {
+      data: null as ArchivedPost | null,
+      error: error.message,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
   return { data: data as ArchivedPost, error: null };
 }

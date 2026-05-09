@@ -4,16 +4,18 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isSuperAdmin } from '@/lib/utils/admin';
 import { revalidatePath } from 'next/cache';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 export async function archivePost(postId: string): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   const admin = createAdminClient();
 
@@ -24,7 +26,8 @@ export async function archivePost(postId: string): Promise<ActionResult> {
     .eq('id', postId)
     .single();
 
-  if (fetchError || !post) return { error: '文章不存在' };
+  if (fetchError || !post)
+    return { error: '文章不存在', error_code: ErrorCode.NOT_FOUND };
 
   // 读取标签（在删除文章前保存）
   const { data: postTags } = await admin
@@ -52,7 +55,11 @@ export async function archivePost(postId: string): Promise<ActionResult> {
     tags: tags.length > 0 ? tags : null,
   });
 
-  if (insertError) return { error: `归档失败: ${insertError.message}` };
+  if (insertError)
+    return {
+      error: `归档失败: ${insertError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   // 删除原文章（CASCADE 自动清理关联数据）
   const { error: deleteError } = await admin
@@ -60,7 +67,11 @@ export async function archivePost(postId: string): Promise<ActionResult> {
     .delete()
     .eq('id', postId);
 
-  if (deleteError) return { error: `删除原文章失败: ${deleteError.message}` };
+  if (deleteError)
+    return {
+      error: `删除原文章失败: ${deleteError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   revalidatePath('/');
   revalidatePath('/admin/archive');
@@ -68,7 +79,8 @@ export async function archivePost(postId: string): Promise<ActionResult> {
 }
 
 export async function restorePost(archiveId: string): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const admin = createAdminClient();
 
@@ -79,7 +91,8 @@ export async function restorePost(archiveId: string): Promise<ActionResult> {
     .eq('id', archiveId)
     .single();
 
-  if (fetchError || !archived) return { error: '归档文章不存在' };
+  if (fetchError || !archived)
+    return { error: '归档文章不存在', error_code: ErrorCode.NOT_FOUND };
 
   // 检查 slug 冲突
   let slug = archived.slug;
@@ -107,7 +120,11 @@ export async function restorePost(archiveId: string): Promise<ActionResult> {
     updated_at: archived.updated_at,
   });
 
-  if (insertError) return { error: `还原失败: ${insertError.message}` };
+  if (insertError)
+    return {
+      error: `还原失败: ${insertError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   // 恢复标签关联
   const archivedTags: { name: string; slug: string; color: string }[] | null = (
@@ -152,7 +169,8 @@ export async function restorePost(archiveId: string): Promise<ActionResult> {
 export async function permanentlyDeleteArchive(
   archiveId: string,
 ): Promise<ActionResult> {
-  if (!(await isSuperAdmin())) return { error: '无权限' };
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
 
   const admin = createAdminClient();
 
@@ -161,7 +179,11 @@ export async function permanentlyDeleteArchive(
     .delete()
     .eq('id', archiveId);
 
-  if (error) return { error: `删除失败: ${error.message}` };
+  if (error)
+    return {
+      error: `删除失败: ${error.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   revalidatePath('/admin/archive');
   return {};

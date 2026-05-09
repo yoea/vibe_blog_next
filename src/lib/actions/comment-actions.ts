@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
+import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
 
 async function getPostSlug(
@@ -32,9 +33,13 @@ export async function createComment(
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!content.trim()) return { error: '评论内容不能为空' };
+  if (!content.trim())
+    return { error: '评论内容不能为空', error_code: ErrorCode.VALIDATION };
   if (content.trim().length > 500)
-    return { error: '评论内容不能超过 500 个字符' };
+    return {
+      error: '评论内容不能超过 500 个字符',
+      error_code: ErrorCode.VALIDATION,
+    };
 
   const insertData: any = {
     post_id: postId,
@@ -49,21 +54,30 @@ export async function createComment(
       1,
       'author_id',
     );
-    if (!allowed) return { error: '评论过于频繁，请稍后再试' };
+    if (!allowed)
+      return {
+        error: '评论过于频繁，请稍后再试',
+        error_code: ErrorCode.RATE_LIMITED,
+      };
 
     insertData.author_id = user.id;
     insertData.author_email = user.email;
   } else {
     const name = guestName?.trim();
-    if (!name) return { error: '请填写昵称' };
-    if (name.length > 50) return { error: '昵称不能超过 50 个字符' };
+    if (!name) return { error: '请填写昵称', error_code: ErrorCode.VALIDATION };
+    if (name.length > 50)
+      return {
+        error: '昵称不能超过 50 个字符',
+        error_code: ErrorCode.VALIDATION,
+      };
 
     const h = await headers();
     const ip =
       h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       h.get('x-real-ip') ??
       null;
-    if (!ip || ip === 'unknown') return { error: '无法获取 IP 地址' };
+    if (!ip || ip === 'unknown')
+      return { error: '无法获取 IP 地址', error_code: ErrorCode.SERVER_ERROR };
 
     const { allowed, remaining } = await checkIpRateLimit(
       ip,
@@ -74,6 +88,7 @@ export async function createComment(
     if (!allowed)
       return {
         error: `评论过于频繁，请 ${remaining > 0 ? `${remaining} 分钟后再试` : '稍后再试'}`,
+        error_code: ErrorCode.RATE_LIMITED,
       };
 
     insertData.guest_name = name;
@@ -100,7 +115,8 @@ export async function createComment(
     .select('*')
     .single();
 
-  if (error) return { error: error.message };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
 
   // 插入通知
   const { data: post } = await supabase
@@ -183,7 +199,7 @@ export async function deleteComment(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '未登录' };
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
 
   // 允许评论作者或文章作者删除
   const { data: comment } = await supabase
@@ -192,7 +208,7 @@ export async function deleteComment(
     .eq('id', commentId)
     .single();
 
-  if (!comment) return { error: '评论不存在' };
+  if (!comment) return { error: '评论不存在', error_code: ErrorCode.NOT_FOUND };
 
   const { data: post } = await supabase
     .from('posts')
@@ -204,7 +220,7 @@ export async function deleteComment(
   const isPostAuthor = post?.author_id === user.id;
 
   if (!isCommentAuthor && !isPostAuthor) {
-    return { error: '无权限删除此评论' };
+    return { error: '无权限删除此评论', error_code: ErrorCode.FORBIDDEN };
   }
 
   // Use admin client to bypass RLS (post_author_comment_delete policy subquery may be blocked)
@@ -216,15 +232,24 @@ export async function deleteComment(
     .delete()
     .eq('parent_id', commentId);
 
-  if (childError) return { error: `删除回复失败: ${childError.message}` };
+  if (childError)
+    return {
+      error: `删除回复失败: ${childError.message}`,
+      error_code: ErrorCode.SERVER_ERROR,
+    };
 
   const { error, count } = await admin
     .from('post_comments')
     .delete({ count: 'exact' })
     .eq('id', commentId);
 
-  if (error) return { error: error.message };
-  if (count === 0) return { error: '删除失败，评论可能已被删除或无权限' };
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
+  if (count === 0)
+    return {
+      error: '删除失败，评论可能已被删除或无权限',
+      error_code: ErrorCode.FORBIDDEN,
+    };
   const slug = await getPostSlug(supabase, postId);
   if (slug) revalidatePath(`/posts/${slug}`);
   return {};
@@ -246,7 +271,11 @@ export async function toggleCommentLike(
       20,
       1,
     );
-    if (!allowed) return { error: '操作过于频繁，请稍后再试' };
+    if (!allowed)
+      return {
+        error: '操作过于频繁，请稍后再试',
+        error_code: ErrorCode.RATE_LIMITED,
+      };
 
     const { data: existing } = await supabase
       .from('comment_likes')
@@ -260,13 +289,15 @@ export async function toggleCommentLike(
         .from('comment_likes')
         .delete()
         .eq('id', existing.id);
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
       return { liked: false };
     } else {
       const { error } = await supabase
         .from('comment_likes')
         .insert({ comment_id: commentId, user_id: user.id });
-      if (error) return { error: error.message };
+      if (error)
+        return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
       return { liked: true };
     }
   }
@@ -277,10 +308,15 @@ export async function toggleCommentLike(
     (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ??
     (await headers()).get('x-real-ip') ??
     null;
-  if (!ip || ip === 'unknown') return { error: '无法获取IP' };
+  if (!ip || ip === 'unknown')
+    return { error: '无法获取IP', error_code: ErrorCode.SERVER_ERROR };
 
   const { allowed } = await checkIpRateLimit(ip, 'comment_likes', 10, 60);
-  if (!allowed) return { error: '操作过于频繁，请稍后再试' };
+  if (!allowed)
+    return {
+      error: '操作过于频繁，请稍后再试',
+      error_code: ErrorCode.RATE_LIMITED,
+    };
 
   const { data: existing } = await supabase
     .from('comment_likes')
@@ -294,13 +330,15 @@ export async function toggleCommentLike(
       .from('comment_likes')
       .delete()
       .eq('id', existing.id);
-    if (error) return { error: error.message };
+    if (error)
+      return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
     return { liked: false };
   } else {
     const { error } = await supabase
       .from('comment_likes')
       .insert({ comment_id: commentId, ip });
-    if (error) return { error: error.message };
+    if (error)
+      return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
     return { liked: true };
   }
 }

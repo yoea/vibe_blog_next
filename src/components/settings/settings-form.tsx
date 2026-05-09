@@ -37,16 +37,20 @@ import {
   Archive,
   CheckCircle,
   AlertTriangle,
+  Copy,
 } from 'lucide-react';
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider';
 import { DonateButton } from '@/components/donate-button';
 import {
   toggleMaintenanceMode,
   updateAIConfig,
+  generateApiKey,
+  deleteApiKey,
   updateICPConfig,
   toggleDeployNotify,
   saveAIModels,
 } from '@/lib/actions/admin-actions';
+import { copyToClipboard } from '@/lib/utils/clipboard';
 
 interface Props {
   user: User;
@@ -59,6 +63,7 @@ interface Props {
   icpNumber?: string;
   icpVisible?: boolean;
   showDeployNotify?: boolean;
+  initialApiKey?: string;
 }
 
 export function SettingsForm({
@@ -72,6 +77,7 @@ export function SettingsForm({
   icpNumber: initialIcpNumber,
   icpVisible: initialIcpVisible,
   showDeployNotify: initialShowDeployNotify,
+  initialApiKey,
 }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -84,7 +90,9 @@ export function SettingsForm({
   const [aiApiKey, setAiApiKey] = useState(initialAiApiKey ?? '');
   const [aiModel, setAiModel] = useState(initialAiModel ?? '');
   const [showAiKey, setShowAiKey] = useState(false);
-  const [customModels, setCustomModels] = useState<string[]>(initialAiModels ?? []);
+  const [customModels, setCustomModels] = useState<string[]>(
+    initialAiModels ?? [],
+  );
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [newModelInput, setNewModelInput] = useState('');
   const [aiTestResult, setAiTestResult] = useState<{
@@ -93,6 +101,17 @@ export function SettingsForm({
     models?: string[];
     error?: string;
   } | null>(null);
+  // 掩码本站 API Key（用于显示）
+  function maskKeyForDisplay(key: string) {
+    if (key.length <= 12) return key;
+    return key.slice(0, 6) + '*'.repeat(Math.min(key.length - 10, 8)) + key.slice(-4);
+  }
+  const [apiKeyMasked, setApiKeyMasked] = useState<string | null>(
+    initialApiKey ? maskKeyForDisplay(initialApiKey) : null,
+  );
+  const [showKeyDialog, setShowKeyDialog] = useState(false);
+  const [generatedKey, setGeneratedKey] = useState('');
+  const [apiKeyLoading, setApiKeyLoading] = useState(false);
 
   const presetModels: string[] = [];
 
@@ -183,7 +202,11 @@ export function SettingsForm({
         }
       }
     } catch {
-      setAiTestResult({ loading: false, success: false, error: '测试请求失败' });
+      setAiTestResult({
+        loading: false,
+        success: false,
+        error: '测试请求失败',
+      });
     }
   };
 
@@ -202,6 +225,33 @@ export function SettingsForm({
 
     // 保存成功后发起连通性测试
     await runTestConnection();
+  };
+
+  const handleGenerateApiKey = async () => {
+    setApiKeyLoading(true);
+    const result = await generateApiKey();
+    setApiKeyLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    if (result.apiKey) {
+      setGeneratedKey(result.apiKey);
+      setShowKeyDialog(true);
+    }
+  };
+
+  const handleDeleteApiKey = async () => {
+    setApiKeyLoading(true);
+    const result = await deleteApiKey();
+    setApiKeyLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    setShowKeyDialog(false);
+    setApiKeyMasked(null);
+    toast.success('API Key 已删除');
   };
 
   const handleSaveICP = async () => {
@@ -791,6 +841,41 @@ export function SettingsForm({
 
             <Separator />
 
+            {/* 本站 API KEY — 用于 AI Agent 编程访问 */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">本站API KEY</h4>
+              <p className="text-xs text-muted-foreground -mt-1">
+                持有此 Key 即拥有超级管理员权限，可用于 AI Agent 通过 RESTful API 编程访问博客。
+              </p>
+
+              {apiKeyMasked ? (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <code className="text-sm font-mono bg-muted px-3 py-1.5 rounded select-all">
+                    {apiKeyMasked}
+                  </code>
+                  <Button
+                    variant="outline"
+                    onClick={handleGenerateApiKey}
+                    disabled={apiKeyLoading}
+                    className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm"
+                  >
+                    {apiKeyLoading ? '生成中...' : '重置密钥'}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={handleGenerateApiKey}
+                  disabled={apiKeyLoading}
+                  className="w-full sm:w-auto hover:border-foreground/30 hover:shadow-sm"
+                >
+                  {apiKeyLoading ? '生成中...' : '立即生成'}
+                </Button>
+              )}
+            </div>
+
+            <Separator />
+
             {/* 归档文章管理 */}
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
@@ -1004,6 +1089,43 @@ export function SettingsForm({
               {changingPassword ? '修改中...' : '确认修改'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* API Key 生成弹窗 */}
+      <Dialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>API Key 已生成</DialogTitle>
+            <DialogDescription>
+              请立即复制并妥善保管，关闭后无法再次查看完整 Key。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <code className="block text-sm font-mono bg-muted px-3 py-2 rounded break-all select-all">
+              {generatedKey}
+            </code>
+            <DialogFooter>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteApiKey}
+                disabled={apiKeyLoading}
+              >
+                删除密钥
+              </Button>
+              <Button
+                onClick={async () => {
+                  await copyToClipboard(generatedKey);
+                  toast.success('已复制到剪贴板');
+                  setShowKeyDialog(false);
+                  setApiKeyMasked(maskKeyForDisplay(generatedKey));
+                }}
+              >
+                <Copy className="h-4 w-4" />
+                复制
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
