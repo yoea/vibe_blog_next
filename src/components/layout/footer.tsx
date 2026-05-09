@@ -56,6 +56,13 @@ export function Footer({
             </Link>
             <span className="text-muted-foreground select-none">|</span>
             <Link
+              href="/guide"
+              className="hover:text-foreground transition-colors"
+            >
+              接入指南
+            </Link>
+            <span className="text-muted-foreground select-none">|</span>
+            <Link
               href="/privacy"
               className="hover:text-foreground transition-colors"
             >

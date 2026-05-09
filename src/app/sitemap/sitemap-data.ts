@@ -21,5 +21,6 @@ export const routes: SitemapRoute[] = [
   { path: '/register', title: '注册', indexable: false },
   { path: '/settings', title: '设置', indexable: false },
   { path: '/sitemap', title: '网站地图' },
+  { path: '/guide', title: '接入指南' },
   { path: '/tags', title: '标签管理' },
 ];

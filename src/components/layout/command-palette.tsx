@@ -171,6 +171,7 @@ export function CommandPalette() {
     '/settings': Settings,
     '/sitemap': Map,
     '/tags': Tags,
+    '/guide': BookOpen,
     '/admin/archive': FileText,
   };
   const routeAuthMap: Record<string, 'auth' | 'anon' | null> = {

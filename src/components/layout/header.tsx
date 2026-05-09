@@ -18,6 +18,7 @@ import {
   Users,
   Tags,
   Search,
+  Info,
 } from 'lucide-react';
 import { useTheme, type ThemeMode } from '@/components/layout/theme-provider';
 
@@ -196,6 +197,14 @@ export function Header({
       >
         <Tags className="h-4 w-4" />
         <span>标签</span>
+      </Link>
+      <Link
+        href="/about"
+        onClick={() => setMenuOpen(false)}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
+      >
+        <Info className="h-4 w-4" />
+        <span>关于</span>
       </Link>
       {user ? (
         <>

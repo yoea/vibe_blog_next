@@ -15,6 +15,8 @@
 | `/profile` | `post-pin-btn`, `post-edit-btn`, `post-delete-btn` | 我的文章管理 |
 | `/settings` | `theme-toggle`, site config admin section | 个人设置 + 管理 |
 | `/tags` | tag links | 标签浏览 |
+| `/guide` | — | AI Agent 接入指南（本页面的可视化版本） |
+| `/about` | — | 项目介绍与背景 |
 | `/author` | author links | 作者列表 |
 | `/author/{id}` | `guestbook-form`, `guestbook-textarea`, `guestbook-submit` | 作者主页 + 留言板 |
 
@@ -34,6 +36,13 @@
 | POST | `/api/v1/posts/{slug}/comments` | 添加评论（author_id 由 API key 自动确定） |
 | DELETE | `/api/v1/comments/{id}` | 删除评论 |
 | POST | `/api/v1/posts/{slug}/like` | 切换点赞 |
+| POST | `/api/v1/posts/{slug}/cover` | 上传封面图（multipart/form-data, cover 字段） |
+| DELETE | `/api/v1/posts/{slug}/cover` | 移除封面图 |
+| POST | `/api/v1/posts/{slug}/archive` | 归档文章 |
+| DELETE | `/api/v1/posts/{slug}/archive` | 取消归档（还原） |
+| GET | `/api/v1/tags` | 标签列表 |
+| POST | `/api/v1/tags` | 创建标签 |
+| DELETE | `/api/v1/tags/{id}` | 删除标签 |
 | GET | `/api/v1/whoami` | 获取当前 API key 拥有者的用户信息 |
 
 所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。每个管理员可生成多个独立密钥。

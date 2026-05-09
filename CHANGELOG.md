@@ -4,22 +4,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.11.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.2...v0.11.3) (2026-05-09)
 
-
 ### Bug 修复
 
-* 文章发布后跳转到详情页，savePost 返回 slug，增加 toast 提示 ([947b859](https://git.ewing.top/yoea/vibe_blog_next/commit/947b859c47267d642b207a930ed0c484b3220444))
-* 修复设置页 sticky header SSR hydration 不匹配 ([dc96351](https://git.ewing.top/yoea/vibe_blog_next/commit/dc9635180d4d86337426b80f245dd0c5081d5fda))
-
+- 文章发布后跳转到详情页，savePost 返回 slug，增加 toast 提示 ([947b859](https://git.ewing.top/yoea/vibe_blog_next/commit/947b859c47267d642b207a930ed0c484b3220444))
+- 修复设置页 sticky header SSR hydration 不匹配 ([dc96351](https://git.ewing.top/yoea/vibe_blog_next/commit/dc9635180d4d86337426b80f245dd0c5081d5fda))
 
 ### 新功能
 
-* 登录成功 toast 显示跳转目标页面 ([1e2b6f1](https://git.ewing.top/yoea/vibe_blog_next/commit/1e2b6f1942701d487d04aa44a675e3c8eeef62ba))
-
+- 登录成功 toast 显示跳转目标页面 ([1e2b6f1](https://git.ewing.top/yoea/vibe_blog_next/commit/1e2b6f1942701d487d04aa44a675e3c8eeef62ba))
 
 ### 文档
 
-* 更新 CLAUDE.md/README.md/OpenAPI 文档 ([181353f](https://git.ewing.top/yoea/vibe_blog_next/commit/181353f7f031c9fbbd8d1930c60e1541a9745f29))
-* 更新关于页面，新增 AI Agent 友好/API/错误码章节 ([a5bb8a1](https://git.ewing.top/yoea/vibe_blog_next/commit/a5bb8a196022525dea67b8bbce92c9c5a4942a5d))
+- 更新 CLAUDE.md/README.md/OpenAPI 文档 ([181353f](https://git.ewing.top/yoea/vibe_blog_next/commit/181353f7f031c9fbbd8d1930c60e1541a9745f29))
+- 更新关于页面，新增 AI Agent 友好/API/错误码章节 ([a5bb8a1](https://git.ewing.top/yoea/vibe_blog_next/commit/a5bb8a196022525dea67b8bbce92c9c5a4942a5d))
 
 ### [0.11.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.1...v0.11.2) (2026-05-09)
 
