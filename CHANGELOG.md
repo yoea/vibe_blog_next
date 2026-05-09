@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.0...v0.11.1) (2026-05-09)
+
+
+### Bug 修复
+
+* 登录按钮增加 loading 反馈，修复 GitHub Release compare 链接域名 ([ee98e77](https://git.ewing.top/yoea/vibe_blog_next/commit/ee98e778d7f7808405ac35611cf604f79e15622f))
+
 ## [0.11.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.10.0...v0.11.0) (2026-05-09)
 
 
