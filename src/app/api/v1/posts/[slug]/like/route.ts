@@ -8,7 +8,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  if (!(await validateApiKey(request))) {
+  const auth = await validateApiKey(request);
+  if (!auth) {
     return NextResponse.json(
       { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
       { status: 401 },

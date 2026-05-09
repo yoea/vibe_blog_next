@@ -6,7 +6,8 @@ import { ErrorCode } from '@/lib/db/types';
 
 // GET /api/v1/posts — 列出文章（分页）
 export async function GET(request: NextRequest) {
-  if (!(await validateApiKey(request))) {
+  const auth = await validateApiKey(request);
+  if (!auth) {
     return NextResponse.json(
       { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
       { status: 401 },
@@ -26,7 +27,8 @@ export async function GET(request: NextRequest) {
 
 // POST /api/v1/posts — 创建文章
 export async function POST(request: NextRequest) {
-  if (!(await validateApiKey(request))) {
+  const auth = await validateApiKey(request);
+  if (!auth) {
     return NextResponse.json(
       { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
       { status: 401 },
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt?.trim() ?? null,
         published: published ?? true,
         cover_image_url: cover_image_url ?? null,
+        author_id: auth.userId,
       })
       .select('slug')
       .single();

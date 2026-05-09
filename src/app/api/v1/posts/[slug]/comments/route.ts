@@ -8,7 +8,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  if (!(await validateApiKey(request))) {
+  const auth = await validateApiKey(request);
+  if (!auth) {
     return NextResponse.json(
       { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
       { status: 401 },
@@ -58,8 +59,9 @@ export async function POST(
       .insert({
         post_id: post.id,
         content: content.trim(),
+        author_id: auth.userId,
         parent_id: parentId ?? null,
-        guest_name: author?.trim() || 'API Bot',
+        guest_name: author?.trim() || null,
         ip: 'api',
       })
       .select('id, content, created_at')
