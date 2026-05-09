@@ -222,12 +222,19 @@ export function RegisterForm() {
             </button>
           </div>
           {confirmPassword.length > 0 && password !== confirmPassword && (
-            <p className="text-xs text-destructive" role="alert">两次输入的密码不一致</p>
+            <p className="text-xs text-destructive" role="alert">
+              两次输入的密码不一致
+            </p>
           )}
         </div>
 
         {error && (
-          <p id="register-error" role="alert" className="text-sm text-destructive" data-testid="register-error">
+          <p
+            id="register-error"
+            role="alert"
+            className="text-sm text-destructive"
+            data-testid="register-error"
+          >
             {error}
           </p>
         )}

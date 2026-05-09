@@ -87,7 +87,11 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
   const authorLabelId = `${idPrefix}-author-${item.id}`;
   return (
     <>
-      <div className="flex gap-3 pb-3" role="comment" aria-labelledby={authorLabelId}>
+      <div
+        className="flex gap-3 pb-3"
+        role="comment"
+        aria-labelledby={authorLabelId}
+      >
         {!isGuest ? (
           <Avatar
             avatarUrl={avatarUrl}
@@ -129,7 +133,11 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
                 </span>
               )}
             </div>
-            <time className="shrink-0 ml-2" dateTime={item.created_at} suppressHydrationWarning>
+            <time
+              className="shrink-0 ml-2"
+              dateTime={item.created_at}
+              suppressHydrationWarning
+            >
               {formatTimeAgo(item.created_at)}
             </time>
           </div>
@@ -180,7 +188,11 @@ export function ThreadedItemRenderer<T extends ThreadedItem>({
       </div>
 
       {item.replies && item.replies.length > 0 && (
-        <div className="ml-8 pl-4 border-l-2 border-muted" role="list" aria-label="回复">
+        <div
+          className="ml-8 pl-4 border-l-2 border-muted"
+          role="list"
+          aria-label="回复"
+        >
           <ReplyList
             replies={item.replies as unknown as T[]}
             parentAuthorName={displayName}
@@ -416,7 +428,12 @@ function ReplyItem<T extends ThreadedItem>({
 
   return (
     <>
-      <div id={`${idPrefix}-${reply.id}`} className="flex gap-3 pb-2 pt-1" role="comment" aria-labelledby={replyAuthorLabelId}>
+      <div
+        id={`${idPrefix}-${reply.id}`}
+        className="flex gap-3 pb-2 pt-1"
+        role="comment"
+        aria-labelledby={replyAuthorLabelId}
+      >
         {!isGuest ? (
           <Avatar
             avatarUrl={avatarUrl}
@@ -453,7 +470,11 @@ function ReplyItem<T extends ThreadedItem>({
                 </Link>
               )}
             </div>
-            <time className="shrink-0 ml-2" dateTime={reply.created_at} suppressHydrationWarning>
+            <time
+              className="shrink-0 ml-2"
+              dateTime={reply.created_at}
+              suppressHydrationWarning
+            >
               {formatTimeAgo(reply.created_at)}
             </time>
           </div>

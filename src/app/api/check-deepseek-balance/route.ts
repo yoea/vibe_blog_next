@@ -9,7 +9,9 @@ export async function GET() {
       .select('key, value')
       .in('key', ['ai_base_url', 'ai_api_key']);
 
-    const configMap = new Map((rows ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+    const configMap = new Map(
+      (rows ?? []).map((r: { key: string; value: string }) => [r.key, r.value]),
+    );
     const baseUrl = configMap.get('ai_base_url') ?? '';
     const apiKey = configMap.get('ai_api_key') ?? '';
 

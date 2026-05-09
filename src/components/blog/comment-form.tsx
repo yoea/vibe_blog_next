@@ -121,7 +121,12 @@ export function CommentForm({
       />
       <div className="flex items-center justify-between gap-2">
         {error ? (
-          <p id="comment-form-error" role="alert" className="text-sm text-destructive" data-testid="comment-error">
+          <p
+            id="comment-form-error"
+            role="alert"
+            className="text-sm text-destructive"
+            data-testid="comment-error"
+          >
             {error}
           </p>
         ) : (

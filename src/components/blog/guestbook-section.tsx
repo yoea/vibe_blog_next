@@ -114,11 +114,17 @@ export function GuestbookSection({
     : messages.filter((m) => isOwner || currentUserId === m.author_id);
 
   return (
-    <section id="guestbook" aria-labelledby="guestbook-title" className="space-y-4">
+    <section
+      id="guestbook"
+      aria-labelledby="guestbook-title"
+      className="space-y-4"
+    >
       <div className="flex items-center gap-2">
         {icon}
         <div>
-          <h2 id="guestbook-title" className="text-xl font-bold">{title}</h2>
+          <h2 id="guestbook-title" className="text-xl font-bold">
+            {title}
+          </h2>
           <p className="text-xs text-muted-foreground">
             {initialTotal} 条留言
             {!isOwner && !messagesPublic && initialTotal > 0 && (

@@ -119,7 +119,12 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         />
       </div>
       {error && (
-        <p id="login-error" role="alert" className="text-sm text-destructive" data-testid="login-error">
+        <p
+          id="login-error"
+          role="alert"
+          className="text-sm text-destructive"
+          data-testid="login-error"
+        >
           {error}
         </p>
       )}
