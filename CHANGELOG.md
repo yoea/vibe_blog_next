@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.9.0...v0.10.0) (2026-05-09)
+
+
+### 新功能
+
+* 错误码标准化 + Bot RESTful API + 本站API KEY交互重构 ([1361289](https://git.ewing.top/yoea/vibe_blog_next/commit/136128978bfbf884109e251734550e68f94c8b88))
+* 全站交互元素增加 data-testid + aria-label，面向 AI Agent 可操作性优化 ([62a2051](https://git.ewing.top/yoea/vibe_blog_next/commit/62a2051f11e6114abe9481dc85fc70954979c4db))
+
 ## [0.9.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.8.0...v0.9.0) (2026-05-06)
 
 ### Bug 修复
