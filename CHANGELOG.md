@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.10.0...v0.11.0) (2026-05-09)
+
+
+### 新功能
+
+* AI Agent 自发现文档 + 文档全面更新 + API KEY 交互优化 ([fa34e53](https://git.ewing.top/yoea/vibe_blog_next/commit/fa34e53b2186807913ff2e88e913f4c18544f048))
+* DeepSeek 余额查询 + 设置页分类整理 ([e2a8e1d](https://git.ewing.top/yoea/vibe_blog_next/commit/e2a8e1d1b32137fb106c79e4a3eeb6301b147733))
+* P2 写操作幂等键 + 评论区语义化 + 表单无障碍 ([2ff821d](https://git.ewing.top/yoea/vibe_blog_next/commit/2ff821d4a128b4757b6bfdb9026f63c1247d3716))
+
+
+### 文档
+
+* README 和设置页文案微调 ([eb68f00](https://git.ewing.top/yoea/vibe_blog_next/commit/eb68f009e8e44cb45cc8e4fb60a512c1c4422806))
+
 ## [0.10.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.9.0...v0.10.0) (2026-05-09)
 
 
