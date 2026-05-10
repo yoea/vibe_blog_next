@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.5](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.4...v0.11.5) (2026-05-10)
+
+
+### Bug 修复
+
+* 补全 revalidatePath 缓存失效逻辑 ([aea2aa9](https://git.ewing.top/yoea/vibe_blog_next/commit/aea2aa970f4c61f0609e1bfe154d8546678d15f5))
+
+
+### 新功能
+
+* 页面缓存策略优化，导航栏移除关于入口 ([66de1d4](https://git.ewing.top/yoea/vibe_blog_next/commit/66de1d40815dd9dbcc4ca2ee1e2e9c02b00fc98c))
+* AI Agent 自发现机制，更新文档描述 ([f0805d0](https://git.ewing.top/yoea/vibe_blog_next/commit/f0805d07d7cbf675d9cf2a43e2f734ecee51dc38))
+
+
+### 文档
+
+* 关于页面新增 MCP 接入专区 ([33eeb48](https://git.ewing.top/yoea/vibe_blog_next/commit/33eeb48bbce57b10ab85dcab5f83a0ecc3051c8a))
+
 ### [0.11.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.3...v0.11.4) (2026-05-09)
 
 ### 文档
