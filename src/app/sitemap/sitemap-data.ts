@@ -12,6 +12,7 @@ export const routes: SitemapRoute[] = [
   { path: '/about', title: '关于本站' },
   { path: '/admin/archive', title: '归档管理', indexable: false },
   { path: '/author', title: '作者列表' },
+  { path: '/guide', title: '接入指南' },
   { path: '/legal', title: '法律信息' },
   { path: '/login', title: '登录', indexable: false },
   { path: '/maintenance', title: '系统维护', indexable: false },
@@ -21,6 +22,5 @@ export const routes: SitemapRoute[] = [
   { path: '/register', title: '注册', indexable: false },
   { path: '/settings', title: '设置', indexable: false },
   { path: '/sitemap', title: '网站地图' },
-  { path: '/guide', title: '接入指南' },
   { path: '/tags', title: '标签管理' },
 ];
