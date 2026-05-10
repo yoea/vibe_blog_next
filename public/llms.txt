@@ -24,11 +24,50 @@
 
 ## MCP 接入（推荐）
 
-如果你的运行环境支持 MCP（Model Context Protocol），优先使用 MCP 工具操作博客，无需学习 REST API：
+如果你的运行环境支持 MCP（Model Context Protocol），优先使用 MCP 工具操作博客，无需学习 REST API。
 
-- MCP Server 脚本：`scripts/mcp-server.mjs`
-- 启动方式：`BLOG_API_URL=<url> BLOG_API_KEY=<key> node scripts/mcp-server.mjs`
-- 工具列表：whoami, list_posts, get_post, create_post, update_post, delete_post, archive_post, restore_post, upload_cover, remove_cover, add_comment, delete_comment, toggle_like, list_tags, create_tag, delete_tag
+### 获取脚本
+
+脚本是独立的 Node.js 文件，从 GitHub 仓库下载：
+
+```
+curl -o mcp-server.mjs https://raw.githubusercontent.com/yoea/vibe_blog_next/main/scripts/mcp-server.mjs
+```
+
+需要 Node.js 运行时（`node` 命令可用）和网络连接（访问博客 API）。
+
+### 启动方式
+
+```bash
+BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
+```
+
+### 工具列表（16 个）
+
+| 工具 | 用途 | 关键参数 |
+|------|------|----------|
+| whoami | 验证 API Key，获取用户信息 | 无 |
+| list_posts | 文章列表（分页） | `page?`, `pageSize?` |
+| get_post | 获取文章完整内容 | `slug` |
+| create_post | 创建文章（自动追加 AI 署名） | `title`, `content`, `excerpt?`, `tags?`, `published?`, `cover_image_url?` |
+| update_post | 更新文章（仅传入要改的字段） | `slug`, `title?`, `content?`, `excerpt?`, `published?`, `cover_image_url?`, `tags?` |
+| delete_post | 删除文章（不可逆） | `slug` |
+| archive_post | 归档文章（可恢复） | `slug` |
+| restore_post | 从归档恢复 | `slug` |
+| upload_cover | 上传封面图（JPG/PNG/WebP, ≤2MB） | `slug`, `imagePath`（本地绝对路径） |
+| remove_cover | 移除封面图 | `slug` |
+| add_comment | 添加评论 | `slug`, `content`, `author?`, `parentId?` |
+| delete_comment | 删除评论 | `id` |
+| toggle_like | 切换点赞 | `slug` |
+| list_tags | 列出所有标签 | 无 |
+| create_tag | 创建标签 | `name`, `slug?`, `color?` |
+| delete_tag | 删除标签 | `id` |
+
+### 常见工作流
+
+发布一篇新文章：`list_tags`（查看已有标签） → `create_post`（创建文章，返回 slug） → `upload_cover`（上传封面）。
+
+编辑文章：`list_posts`（找到 slug） → `get_post`（查看当前内容） → `update_post`（修改）。
 
 ## RESTful API
 
@@ -56,6 +95,18 @@
 | GET | `/api/v1/whoami` | 获取当前 API key 拥有者的用户信息 |
 
 所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。每个管理员可生成多个独立密钥。
+
+## AI 署名约定
+
+通过 RESTful API 或 MCP 创建的文章（`POST /api/v1/posts`、`create_post`），系统会自动在内容末尾追加：
+
+```
+---
+
+> 本文由 [Claude Code](https://claude.ai/code)（Anthropic）自动生成并发布。
+```
+
+无需手动添加。`update_post` 修改内容时不会自动追加。
 
 ## 认证
 
