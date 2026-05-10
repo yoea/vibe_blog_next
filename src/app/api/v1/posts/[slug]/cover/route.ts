@@ -39,7 +39,10 @@ export async function POST(
     .maybeSingle();
   const isAdmin = userSettings?.is_admin ?? false;
 
-  if (post.author_id !== (auth as { userId: string; keyId: string }).userId && !isAdmin)
+  if (
+    post.author_id !== (auth as { userId: string; keyId: string }).userId &&
+    !isAdmin
+  )
     return NextResponse.json(
       { error: '无权限', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },
@@ -159,7 +162,10 @@ export async function DELETE(
     .maybeSingle();
   const isAdmin = userSettings?.is_admin ?? false;
 
-  if (post.author_id !== (auth as { userId: string; keyId: string }).userId && !isAdmin)
+  if (
+    post.author_id !== (auth as { userId: string; keyId: string }).userId &&
+    !isAdmin
+  )
     return NextResponse.json(
       { error: '无权限', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },

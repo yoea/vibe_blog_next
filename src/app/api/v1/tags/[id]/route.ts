@@ -39,8 +39,13 @@ export async function DELETE(
     );
 
   // 检查权限：标签创建者或管理员
-  const admin = await isAdmin((auth as { userId: string; keyId: string }).userId);
-  if (tag.created_by !== (auth as { userId: string; keyId: string }).userId && !admin)
+  const admin = await isAdmin(
+    (auth as { userId: string; keyId: string }).userId,
+  );
+  if (
+    tag.created_by !== (auth as { userId: string; keyId: string }).userId &&
+    !admin
+  )
     return NextResponse.json(
       { error: '只能删除自己创建的标签', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },

@@ -9,7 +9,9 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createAdminClient();
 
-  const { data: authUser } = await supabase.auth.admin.getUserById((auth as { userId: string; keyId: string }).userId);
+  const { data: authUser } = await supabase.auth.admin.getUserById(
+    (auth as { userId: string; keyId: string }).userId,
+  );
 
   const { data: settings } = await supabase
     .from('user_settings')
