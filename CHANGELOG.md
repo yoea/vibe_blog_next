@@ -4,23 +4,20 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.12.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.1...v0.12.2) (2026-05-10)
 
-
 ### 新功能
 
-* 文章详情页新增左侧悬浮目录（TOC） ([ee66912](https://git.ewing.top/yoea/vibe_blog_next/commit/ee66912ea98c24dd59f99301152e013b20088e83))
-* API Key 开放给所有用户，增加每小时 60 次请求限流 ([615421a](https://git.ewing.top/yoea/vibe_blog_next/commit/615421aec346464d3cc9932639fe5a27e056416b))
-
+- 文章详情页新增左侧悬浮目录（TOC） ([ee66912](https://git.ewing.top/yoea/vibe_blog_next/commit/ee66912ea98c24dd59f99301152e013b20088e83))
+- API Key 开放给所有用户，增加每小时 60 次请求限流 ([615421a](https://git.ewing.top/yoea/vibe_blog_next/commit/615421aec346464d3cc9932639fe5a27e056416b))
 
 ### Bug 修复
 
-* 导航栏断点调整为 md，加载更多文案优化 ([63bba49](https://git.ewing.top/yoea/vibe_blog_next/commit/63bba494bbf908302ced26fdbe0d7703e2a8b40b))
-* 首页加载更多文章后返回不保留状态的问题 ([e1a09b0](https://git.ewing.top/yoea/vibe_blog_next/commit/e1a09b016af65811cf55915f9ff4f62f432ec206))
-* **api:** 限流调整为每分钟 60 次，管理员 300 次 ([675884a](https://git.ewing.top/yoea/vibe_blog_next/commit/675884a9eb2dca89cfcd5b29a2b8c8d6cfd65a9d))
-
+- 导航栏断点调整为 md，加载更多文案优化 ([63bba49](https://git.ewing.top/yoea/vibe_blog_next/commit/63bba494bbf908302ced26fdbe0d7703e2a8b40b))
+- 首页加载更多文章后返回不保留状态的问题 ([e1a09b0](https://git.ewing.top/yoea/vibe_blog_next/commit/e1a09b016af65811cf55915f9ff4f62f432ec206))
+- **api:** 限流调整为每分钟 60 次，管理员 300 次 ([675884a](https://git.ewing.top/yoea/vibe_blog_next/commit/675884a9eb2dca89cfcd5b29a2b8c8d6cfd65a9d))
 
 ### 其他变更
 
-* Prettier 格式化 API 路由和 CHANGELOG ([4d6d87d](https://git.ewing.top/yoea/vibe_blog_next/commit/4d6d87d8967b832a145b9a518c1c137ed8da2050))
+- Prettier 格式化 API 路由和 CHANGELOG ([4d6d87d](https://git.ewing.top/yoea/vibe_blog_next/commit/4d6d87d8967b832a145b9a518c1c137ed8da2050))
 
 ### [0.12.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.0...v0.12.1) (2026-05-10)
 
