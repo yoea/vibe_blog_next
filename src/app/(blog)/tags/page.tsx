@@ -2,6 +2,8 @@ import { getAllTagsWithCounts } from '@/lib/db/queries';
 import { createClient } from '@/lib/supabase/server';
 import { isSuperAdmin } from '@/lib/utils/admin';
 import { TagManager } from '@/components/tags/tag-manager';
+
+export const revalidate = 300;
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

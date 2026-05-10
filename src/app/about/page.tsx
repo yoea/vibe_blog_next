@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getBuildInfo } from '@/lib/build-info';
 import { createClient } from '@/lib/supabase/server';
+
+export const revalidate = 3600;
 import { GitFork, BookOpen, ArrowRight } from 'lucide-react';
 import { GitHubIcon } from '@/components/icons/github-icon';
 

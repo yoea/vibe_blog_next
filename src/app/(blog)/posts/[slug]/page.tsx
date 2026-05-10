@@ -6,6 +6,8 @@ import { CommentSection } from '@/components/blog/comment-section';
 import { ArchivePostButton } from '@/components/blog/archive-post-button';
 import { CoverReveal } from '@/components/blog/cover-reveal';
 import { Avatar } from '@/components/ui/avatar';
+
+export const revalidate = 300;
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Edit2 } from 'lucide-react';

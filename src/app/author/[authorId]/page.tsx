@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { PostCard } from '@/components/blog/post-card';
 import { AuthorCard } from '@/components/blog/author-card';
 import { GuestbookSection } from '@/components/blog/guestbook-section';
+
+export const revalidate = 300;
 import { getGuestbookMessages } from '@/lib/db/queries';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import ReactMarkdown from 'react-markdown';
+
+export const revalidate = 86400;
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 

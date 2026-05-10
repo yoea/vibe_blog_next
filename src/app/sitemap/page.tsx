@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+export const revalidate = 86400;
+
 export const metadata = {
   title: '网站地图',
   openGraph: { title: '网站地图' },

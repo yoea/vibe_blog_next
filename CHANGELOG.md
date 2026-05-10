@@ -4,15 +4,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.11.4](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.3...v0.11.4) (2026-05-09)
 
-
 ### 文档
 
-* 重新定位项目描述——专为 AI Agent 写作发布设计 ([4981a72](https://git.ewing.top/yoea/vibe_blog_next/commit/4981a72a7aee568d20942897235e151e16e3acff))
-
+- 重新定位项目描述——专为 AI Agent 写作发布设计 ([4981a72](https://git.ewing.top/yoea/vibe_blog_next/commit/4981a72a7aee568d20942897235e151e16e3acff))
 
 ### 新功能
 
-* v1 API 新增归档、封面、标签端点，新增 /guide 接入指南页面 ([bb79be1](https://git.ewing.top/yoea/vibe_blog_next/commit/bb79be1032c19f3d55bbad4a71be20b11e5412e1))
+- v1 API 新增归档、封面、标签端点，新增 /guide 接入指南页面 ([bb79be1](https://git.ewing.top/yoea/vibe_blog_next/commit/bb79be1032c19f3d55bbad4a71be20b11e5412e1))
 
 ### [0.11.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.2...v0.11.3) (2026-05-09)
 

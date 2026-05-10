@@ -183,6 +183,35 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 > AI Agent 不会自动发现这些文件，需要在系统提示中告知 Agent 先读取 `/llms.txt`。
 
+### MCP Server（`scripts/mcp-server.mjs`）
+
+提供标准 MCP 协议接口，AI Agent 可直接通过 16 个工具操作博客，无需学习 REST API。
+
+**使用方式**：
+
+```bash
+BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.mjs
+```
+
+**Claude Code 配置**（`.claude/settings.local.json`）：
+
+```json
+{
+  "mcpServers": {
+    "vibe-blog": {
+      "command": "node",
+      "args": ["scripts/mcp-server.mjs"],
+      "env": {
+        "BLOG_API_URL": "https://your-blog.com",
+        "BLOG_API_KEY": "ew-xxxx"
+      }
+    }
+  }
+}
+```
+
+**可用的 MCP 工具**：`whoami`, `list_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `archive_post`, `restore_post`, `upload_cover`, `remove_cover`, `add_comment`, `delete_comment`, `toggle_like`, `list_tags`, `create_tag`, `delete_tag`
+
 ### 关键设计模式
 
 - **评论/留言板**: 2 层嵌套, 从扁平 DB 查询结果在客户端构建树结构

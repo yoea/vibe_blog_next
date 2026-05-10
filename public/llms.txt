@@ -22,7 +22,17 @@
 
 **导航栏**: `desktop-nav` / `mobile-nav` / `mobile-menu-btn` / `breadcrumb`
 
+## MCP 接入（推荐）
+
+如果你的运行环境支持 MCP（Model Context Protocol），优先使用 MCP 工具操作博客，无需学习 REST API：
+
+- MCP Server 脚本：`scripts/mcp-server.mjs`
+- 启动方式：`BLOG_API_URL=<url> BLOG_API_KEY=<key> node scripts/mcp-server.mjs`
+- 工具列表：whoami, list_posts, get_post, create_post, update_post, delete_post, archive_post, restore_post, upload_cover, remove_cover, add_comment, delete_comment, toggle_like, list_tags, create_tag, delete_tag
+
 ## RESTful API
+
+如果不支持 MCP，使用 REST API。
 
 完整 OpenAPI 规范: `/api/v1/openapi.json`
 

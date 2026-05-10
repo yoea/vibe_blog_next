@@ -2,6 +2,8 @@ import { getPostsByTag } from '@/lib/db/queries';
 import { loadMorePostsByTag } from '@/lib/actions/post-actions';
 import { PostListClient } from '@/components/blog/post-list-client';
 import { linkRefTag } from '@/lib/constants';
+
+export const revalidate = 300;
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: '法律信息',
   openGraph: { title: '法律信息' },

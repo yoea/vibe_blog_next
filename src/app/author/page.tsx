@@ -2,6 +2,8 @@ import { getAllUsers } from '@/lib/db/queries';
 import { loadMoreAuthors } from '@/lib/actions/post-actions';
 import { deleteUserAsAdmin } from '@/lib/actions/admin-actions';
 import { isSuperAdmin, getSuperAdminUserIds } from '@/lib/utils/admin';
+
+export const revalidate = 600;
 import { AuthorListClient } from '@/components/blog/author-list-client';
 import { createClient } from '@/lib/supabase/server';
 
