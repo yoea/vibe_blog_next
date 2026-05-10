@@ -30,5 +30,6 @@ export async function updateUserSettings(
   if (error)
     return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
   revalidatePath('/settings');
+  revalidatePath(`/author/${user.id}`);
   return {};
 }

@@ -80,6 +80,7 @@ export async function uploadAvatar(
 
   revalidatePath('/settings');
   revalidatePath('/profile');
+  revalidatePath(`/author/${user.id}`);
 
   return { avatarUrl: publicUrl };
 }
@@ -121,6 +122,7 @@ export async function deleteAvatar(): Promise<ActionResult> {
 
   revalidatePath('/settings');
   revalidatePath('/profile');
+  revalidatePath(`/author/${user.id}`);
 
   return {};
 }

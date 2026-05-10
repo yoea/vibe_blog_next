@@ -66,6 +66,7 @@ export async function savePost(
     if (slug) revalidatePath(`/posts-edit/${slug}`);
     revalidatePath('/');
     revalidatePath('/profile');
+    revalidatePath('/tags');
     return { slug };
   } else {
     // Rate limit: 10 posts per hour per IP
@@ -113,6 +114,7 @@ export async function savePost(
       return { error: tagError, error_code: ErrorCode.SERVER_ERROR };
     revalidatePath('/');
     revalidatePath('/profile');
+    revalidatePath('/tags');
     return { slug: slugId };
   }
 }
