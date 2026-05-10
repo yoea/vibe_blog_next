@@ -3,6 +3,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import type { Schema } from 'hast-util-sanitize';
@@ -22,6 +23,12 @@ const sanitizeSchema: Schema = {
       ...((defaultSchema.attributes as any)?.code ?? []),
       ['className', /^hljs-/],
     ],
+    h1: [...((defaultSchema.attributes as any)?.h1 ?? []), ['id']],
+    h2: [...((defaultSchema.attributes as any)?.h2 ?? []), ['id']],
+    h3: [...((defaultSchema.attributes as any)?.h3 ?? []), ['id']],
+    h4: [...((defaultSchema.attributes as any)?.h4 ?? []), ['id']],
+    h5: [...((defaultSchema.attributes as any)?.h5 ?? []), ['id']],
+    h6: [...((defaultSchema.attributes as any)?.h6 ?? []), ['id']],
   },
 };
 
@@ -30,7 +37,11 @@ export function MarkdownPreview({ content }: { content: string }) {
     <div className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
-        rehypePlugins={[rehypeHighlight, [rehypeSanitize, sanitizeSchema]]}
+        rehypePlugins={[
+          rehypeSlug,
+          rehypeHighlight,
+          [rehypeSanitize, sanitizeSchema],
+        ]}
         components={{
           pre: ({ children, className }) => (
             <CodeBlock className={className}>{children}</CodeBlock>

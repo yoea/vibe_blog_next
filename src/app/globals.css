@@ -127,6 +127,7 @@
     @apply font-sans;
     height: 100%;
     -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
   }
   body {
     @apply text-foreground;
