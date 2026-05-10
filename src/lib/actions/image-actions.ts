@@ -55,6 +55,16 @@ export async function uploadContentImage(
     .from('images')
     .getPublicUrl(fileName);
 
+  // Create metadata record
+  await supabase.from('user_attachments').insert({
+    user_id: user.id,
+    bucket: 'images',
+    storage_path: fileName,
+    original_name: file.name,
+    mime_type: file.type,
+    size: file.size,
+  });
+
   return { imageUrl: urlData.publicUrl };
 }
 

@@ -99,7 +99,7 @@ npm run deploy:local    # 本地构建 + 上传部署
 | 其他      | about, legal, privacy, sitemap, maintenance, unauthorized                                                                                      |
 | `admin/`  | archive (归档管理)                                                                                                                             |
 | `api/`    | auth/callback, check-like, generate-summary, generate-tags, healthz, my-ip, search, shares, site-stats, check-deepseek-balance, test-ai-config |
-| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes, images, whoami（Bearer Token 认证，多密钥管理）                                                     |
+| `api/v1/` | **Bot RESTful API** — posts CRUD, comments, likes, images, attachments, whoami（Bearer Token 认证，多密钥管理）                                                     |
 
 ### 目录结构 (src/)
 
@@ -169,6 +169,8 @@ if (result.error_code === 'UNAUTHORIZED') {
 | `DELETE` | `/api/v1/comments/:id`         | 删除评论                                |
 | `POST`   | `/api/v1/posts/:slug/like`     | 切换点赞                                |
 | `POST`   | `/api/v1/images`               | 上传图片（返回公开 URL）                |
+| `POST`   | `/api/v1/attachments`          | 上传附件（图片或文档，返回 URL + ID）   |
+| `DELETE` | `/api/v1/attachments?id=xxx`   | 删除附件                                |
 | `GET`    | `/api/v1/whoami`               | 获取当前 key 拥有者的用户信息           |
 
 **认证方式**：`Authorization: Bearer <api_key>`
@@ -188,7 +190,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 ### MCP Server（`scripts/mcp-server.mjs`）
 
-提供标准 MCP 协议接口，AI Agent 可直接通过 17 个工具操作博客，无需学习 REST API。
+提供标准 MCP 协议接口，AI Agent 可直接通过 19 个工具操作博客，无需学习 REST API。
 
 **使用方式**：
 
@@ -213,7 +215,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 }
 ```
 
-**可用的 MCP 工具**：`whoami`, `list_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `archive_post`, `restore_post`, `upload_cover`, `remove_cover`, `upload_image`, `add_comment`, `delete_comment`, `toggle_like`, `list_tags`, `create_tag`, `delete_tag`
+**可用的 MCP 工具**：`whoami`, `list_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `archive_post`, `restore_post`, `upload_cover`, `remove_cover`, `upload_image`, `upload_attachment`, `delete_attachment`, `add_comment`, `delete_comment`, `toggle_like`, `list_tags`, `create_tag`, `delete_tag`
 
 ### 关键设计模式
 

@@ -707,6 +707,110 @@ server.registerTool(
   },
 );
 
+// ── upload_attachment ──
+server.registerTool(
+  'upload_attachment',
+  {
+    description:
+      'Upload a local file (image or document) as an attachment. ' +
+      'Accepts images (JPG, PNG, WebP, max 2MB) and documents (PDF, Word, Excel, PowerPoint, TXT, CSV, ZIP, max 10MB). ' +
+      'Returns the public URL, attachment ID, size, and MIME type. ' +
+      'filePath must be an absolute path to the file on the local filesystem.',
+    inputSchema: {
+      filePath: z
+        .string()
+        .describe(
+          'Absolute path to the local file (e.g. "/home/user/document.pdf" or "C:\\Users\\file.docx")',
+        ),
+    },
+  },
+  async ({ filePath }) => {
+    let file;
+    try {
+      file = readFileSync(filePath);
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: Cannot read file "${filePath}" — ${err.message}. Make sure the path is absolute and the file exists.`,
+          },
+        ],
+        isError: true,
+      };
+    }
+    const ext = filePath.split('.').pop()?.toLowerCase();
+    const mimeMap = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx:
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ppt: 'application/vnd.ms-powerpoint',
+      pptx:
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      txt: 'text/plain',
+      csv: 'text/csv',
+      zip: 'application/zip',
+    };
+    const mimeType = mimeMap[ext] || 'application/octet-stream';
+    const blob = new Blob([file], { type: mimeType });
+    const formData = new FormData();
+    const fileName = filePath.split(/[/\\]/).pop() || `file.${ext}`;
+    formData.append('file', blob, fileName);
+    const data = await api('/attachments', {
+      method: 'POST',
+      body: formData,
+    });
+    if (data?.error) return formatResult(data);
+    const { url, id, size, mime_type } = data.data || {};
+    return {
+      content: [
+        {
+          type: 'text',
+          text:
+            `Attachment uploaded successfully!\n` +
+            `ID: ${id}\n` +
+            `URL: ${url}\n` +
+            `Size: ${size} bytes\n` +
+            `MIME: ${mime_type}`,
+        },
+      ],
+    };
+  },
+);
+
+// ── delete_attachment ──
+server.registerTool(
+  'delete_attachment',
+  {
+    description:
+      'Delete an attachment by its ID. This removes both the file from storage and the metadata record. ' +
+      'You can only delete attachments you own (created with your API key).',
+    inputSchema: {
+      id: z.string().describe('Attachment ID to delete'),
+    },
+  },
+  async ({ id }) => {
+    const data = await api(
+      `/attachments?id=${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+      },
+    );
+    if (data?.error) return formatResult(data);
+    return {
+      content: [{ type: 'text', text: `Attachment "${id}" has been deleted.` }],
+    };
+  },
+);
+
 // ── Start ──
 const transport = new StdioServerTransport();
 await server.connect(transport);

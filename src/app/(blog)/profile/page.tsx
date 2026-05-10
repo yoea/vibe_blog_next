@@ -8,10 +8,11 @@ import { ProfileInfoCard } from '@/components/profile/profile-info-card';
 import { MyPostRowList } from '@/components/profile/my-post-row';
 import { GuestbookSection } from '@/components/blog/guestbook-section';
 import { TagManager } from '@/components/tags/tag-manager';
+import { AttachmentManagerButton } from '@/components/profile/attachment-manager-button';
 import { loadMoreMyPosts } from '@/lib/actions/post-actions';
 import { LINK_REF_PROFILE } from '@/lib/constants';
 import { isSuperAdmin } from '@/lib/utils/admin';
-import { Plus, Tags, FileText, MessageSquare } from 'lucide-react';
+import { Plus, Tags, FileText, MessageSquare, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
@@ -156,6 +157,15 @@ export default async function ProfilePage() {
           currentUserId={user.id}
           isAdmin={isAdmin}
         />
+      </section>
+
+      {/* Module: Attachment Manager */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Paperclip className="h-5 w-5" />
+          <h2 className="text-xl font-bold">附件管理</h2>
+        </div>
+        <AttachmentManagerButton />
       </section>
 
       {/* Module 4: Guestbook Messages */}

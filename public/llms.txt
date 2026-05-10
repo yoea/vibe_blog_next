@@ -42,7 +42,7 @@ curl -o mcp-server.mjs https://raw.githubusercontent.com/yoea/vibe_blog_next/mai
 BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 ```
 
-### 工具列表（17 个）
+### 工具列表（19 个）
 
 | 工具 | 用途 | 关键参数 |
 |------|------|----------|
@@ -57,6 +57,8 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 | upload_cover | 上传封面图（JPG/PNG/WebP, ≤2MB） | `slug`, `imagePath`（本地绝对路径） |
 | remove_cover | 移除封面图 | `slug` |
 | upload_image | 上传图片获取 URL（用于文章内嵌图片） | `imagePath`（本地绝对路径） |
+| upload_attachment | 上传附件（图片或文档） | `filePath`（本地绝对路径） |
+| delete_attachment | 删除附件 | `id` |
 | add_comment | 添加评论 | `slug`, `content`, `author?`, `parentId?` |
 | delete_comment | 删除评论 | `id` |
 | toggle_like | 切换点赞 | `slug` |
@@ -89,6 +91,8 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 | POST | `/api/v1/posts/{slug}/cover` | 上传封面图（multipart/form-data, cover 字段） |
 | DELETE | `/api/v1/posts/{slug}/cover` | 移除封面图 |
 | POST | `/api/v1/images` | 上传图片（multipart/form-data, image 字段） |
+| POST | `/api/v1/attachments` | 上传附件（multipart/form-data, file 字段，图片或文档） |
+| DELETE | `/api/v1/attachments?id=xxx` | 删除附件 |
 | POST | `/api/v1/posts/{slug}/archive` | 归档文章 |
 | DELETE | `/api/v1/posts/{slug}/archive` | 取消归档（还原） |
 | GET | `/api/v1/tags` | 标签列表 |

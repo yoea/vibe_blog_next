@@ -391,6 +391,44 @@
         }
       }
     },
+    "/attachments": {
+      "post": {
+        "summary": "上传附件（图片或文档）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary", "description": "附件文件（图片: JPG/PNG/WebP ≤2MB; 文档: PDF/Word/Excel/PPT/TXT/CSV/ZIP ≤10MB）" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "上传成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "object", "properties": { "url": { "type": "string", "description": "文件公开 URL" }, "id": { "type": "string", "description": "附件 ID" }, "size": { "type": "integer", "description": "文件大小（字节）" }, "mime_type": { "type": "string", "description": "MIME 类型" } } } } } } } },
+          "400": { "description": "文件格式或大小错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "未认证", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "服务端错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "summary": "删除附件",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "附件 ID" }
+        ],
+        "responses": {
+          "200": { "description": "删除成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "object", "properties": { "success": { "type": "boolean" } } } } } } } },
+          "400": { "description": "缺少参数", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "未认证", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "附件不存在", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "服务端错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
     "/whoami": {
       "get": {
         "summary": "获取当前 API key 拥有者的用户信息",
