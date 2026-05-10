@@ -498,6 +498,39 @@ create policy "covers_owner_delete"
   );
 
 -- ============================================
+-- Images storage bucket (2MB, post content images)
+-- ============================================
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('images', 'images', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+create policy "images_public_read"
+  on storage.objects for select
+  using (bucket_id = 'images');
+
+create policy "images_owner_insert"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'images'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "images_owner_update"
+  on storage.objects for update
+  using (
+    bucket_id = 'images'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+create policy "images_owner_delete"
+  on storage.objects for delete
+  using (
+    bucket_id = 'images'
+    and auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+-- ============================================
 -- Migration: add github_username column
 -- ============================================
 

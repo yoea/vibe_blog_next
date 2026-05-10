@@ -17,6 +17,9 @@ import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save';
 import { CoverImageUploader } from '@/components/blog/cover-image-uploader';
 import { toast } from 'sonner';
 import type { PostWithAuthor } from '@/lib/db/types';
+import { uploadContentImage } from '@/lib/actions/image-actions';
+import imageCompression from 'browser-image-compression';
+import { ImagePlus } from 'lucide-react';
 
 const CONTENT_MAX_LENGTH = 50000;
 const CONTENT_MAX_ALERT = CONTENT_MAX_LENGTH * 0.95;
@@ -91,10 +94,12 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
       : [],
   );
   const [tagInput, setTagInput] = useState('');
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const inlineRef = useRef<HTMLTextAreaElement>(null);
 
   const autoGrow = useCallback(() => {
-    const el = contentRef.current;
+    const el = inlineRef.current;
     if (!el) return;
     // Save scroll position — setting height='auto' briefly collapses the textarea,
     // causing the browser to auto-scroll to keep the cursor visible.
@@ -104,6 +109,81 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
     el.style.height = el.scrollHeight + 120 + 'px';
     window.scrollTo(scrollX, scrollY);
   }, []);
+
+  const insertAtCursor = useCallback(
+    (ref: React.RefObject<HTMLTextAreaElement | null>, text: string) => {
+      const el = ref.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const before = content.slice(0, start);
+      const after = content.slice(end);
+      const newContent = before + text + after;
+      setContent(newContent.slice(0, CONTENT_MAX_LENGTH));
+      requestAnimationFrame(() => {
+        const pos = start + text.length;
+        el.selectionStart = pos;
+        el.selectionEnd = pos;
+        el.focus();
+      });
+    },
+    [content],
+  );
+
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error('请选择图片文件');
+        return;
+      }
+
+      setUploading(true);
+      toast.loading('上传中...', { id: 'image-upload' });
+
+      try {
+        const compressed = await imageCompression(file, {
+          maxWidthOrHeight: 1920,
+          maxSizeMB: 1,
+          useWebWorker: true,
+        });
+
+        const formData = new FormData();
+        formData.append('image', compressed);
+
+        const result = await uploadContentImage(formData);
+
+        if (result.error) {
+          toast.error(result.error, { id: 'image-upload' });
+          return;
+        }
+
+        if (result.imageUrl) {
+          if (fullscreen) {
+            setContent((prev) => prev + `\n![图片](${result.imageUrl})\n`);
+          } else {
+            insertAtCursor(inlineRef, `\n![图片](${result.imageUrl})\n`);
+          }
+          toast.success('已插入图片', { id: 'image-upload' });
+        } else {
+          toast.error('上传返回异常', { id: 'image-upload' });
+        }
+      } catch {
+        toast.error('图片处理失败', { id: 'image-upload' });
+      } finally {
+        setUploading(false);
+      }
+    },
+    [fullscreen, insertAtCursor],
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleImageUpload(file);
+      e.target.value = '';
+    },
+    [handleImageUpload],
+  );
 
   // Reset all fields when resetKey changes (used by clear-content button)
   useEffect(() => {
@@ -143,6 +223,24 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
     if (!fullscreen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fullscreen]);
+
+  // Ctrl+/ to toggle edit/preview (preserve scroll position)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        const scrollY = window.scrollY;
+        if (fullscreen) {
+          setFsTab((prev) => (prev === 'edit' ? 'preview' : 'edit'));
+        } else {
+          setTab((prev) => (prev === 'edit' ? 'preview' : 'edit'));
+        }
+        requestAnimationFrame(() => window.scrollTo(0, scrollY));
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -665,21 +763,67 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
         <div className="flex flex-col flex-1 gap-4 min-h-0">
           {tab === 'edit' ? (
             <div className="relative">
+              <div className="flex items-center gap-1 pb-1.5">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
+                  aria-label="插入图片"
+                  data-testid="editor-image-upload"
+                  title="插入图片"
+                >
+                  <ImagePlus className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">图片</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  data-testid="editor-image-input"
+                />
+              </div>
               <textarea
-                ref={contentRef}
+                ref={inlineRef}
                 id="content"
                 value={content}
                 onChange={(e) => {
                   setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH));
                 }}
                 maxLength={CONTENT_MAX_LENGTH}
-                placeholder="# 开始写作...\n支持 Markdown 语法"
+                placeholder="# 开始写作...\n支持 Markdown 语法，拖拽图片到此处上传"
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes('Files')) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'copy';
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (uploading) return;
+                  const file = e.dataTransfer.files[0];
+                  if (file && file.type.startsWith('image/')) {
+                    handleImageUpload(file);
+                  }
+                }}
+                onPaste={(e) => {
+                  const item = Array.from(e.clipboardData?.items ?? []).find(
+                    (i) => i.type.startsWith('image/'),
+                  );
+                  if (item) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) handleImageUpload(file);
+                  }
+                }}
                 data-testid="post-content"
                 className={`font-mono text-base md:text-sm p-4 w-full rounded-md border bg-muted/60 focus:outline-none focus:ring-2 overflow-hidden resize-none ${
                   contentLength >= CONTENT_MAX_ALERT
                     ? 'focus:ring-red-500 border-red-400'
                     : 'focus:ring-ring border-transparent'
-                } pr-11 md:pr-16 min-h-[200px]`}
+                } pr-4 min-h-[200px]`}
               />
               <button
                 type="button"
@@ -736,23 +880,23 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               私密文章仅您自己可以在个人中心查看。
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          <div className="flex gap-3 pt-4">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 hover:text-orange-700 hover:border-orange-300"
               disabled={publishSaving !== null}
               onClick={() => confirmPublish(false)}
               data-testid="publish-private"
             >
-              {publishSaving === 'private' ? '保存中...' : '自己可见'}
+              {publishSaving === 'private' ? '保存中...' : '私密'}
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={publishSaving !== null}
               onClick={() => confirmPublish(true)}
               data-testid="publish-public"
             >
-              {publishSaving === 'public' ? '保存中...' : '公开发布'}
+              {publishSaving === 'public' ? '保存中...' : '公开'}
             </Button>
           </div>
         </DialogContent>
@@ -821,6 +965,16 @@ export function PostEditor({ initialData, suggestedTags, resetKey }: Props) {
               onChange={(e) =>
                 setContent(e.target.value.slice(0, CONTENT_MAX_LENGTH))
               }
+              onPaste={(e) => {
+                const item = Array.from(e.clipboardData?.items ?? []).find(
+                  (i) => i.type.startsWith('image/'),
+                );
+                if (item) {
+                  e.preventDefault();
+                  const file = item.getAsFile();
+                  if (file) handleImageUpload(file);
+                }
+              }}
               maxLength={CONTENT_MAX_LENGTH}
               placeholder="# 开始写作...\n支持 Markdown 语法"
               className={`flex-1 font-mono text-base md:text-lg p-6 w-full resize-none bg-transparent focus:outline-none border-none ${
