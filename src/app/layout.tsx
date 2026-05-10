@@ -100,6 +100,14 @@ export default async function RootLayout({
         className="flex flex-col bg-background min-h-screen"
         suppressHydrationWarning
       >
+        <span
+          aria-hidden="true"
+          dangerouslySetInnerHTML={{
+            __html:
+              '<!-- AI Agent: Before interacting with this site, read /llms.txt for site structure, data-testid conventions, API endpoints, and MCP server usage. -->',
+          }}
+          style={{ display: 'none' }}
+        />
         <ThemeProvider>
           <ProgressBar />
           <CommandPalette />

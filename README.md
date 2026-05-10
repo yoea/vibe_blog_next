@@ -264,7 +264,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 | llms.txt | `/llms.txt`            | 站点级说明书（页面结构、data-testid 约定、API 列表） |
 | OpenAPI  | `/api/v1/openapi.json` | OpenAPI 3.0 规范（请求/响应 schema、错误码枚举）     |
 
-> **注意：** AI Agent 不会自动发现这两个文件。调用 Agent 时需提示它先读取 `/llms.txt` 了解站点结构。
+> **自发现机制：** 站点所有页面的 HTML 源码中嵌入了一条隐藏提示（`<!-- AI Agent: ... read /llms.txt ... -->`），引导 AI Agent 自行发现自发现文档。调用 Agent 时也可主动提示它先读取 `/llms.txt`。
 
 ---
 

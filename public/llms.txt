@@ -1,6 +1,6 @@
 # 字里行间
 
-> Next.js 16 个人博客，支持人类用户和 AI Agent 操作。所有交互元素具备 data-testid，提供 RESTful API。
+> Next.js 16 个人博客，支持人类用户和 AI Agent 操作。所有交互元素具备 data-testid，提供 RESTful API 和 MCP Server。站点 HTML 中的隐藏提示会引导AI Agent来看这个页面的内容。
 
 ## 关键页面
 

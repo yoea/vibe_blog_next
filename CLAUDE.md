@@ -181,7 +181,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 | `public/llms.txt`            | `/llms.txt`            | 站点说明书：页面结构、data-testid 约定、API 端点列表、错误码枚举、认证方式 |
 | `public/api/v1/openapi.json` | `/api/v1/openapi.json` | OpenAPI 3.0 规范：所有 v1 端点的请求/响应 schema、认证 scheme              |
 
-> AI Agent 不会自动发现这些文件，需要在系统提示中告知 Agent 先读取 `/llms.txt`。
+> 站点所有页面的 HTML 源码中嵌入了一条隐藏注释（`layout.tsx` 中注入），引导 AI Agent 自行发现 `/llms.txt` 和 `/api/v1/openapi.json`。
 
 ### MCP Server（`scripts/mcp-server.mjs`）
 
