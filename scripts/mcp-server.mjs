@@ -12,7 +12,11 @@ const BLOG_API_URL = (process.env.BLOG_API_URL ?? '').replace(/\/+$/, '');
 const BLOG_API_KEY = process.env.BLOG_API_KEY ?? '';
 
 if (!BLOG_API_URL || !BLOG_API_KEY) {
-  console.error('Missing BLOG_API_URL or BLOG_API_KEY environment variables');
+  console.error(
+    'Error: BLOG_API_URL and BLOG_API_KEY environment variables are required.\n' +
+      'Example: BLOG_API_URL=https://blog.example.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.mjs\n' +
+      'API keys are generated in the blog settings page (设置 → 本站API KEY → 生成密钥).',
+  );
   process.exit(1);
 }
 
@@ -35,9 +39,13 @@ async function api(path, options = {}) {
     data = { raw: text };
   }
   if (!res.ok) {
-    throw new Error(
-      `[${res.status}] ${data.error || data.raw || 'Unknown error'}`,
-    );
+    // Return structured error instead of throwing — agents can see the error_code
+    return {
+      error: true,
+      status: res.status,
+      error_code: data.error_code || 'UNKNOWN',
+      message: data.error || data.raw || 'Unknown error',
+    };
   }
   return data;
 }
@@ -45,69 +53,151 @@ async function api(path, options = {}) {
 // ---- Build MCP Server ----
 
 const pkg = JSON.parse(
-  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 );
 
 const server = new McpServer({
   name: 'vibe-blog',
   version: pkg.version || '0.1.0',
-  vendor: '字里行间 Blog MCP',
 });
 
+// Helper: format error result for MCP
+function formatResult(data, successMsg) {
+  if (data?.error) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Error [${data.error_code}]: ${data.message}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+  return {
+    content: [
+      { type: 'text', text: successMsg || JSON.stringify(data, null, 2) },
+    ],
+  };
+}
+
 // ── whoami ──
-server.tool(
+server.registerTool(
   'whoami',
-  '获取当前 API Key 对应的用户信息（邮箱、用户名、头像、是否为管理员等）',
+  {
+    description:
+      'Verify your API key and get the current user info (email, display name, avatar, admin status). ' +
+      'Call this first to confirm authentication is working before using other tools.',
+    inputSchema: undefined,
+  },
   async () => {
     const data = await api('/whoami');
-    return {
-      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    };
+    return formatResult(data);
   },
 );
 
 // ── list_posts ──
-server.tool(
+server.registerTool(
   'list_posts',
-  '获取文章列表，支持分页',
   {
-    page: z.number().int().min(1).default(1).describe('页码'),
-    pageSize: z.number().int().min(1).max(50).default(10).describe('每页数量'),
+    description:
+      'List blog posts with pagination. Returns post titles, slugs, excerpts, cover images, tags, like/comment counts, and publish dates. ' +
+      'Use the slug from results to call get_post, update_post, delete_post, etc. ' +
+      'Default page size is 10, max 50.',
+    inputSchema: {
+      page: z
+        .number()
+        .int()
+        .min(1)
+        .default(1)
+        .describe('Page number (starts from 1)'),
+      pageSize: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .default(10)
+        .describe('Number of posts per page (1-50)'),
+    },
   },
   async ({ page, pageSize }) => {
     const data = await api(`/posts?page=${page}&pageSize=${pageSize}`);
-    return {
-      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    };
+    return formatResult(data);
   },
 );
 
 // ── get_post ──
-server.tool(
+server.registerTool(
   'get_post',
-  '根据 slug 获取单篇文章的完整内容',
   {
-    slug: z.string().describe('文章 slug（URL 中的标识符）'),
+    description:
+      'Get the full content of a single post by its slug. Returns title, markdown content, excerpt, cover image URL, tags, like count, comments, and metadata. ' +
+      'Use list_posts first to discover available slugs.',
+    inputSchema: {
+      slug: z
+        .string()
+        .describe(
+          'Post slug (the URL-friendly identifier, e.g. "my-first-post")',
+        ),
+    },
   },
   async ({ slug }) => {
     const data = await api(`/posts/${encodeURIComponent(slug)}`);
-    return {
-      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    };
+    return formatResult(data);
   },
 );
 
 // ── create_post ──
-server.tool(
+server.registerTool(
   'create_post',
-  '创建一篇新文章。title 和 content 为必填。',
   {
-    title: z.string().min(1).describe('文章标题'),
-    content: z.string().min(1).describe('Markdown 正文'),
-    excerpt: z.string().optional().describe('文章摘要'),
-    published: z.boolean().default(true).describe('是否直接发布'),
-    cover_image_url: z.string().url().optional().describe('封面图 URL'),
-    tags: z.array(z.string()).optional().describe('标签名称列表'),
+    description:
+      'Create and publish a new blog post. The post appears on the homepage immediately if published=true (default). ' +
+      'You MUST provide title and content. You SHOULD also provide excerpt and tags — do not leave them empty. ' +
+      'Auto-generate excerpt and tags from the content if the user does not specify them. ' +
+      'The system appends an AI attribution footer to content automatically — do not add one yourself.',
+    inputSchema: {
+      title: z
+        .string()
+        .min(1)
+        .describe(
+          'Post title (required). Write a concise, engaging title that summarizes the topic.',
+        ),
+      content: z
+        .string()
+        .min(1)
+        .describe(
+          'Post body in Markdown format (required). Use headings, lists, code blocks, links etc. as appropriate. ' +
+            'Do NOT add an AI attribution footer — the system adds it automatically.',
+        ),
+      excerpt: z
+        .string()
+        .max(140)
+        .optional()
+        .describe(
+          'Summary shown in post cards and search results. Max 140 characters. ' +
+            'Auto-generate from content if the user does not provide one — write a concise summary of the key points.',
+        ),
+      published: z
+        .boolean()
+        .default(true)
+        .describe('Set true to publish immediately, false to save as draft'),
+      cover_image_url: z
+        .string()
+        .url()
+        .optional()
+        .describe(
+          'Direct URL to cover image. Use upload_cover tool if you only have a local file.',
+        ),
+      tags: z
+        .array(z.string())
+        .optional()
+        .describe(
+          'Tag names for categorization. Auto-generate 2–7 relevant tags if the user does not specify. ' +
+            'Each tag: 2–6 Chinese characters OR 1–2 English words (e.g. "JavaScript", "机器学习", "React"). ' +
+            'Tags that do not yet exist will be created automatically with random colors.',
+        ),
+    },
   },
   async ({ title, content, excerpt, published, cover_image_url, tags }) => {
     const data = await api('/posts', {
@@ -121,11 +211,20 @@ server.tool(
         ...(tags && { tags }),
       }),
     });
+    if (data?.error) return formatResult(data);
+    const slug = data.data?.slug;
     return {
       content: [
         {
           type: 'text',
-          text: `文章创建成功！slug: ${data.data.slug}`,
+          text:
+            `Post created successfully!\n` +
+            `Slug: ${slug}\n` +
+            `URL: ${BLOG_API_URL}/posts/${slug}\n` +
+            `Published: ${published !== false}\n\n` +
+            `Next steps:\n` +
+            `- Use upload_cover to add a cover image\n` +
+            `- Use update_post to edit content or add tags`,
         },
       ],
     };
@@ -133,93 +232,186 @@ server.tool(
 );
 
 // ── update_post ──
-server.tool(
+server.registerTool(
   'update_post',
-  '根据 slug 更新文章。只需传入要更新的字段。',
   {
-    slug: z.string().describe('文章 slug'),
-    title: z.string().optional().describe('新标题'),
-    content: z.string().optional().describe('新的 Markdown 正文'),
-    excerpt: z.string().optional().describe('新摘要'),
-    published: z.boolean().optional().describe('是否发布'),
-    cover_image_url: z.string().url().optional().describe('封面图 URL'),
+    description:
+      'Update an existing post. Only pass the fields you want to change — omitted fields keep their current values. ' +
+      'Use get_post first to see current values. ' +
+      'The slug identifies which post to update (get it from list_posts or create_post).',
+    inputSchema: {
+      slug: z
+        .string()
+        .describe('Post slug to update (from list_posts or create_post)'),
+      title: z.string().optional().describe('New title'),
+      content: z
+        .string()
+        .optional()
+        .describe('New Markdown content (replaces entire body)'),
+      excerpt: z
+        .string()
+        .max(140)
+        .optional()
+        .describe(
+          'New excerpt/summary (max 140 chars). Auto-generate from content if updating content but not providing excerpt.',
+        ),
+      published: z
+        .boolean()
+        .optional()
+        .describe('Change publish status (true=published, false=draft)'),
+      cover_image_url: z
+        .string()
+        .url()
+        .optional()
+        .describe('New cover image URL (use upload_cover for local files)'),
+      tags: z
+        .array(z.string())
+        .optional()
+        .describe(
+          'Replace all tags. 2–7 tags, each 2–6 Chinese chars or 1–2 English words. New tags are created automatically.',
+        ),
+    },
   },
-  async ({ slug, title, content, excerpt, published, cover_image_url }) => {
+  async ({
+    slug,
+    title,
+    content,
+    excerpt,
+    published,
+    cover_image_url,
+    tags,
+  }) => {
     const body = {};
     if (title !== undefined) body.title = title;
     if (content !== undefined) body.content = content;
     if (excerpt !== undefined) body.excerpt = excerpt;
     if (published !== undefined) body.published = published;
     if (cover_image_url !== undefined) body.cover_image_url = cover_image_url;
-    await api(`/posts/${encodeURIComponent(slug)}`, {
+    if (tags !== undefined) body.tags = tags;
+    const data = await api(`/posts/${encodeURIComponent(slug)}`, {
       method: 'PUT',
       body: JSON.stringify(body),
     });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: `文章 "${slug}" 已更新。` }],
+      content: [
+        {
+          type: 'text',
+          text: `Post "${slug}" updated successfully. URL: ${BLOG_API_URL}/posts/${slug}`,
+        },
+      ],
     };
   },
 );
 
 // ── delete_post ──
-server.tool(
+server.registerTool(
   'delete_post',
-  '根据 slug 删除文章，操作不可逆。',
   {
-    slug: z.string().describe('文章 slug'),
+    description:
+      'Permanently delete a post by slug. This action cannot be undone. ' +
+      'Consider using archive_post instead if you may need the post later.',
+    inputSchema: {
+      slug: z.string().describe('Post slug to delete'),
+    },
   },
   async ({ slug }) => {
-    await api(`/posts/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+    const data = await api(`/posts/${encodeURIComponent(slug)}`, {
+      method: 'DELETE',
+    });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: `文章 "${slug}" 已删除。` }],
+      content: [{ type: 'text', text: `Post "${slug}" has been deleted.` }],
     };
   },
 );
 
 // ── archive_post ──
-server.tool(
+server.registerTool(
   'archive_post',
-  '归档文章（移至归档表，可从归档恢复）',
   {
-    slug: z.string().describe('文章 slug'),
+    description:
+      'Archive a post (move to archive table). Archived posts are hidden from the main blog but can be restored later with restore_post. ' +
+      'This is safer than delete — prefer archiving unless you truly want permanent removal.',
+    inputSchema: {
+      slug: z.string().describe('Post slug to archive'),
+    },
   },
   async ({ slug }) => {
-    await api(`/posts/${encodeURIComponent(slug)}/archive`, {
+    const data = await api(`/posts/${encodeURIComponent(slug)}/archive`, {
       method: 'POST',
     });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: `文章 "${slug}" 已归档。` }],
+      content: [
+        {
+          type: 'text',
+          text: `Post "${slug}" archived. Use restore_post to bring it back.`,
+        },
+      ],
     };
   },
 );
 
 // ── restore_post ──
-server.tool(
+server.registerTool(
   'restore_post',
-  '取消归档，从归档表还原文章',
   {
-    slug: z.string().describe('归档文章的 slug'),
+    description:
+      'Restore an archived post back to the main blog. The post will reappear on the homepage and in post listings.',
+    inputSchema: {
+      slug: z.string().describe('Slug of the archived post to restore'),
+    },
   },
   async ({ slug }) => {
-    await api(`/posts/${encodeURIComponent(slug)}/archive`, {
+    const data = await api(`/posts/${encodeURIComponent(slug)}/archive`, {
       method: 'DELETE',
     });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: `文章 "${slug}" 已还原。` }],
+      content: [
+        {
+          type: 'text',
+          text: `Post "${slug}" restored. URL: ${BLOG_API_URL}/posts/${slug}`,
+        },
+      ],
     };
   },
 );
 
 // ── upload_cover ──
-server.tool(
+server.registerTool(
   'upload_cover',
-  '为文章上传封面图。支持 JPG、PNG、WebP，最大 2MB。',
   {
-    slug: z.string().describe('文章 slug'),
-    imagePath: z.string().describe('本地图片文件路径（绝对路径）'),
+    description:
+      'Upload a local image file as the cover image for a post. ' +
+      'Accepts JPG, PNG, WebP formats. Maximum file size: 2MB. ' +
+      'The image will be cropped to 16:9 aspect ratio. ' +
+      'imagePath must be an absolute path to the image file on the local filesystem.',
+    inputSchema: {
+      slug: z.string().describe('Post slug to attach the cover image to'),
+      imagePath: z
+        .string()
+        .describe(
+          'Absolute path to the local image file (e.g. "/home/user/photo.jpg" or "C:\\Users\\photo.jpg")',
+        ),
+    },
   },
   async ({ slug, imagePath }) => {
-    const file = readFileSync(imagePath);
+    let file;
+    try {
+      file = readFileSync(imagePath);
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: Cannot read file "${imagePath}" — ${err.message}. Make sure the path is absolute and the file exists.`,
+          },
+        ],
+        isError: true,
+      };
+    }
     const ext = imagePath.split('.').pop()?.toLowerCase();
     const mimeMap = {
       jpg: 'image/jpeg',
@@ -235,11 +427,12 @@ server.tool(
       method: 'POST',
       body: formData,
     });
+    if (data?.error) return formatResult(data);
     return {
       content: [
         {
           type: 'text',
-          text: `封面上传成功！\n${JSON.stringify(data, null, 2)}`,
+          text: `Cover image uploaded for "${slug}".`,
         },
       ],
     };
@@ -247,34 +440,53 @@ server.tool(
 );
 
 // ── remove_cover ──
-server.tool(
+server.registerTool(
   'remove_cover',
-  '移除文章封面图',
   {
-    slug: z.string().describe('文章 slug'),
+    description: 'Remove the cover image from a post.',
+    inputSchema: {
+      slug: z.string().describe('Post slug to remove the cover image from'),
+    },
   },
   async ({ slug }) => {
-    await api(`/posts/${encodeURIComponent(slug)}/cover`, {
+    const data = await api(`/posts/${encodeURIComponent(slug)}/cover`, {
       method: 'DELETE',
     });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: `文章 "${slug}" 封面已移除。` }],
+      content: [{ type: 'text', text: `Cover image removed from "${slug}".` }],
     };
   },
 );
 
 // ── add_comment ──
-server.tool(
+server.registerTool(
   'add_comment',
-  '为文章添加评论',
   {
-    slug: z.string().describe('文章 slug'),
-    content: z.string().min(1).max(500).describe('评论内容'),
-    author: z
-      .string()
-      .optional()
-      .describe('显示名称（不传则使用 API key 用户）'),
-    parentId: z.string().optional().describe('父评论 ID，用于回复'),
+    description:
+      'Add a comment to a blog post. Comments are public and visible to all visitors. ' +
+      "The author name is optional — if omitted, it uses the API key owner's display name. " +
+      'To reply to an existing comment, pass its ID as parentId (get comment IDs from get_post).',
+    inputSchema: {
+      slug: z.string().describe('Post slug to comment on'),
+      content: z
+        .string()
+        .min(1)
+        .max(500)
+        .describe('Comment text (1-500 characters)'),
+      author: z
+        .string()
+        .optional()
+        .describe(
+          'Display name for the comment (defaults to API key owner name)',
+        ),
+      parentId: z
+        .string()
+        .optional()
+        .describe(
+          'Parent comment ID for threaded replies (get from get_post comments)',
+        ),
+    },
   },
   async ({ slug, content, author, parentId }) => {
     const body = { content };
@@ -284,11 +496,12 @@ server.tool(
       method: 'POST',
       body: JSON.stringify(body),
     });
+    if (data?.error) return formatResult(data);
     return {
       content: [
         {
           type: 'text',
-          text: `评论已添加。\n${JSON.stringify(data, null, 2)}`,
+          text: `Comment added to "${slug}".\n${JSON.stringify(data, null, 2)}`,
         },
       ],
     };
@@ -296,60 +509,98 @@ server.tool(
 );
 
 // ── delete_comment ──
-server.tool(
+server.registerTool(
   'delete_comment',
-  '删除评论',
   {
-    id: z.string().describe('评论 ID'),
+    description:
+      'Delete a comment by its ID. You can only delete comments you own (created with your API key). ' +
+      'Get comment IDs from get_post.',
+    inputSchema: {
+      id: z.string().describe('Comment ID to delete'),
+    },
   },
   async ({ id }) => {
-    await api(`/comments/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const data = await api(`/comments/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: '评论已删除。' }],
+      content: [{ type: 'text', text: 'Comment deleted.' }],
     };
   },
 );
 
 // ── toggle_like ──
-server.tool(
+server.registerTool(
   'toggle_like',
-  '切换文章点赞状态（已赞则取消，未赞则点赞）',
   {
-    slug: z.string().describe('文章 slug'),
+    description:
+      "Toggle the like status for a post. If you haven't liked it, this adds a like. If you already liked it, this removes the like. " +
+      'Each API key can like a post only once.',
+    inputSchema: {
+      slug: z.string().describe('Post slug to toggle like on'),
+    },
   },
   async ({ slug }) => {
     const data = await api(`/posts/${encodeURIComponent(slug)}/like`, {
       method: 'POST',
     });
+    if (data?.error) return formatResult(data);
     const liked = data.data?.liked ?? false;
     return {
-      content: [{ type: 'text', text: liked ? '已点赞' : '已取消点赞' }],
+      content: [
+        {
+          type: 'text',
+          text: liked ? `Liked "${slug}".` : `Unliked "${slug}".`,
+        },
+      ],
     };
   },
 );
 
 // ── list_tags ──
-server.tool('list_tags', '列出所有标签', async () => {
-  const data = await api('/tags');
-  return {
-    content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-  };
-});
+server.registerTool(
+  'list_tags',
+  {
+    description:
+      'List all available tags with their names, slugs, colors, and post counts. ' +
+      'Use this before creating posts with tags to check which tags exist. ' +
+      'Use create_tag to add new tags before referencing them in posts.',
+    inputSchema: undefined,
+  },
+  async () => {
+    const data = await api('/tags');
+    return formatResult(data);
+  },
+);
 
 // ── create_tag ──
-server.tool(
+server.registerTool(
   'create_tag',
-  '创建一个新标签',
   {
-    name: z.string().min(1).max(50).describe('标签名称'),
-    slug: z
-      .string()
-      .optional()
-      .describe('自定义 slug（不传则按 name 自动生成）'),
-    color: z
-      .string()
-      .optional()
-      .describe('十六进制颜色值（如 #ff0000），不传则随机分配'),
+    description:
+      'Create a new tag that can be assigned to posts. ' +
+      'After creating a tag, use its name in create_post or update_post tags array. ' +
+      'Tags are shared across all posts — check list_tags first to avoid duplicates.',
+    inputSchema: {
+      name: z
+        .string()
+        .min(1)
+        .max(50)
+        .describe('Tag display name (e.g. "JavaScript")'),
+      slug: z
+        .string()
+        .optional()
+        .describe(
+          'Custom URL slug (auto-generated from name if omitted, e.g. "javascript")',
+        ),
+      color: z
+        .string()
+        .optional()
+        .describe(
+          'Hex color code (e.g. "#ff0000"), randomly assigned if omitted',
+        ),
+    },
   },
   async ({ name, slug, color }) => {
     const body = { name };
@@ -359,11 +610,12 @@ server.tool(
       method: 'POST',
       body: JSON.stringify(body),
     });
+    if (data?.error) return formatResult(data);
     return {
       content: [
         {
           type: 'text',
-          text: `标签创建成功。\n${JSON.stringify(data, null, 2)}`,
+          text: `Tag "${name}" created. You can now use it in create_post or update_post.`,
         },
       ],
     };
@@ -371,16 +623,23 @@ server.tool(
 );
 
 // ── delete_tag ──
-server.tool(
+server.registerTool(
   'delete_tag',
-  '删除标签（会从所有文章中移除该标签）',
   {
-    id: z.string().describe('标签 ID'),
+    description:
+      'Delete a tag. This removes the tag from all posts that use it. ' +
+      'Get tag IDs from list_tags.',
+    inputSchema: {
+      id: z.string().describe('Tag ID to delete (get from list_tags)'),
+    },
   },
   async ({ id }) => {
-    await api(`/tags/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const data = await api(`/tags/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (data?.error) return formatResult(data);
     return {
-      content: [{ type: 'text', text: '标签已删除。' }],
+      content: [{ type: 'text', text: 'Tag deleted.' }],
     };
   },
 );
