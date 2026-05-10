@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.14.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.13.0...v0.14.0) (2026-05-10)
+
+
+### 新功能
+
+* 新增图片上传 API 端点与 MCP 工具 ([ecb4652](https://git.ewing.top/yoea/vibe_blog_next/commit/ecb46520e76475a434d935cb7454c0bf1db2d3d4))
+
 ## [0.13.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.3...v0.13.0) (2026-05-10)
 
 
