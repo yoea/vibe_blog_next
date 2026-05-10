@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PostCard } from './post-card';
 import { LoadMore } from '@/components/shared/load-more';
 
@@ -36,17 +36,82 @@ export function PostListClient({
   loadedAllText?: string;
   linkRef?: string;
 }) {
-  const [posts, setPosts] = useState(initialPosts);
+  // Restore cached posts immediately to avoid flash on back-navigation
+  const [posts, setPosts] = useState<PostData[]>(() => {
+    if (typeof window === 'undefined') return initialPosts;
+    const cached = sessionStorage.getItem('home_list_posts');
+    if (!cached) return initialPosts;
+    try {
+      const parsed = JSON.parse(cached);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialPosts;
+    } catch {
+      return initialPosts;
+    }
+  });
   const [total, setTotal] = useState(initialTotal);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => {
+    if (typeof window === 'undefined') return 1;
+    const cached = sessionStorage.getItem('home_list_posts');
+    if (!cached) return 1;
+    try {
+      const parsed = JSON.parse(cached);
+      return Array.isArray(parsed) ? Math.ceil(parsed.length / 5) : 1;
+    } catch {
+      return 1;
+    }
+  });
   const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(false);
 
-  // Sync with server props after refresh (e.g., post deletion)
+  // Restore scroll position on back navigation
   useEffect(() => {
-    setPosts(initialPosts);
-    setTotal(initialTotal);
-    setPage(1);
-  }, [initialPosts, initialTotal]);
+    const saved = sessionStorage.getItem('home_list_scroll');
+    if (!saved) return;
+    sessionStorage.removeItem('home_list_scroll');
+    try {
+      const scrollY = JSON.parse(saved);
+      if (typeof scrollY === 'number') window.scrollTo(0, scrollY);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Save scroll position and posts to sessionStorage
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    // Save posts whenever they change (covers load more + navigation)
+    sessionStorage.setItem('home_list_posts', JSON.stringify(posts));
+
+    let timer: ReturnType<typeof setTimeout>;
+    const saveScroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        sessionStorage.setItem(
+          'home_list_scroll',
+          JSON.stringify(window.scrollY),
+        );
+      }, 500);
+    };
+    window.addEventListener('scroll', saveScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', saveScroll);
+    };
+  }, [posts]);
+
+  // Sync with server props — but don't overwrite cached state with fewer posts
+  useEffect(() => {
+    if (initialPosts.length >= posts.length) {
+      setPosts(initialPosts);
+      setTotal(initialTotal);
+      setPage(1);
+      sessionStorage.removeItem('home_list_posts');
+      sessionStorage.removeItem('home_list_scroll');
+    }
+  }, [initialPosts, initialTotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasMore = posts.length < total;
 
