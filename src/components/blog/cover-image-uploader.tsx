@@ -8,6 +8,7 @@ import {
   uploadCoverImage,
   removeCoverImage,
 } from '@/lib/actions/cover-actions';
+import { fetchImageFromUrl, listUserImages } from '@/lib/actions/image-actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,8 +17,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ImagePlus, Trash2 } from 'lucide-react';
+import { ImagePlus, Trash2, Link, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   postId: string;
@@ -73,6 +75,14 @@ export function CoverImageUploader({
   const [previewOpen, setPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const [urlDialogOpen, setUrlDialogOpen] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<
+    { url: string; name: string }[]
+  >([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -149,6 +159,50 @@ export function CoverImageUploader({
     setRemoving(false);
   };
 
+  const handleUrlSubmit = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
+
+    // Supabase Storage URL — 直接使用，不重新上传
+    if (url.includes('.supabase.co/storage/v1/object/public/')) {
+      setUrlDialogOpen(false);
+      setUrlInput('');
+      onCoverChange(url);
+      toast.success('封面图已设置');
+      return;
+    }
+
+    // 外部 URL — 服务端获取后进入裁剪流程
+    setUrlLoading(true);
+    const result = await fetchImageFromUrl(url);
+    setUrlLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    if (result.dataUrl) {
+      setUrlDialogOpen(false);
+      setUrlInput('');
+      setImageSrc(result.dataUrl);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedPixels(null);
+      setCropOpen(true);
+    }
+  };
+
+  const handleOpenGallery = async () => {
+    setGalleryOpen(true);
+    setGalleryLoading(true);
+    const result = await listUserImages();
+    setGalleryLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      setGalleryImages(result.images ?? []);
+    }
+  };
+
   return (
     <>
       <input
@@ -160,9 +214,9 @@ export function CoverImageUploader({
       />
 
       {currentCoverUrl ? (
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center justify-center gap-3">
           <div
-            className="relative rounded-md overflow-hidden w-40 aspect-video bg-muted shrink-0 cursor-pointer"
+            className="relative rounded-md overflow-hidden w-48 aspect-video bg-muted shrink-0 cursor-pointer"
             onClick={() => setPreviewOpen(true)}
             role="button"
             tabIndex={0}
@@ -177,43 +231,92 @@ export function CoverImageUploader({
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 shrink-0 min-w-0">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
+              className="whitespace-nowrap"
             >
-              <ImagePlus className="h-3.5 w-3.5" />
-              <span className="ml-1">替换封面</span>
+              <ImagePlus className="h-3.5 w-3.5 shrink-0" />
+              <span className="ml-1">从相册选</span>
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="text-destructive hover:text-destructive"
+              onClick={() => setUrlDialogOpen(true)}
+              disabled={uploading}
+              className="whitespace-nowrap"
+            >
+              <Link className="h-3.5 w-3.5 shrink-0" />
+              <span className="ml-1">粘贴URL</span>
+            </Button>
+              <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenGallery}
+              disabled={uploading}
+              className="whitespace-nowrap"
+            >
+              <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="ml-1">选择已有</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive whitespace-nowrap"
               onClick={handleRemove}
               disabled={removing}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3.5 w-3.5 shrink-0" />
               <span className="ml-1">移除封面</span>
             </Button>
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || !postId}
-          className="w-40 aspect-video rounded-md border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/50 hover:text-primary/70 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          title={!postId ? '请先保存文章草稿再添加封面' : '添加封面图'}
-        >
-          <ImagePlus className="h-5 w-5" />
-          <span className="text-[11px]">
-            {!postId ? '保存后可添加封面' : '添加封面 (16:9)'}
-          </span>
-        </button>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || !postId}
+            className="w-48 aspect-video rounded-md border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/50 hover:text-primary/70 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            title={!postId ? '请先保存文章草稿再添加封面' : '添加封面图'}
+          >
+            <ImagePlus className="h-5 w-5" />
+            <span className="text-[11px]">
+              {!postId ? '保存后可添加封面' : '添加封面 (16:9)'}
+            </span>
+          </button>
+          <div className="flex flex-col gap-1.5 shrink-0 min-w-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setUrlDialogOpen(true)}
+              disabled={!postId}
+              className="whitespace-nowrap"
+            >
+              <Link className="h-3.5 w-3.5 shrink-0" />
+              <span className="ml-1">粘贴URL</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenGallery}
+              disabled={!postId}
+              className="whitespace-nowrap"
+            >
+              <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="ml-1">选择已有</span>
+            </Button>
+          </div>
+        </div>
       )}
 
       {uploading && (
@@ -229,6 +332,80 @@ export function CoverImageUploader({
             alt="文章封面"
             className="object-contain rounded-lg max-h-[80vh] w-full h-auto"
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Gallery dialog */}
+      <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>从已上传图片选择</DialogTitle>
+          </DialogHeader>
+          {galleryLoading ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              加载中...
+            </p>
+          ) : galleryImages.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              暂无已上传的图片
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto py-2">
+              {galleryImages.map((img) => (
+                <button
+                  key={img.url}
+                  type="button"
+                  onClick={() => {
+                    setGalleryOpen(false);
+                    onCoverChange(img.url);
+                    toast.success('封面图已设置');
+                  }}
+                  className="aspect-video rounded-md overflow-hidden border hover:border-primary transition-colors cursor-pointer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img.url}
+                    alt={img.name}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* URL input dialog */}
+      <Dialog open={urlDialogOpen} onOpenChange={setUrlDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>通过 URL 添加封面</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Input
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleUrlSubmit();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setUrlDialogOpen(false)}
+              disabled={urlLoading}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleUrlSubmit}
+              disabled={urlLoading || !urlInput.trim()}
+            >
+              {urlLoading ? '获取中...' : '确认'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
