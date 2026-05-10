@@ -4,6 +4,26 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getPublishedPosts } from '@/lib/db/queries';
 import { ErrorCode } from '@/lib/db/types';
 
+function randomTagColor(): string {
+  const palette = [
+    '#3B82F6',
+    '#22C55E',
+    '#A855F7',
+    '#EC4899',
+    '#F97316',
+    '#14B8A6',
+    '#EF4444',
+    '#6366F1',
+    '#EAB308',
+    '#06B6D4',
+    '#84CC16',
+    '#F43F5E',
+    '#8B5CF6',
+    '#0EA5E9',
+  ];
+  return palette[Math.floor(Math.random() * palette.length)];
+}
+
 // GET /api/v1/posts — 列出文章（分页）
 export async function GET(request: NextRequest) {
   const auth = await validateApiKey(request);
@@ -58,7 +78,9 @@ export async function POST(request: NextRequest) {
         author_id: auth.userId,
         title: title.trim(),
         slug,
-        content: content.trim(),
+        content:
+          content.trim() +
+          '\n\n---\n\n> 本文由 [Claude Code](https://claude.ai/code)（Anthropic）自动生成并发布。',
         excerpt: excerpt?.trim() ?? null,
         published: published ?? true,
         cover_image_url: cover_image_url ?? null,
@@ -105,7 +127,7 @@ export async function POST(request: NextRequest) {
           } else {
             const { data: newTag, error: createTagError } = await supabase
               .from('tags')
-              .insert({ name: trimmed, slug: tagSlug })
+              .insert({ name: trimmed, slug: tagSlug, color: randomTagColor() })
               .select('id')
               .single();
 
