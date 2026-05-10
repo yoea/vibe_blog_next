@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Point, Area } from 'react-easy-crop';
 import browserImageCompression from 'browser-image-compression';
@@ -83,6 +83,15 @@ export function CoverImageUploader({
     { url: string; name: string }[]
   >([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
+  const galleryFetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (galleryFetchedRef.current || !postId) return;
+    galleryFetchedRef.current = true;
+    listUserImages().then((result) => {
+      if (!result.error) setGalleryImages(result.images ?? []);
+    });
+  }, [postId]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -192,6 +201,10 @@ export function CoverImageUploader({
   };
 
   const handleOpenGallery = async () => {
+    if (galleryImages.length > 0) {
+      setGalleryOpen(true);
+      return;
+    }
     setGalleryOpen(true);
     setGalleryLoading(true);
     const result = await listUserImages();

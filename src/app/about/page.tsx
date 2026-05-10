@@ -35,6 +35,7 @@ const features = [
   '用户注册与登录，支持邮箱 / GitHub OAuth',
   'Markdown 写作，实时预览，自动保存草稿到云端',
   '文章封面图上传与裁剪（16:9，滚动揭示动画）',
+  '编辑器内插入图片（工具栏按钮 / 拖拽 / 粘贴 URL，自动压缩上传）',
   'AI 一键生成文章摘要 + 标签推荐（兼容 OpenAI API）',
   '文章标签分类与标签管理',
   '评论与回复，支持 2 层嵌套树形展示',
@@ -58,7 +59,7 @@ const techStack = [
     label: 'Markdown',
     value: 'react-markdown + remark-gfm + rehype-highlight',
   },
-  { label: 'MCP Server', value: 'scripts/mcp-server.mjs，16 个工具' },
+  { label: 'MCP Server', value: 'scripts/mcp-server.mjs，17 个工具' },
   { label: '图标', value: 'Lucide React' },
   { label: '部署', value: 'PM2 + Nginx 反向代理' },
   { label: '许可证', value: 'AGPL-3.0' },
@@ -181,8 +182,8 @@ export default async function AboutPage() {
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>
-              <span className="font-medium text-foreground">16 个工具</span> —
-              覆盖文章 CRUD、评论、点赞、标签管理、封面图上传、归档与恢复
+              <span className="font-medium text-foreground">17 个工具</span> —
+              覆盖文章 CRUD、评论、点赞、标签管理、封面图上传、图片上传、归档与恢复
             </li>
             <li>
               <span className="font-medium text-foreground">零配置</span> — 仅需

@@ -42,7 +42,7 @@ curl -o mcp-server.mjs https://raw.githubusercontent.com/yoea/vibe_blog_next/mai
 BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 ```
 
-### 工具列表（16 个）
+### 工具列表（17 个）
 
 | 工具 | 用途 | 关键参数 |
 |------|------|----------|
@@ -56,6 +56,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 | restore_post | 从归档恢复 | `slug` |
 | upload_cover | 上传封面图（JPG/PNG/WebP, ≤2MB） | `slug`, `imagePath`（本地绝对路径） |
 | remove_cover | 移除封面图 | `slug` |
+| upload_image | 上传图片获取 URL（用于文章内嵌图片） | `imagePath`（本地绝对路径） |
 | add_comment | 添加评论 | `slug`, `content`, `author?`, `parentId?` |
 | delete_comment | 删除评论 | `id` |
 | toggle_like | 切换点赞 | `slug` |
@@ -65,7 +66,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 
 ### 常见工作流
 
-发布一篇新文章：`list_tags`（查看已有标签） → `create_post`（创建文章，返回 slug） → `upload_cover`（上传封面）。
+发布一篇新文章：`list_tags`（查看已有标签） → `create_post`（创建文章，返回 slug） → `upload_cover`（上传封面） → `upload_image`（上传文中插图，获取 URL 后插入 Markdown）。
 
 编辑文章：`list_posts`（找到 slug） → `get_post`（查看当前内容） → `update_post`（修改）。
 
@@ -87,6 +88,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 | POST | `/api/v1/posts/{slug}/like` | 切换点赞 |
 | POST | `/api/v1/posts/{slug}/cover` | 上传封面图（multipart/form-data, cover 字段） |
 | DELETE | `/api/v1/posts/{slug}/cover` | 移除封面图 |
+| POST | `/api/v1/images` | 上传图片（multipart/form-data, image 字段） |
 | POST | `/api/v1/posts/{slug}/archive` | 归档文章 |
 | DELETE | `/api/v1/posts/{slug}/archive` | 取消归档（还原） |
 | GET | `/api/v1/tags` | 标签列表 |

@@ -644,6 +644,69 @@ server.registerTool(
   },
 );
 
+// ── upload_image ──
+server.registerTool(
+  'upload_image',
+  {
+    description:
+      'Upload a local image file to the blog and get a public URL. ' +
+      'Use this to embed images in post content with Markdown syntax: ![alt text](url). ' +
+      'Accepts JPG, PNG, WebP formats. Maximum file size: 2MB. ' +
+      'imagePath must be an absolute path to the image file on the local filesystem.',
+    inputSchema: {
+      imagePath: z
+        .string()
+        .describe(
+          'Absolute path to the local image file (e.g. "/home/user/photo.jpg" or "C:\\Users\\photo.jpg")',
+        ),
+    },
+  },
+  async ({ imagePath }) => {
+    let file;
+    try {
+      file = readFileSync(imagePath);
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: Cannot read file "${imagePath}" — ${err.message}. Make sure the path is absolute and the file exists.`,
+          },
+        ],
+        isError: true,
+      };
+    }
+    const ext = imagePath.split('.').pop()?.toLowerCase();
+    const mimeMap = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+    };
+    const mimeType = mimeMap[ext] || 'image/jpeg';
+    const blob = new Blob([file], { type: mimeType });
+    const formData = new FormData();
+    formData.append('image', blob, `image.${ext}`);
+    const data = await api('/images', {
+      method: 'POST',
+      body: formData,
+    });
+    if (data?.error) return formatResult(data);
+    const url = data.data?.url;
+    return {
+      content: [
+        {
+          type: 'text',
+          text:
+            `Image uploaded successfully!\n` +
+            `URL: ${url}\n\n` +
+            `Use in Markdown: ![image](${url})`,
+        },
+      ],
+    };
+  },
+);
+
 // ── Start ──
 const transport = new StdioServerTransport();
 await server.connect(transport);

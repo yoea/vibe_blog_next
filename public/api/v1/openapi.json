@@ -366,6 +366,31 @@
         }
       }
     },
+    "/images": {
+      "post": {
+        "summary": "上传图片（通用）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image"],
+                "properties": {
+                  "image": { "type": "string", "format": "binary", "description": "图片文件（JPG/PNG/WebP，≤2MB）" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "上传成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "object", "properties": { "url": { "type": "string", "description": "图片公开 URL" } } } } } } } },
+          "400": { "description": "文件格式或大小错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "未认证", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "服务端错误", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
     "/whoami": {
       "get": {
         "summary": "获取当前 API key 拥有者的用户信息",
