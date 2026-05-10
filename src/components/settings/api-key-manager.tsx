@@ -101,7 +101,7 @@ export function ApiKeyManager() {
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            持有此 Key 可用于 AI Agent 通过 RESTful API 访问博客。
+            持有此 Key 可用于 AI Agent 通过 MCP 或 RESTful API 访问博客。
           </p>
           <Button
             size="sm"
