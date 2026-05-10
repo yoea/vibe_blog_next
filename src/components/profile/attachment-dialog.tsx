@@ -88,9 +88,9 @@ export function AttachmentDialog({ open, onOpenChange }: Props) {
               加载中...
             </p>
           ) : tab === 'images' ? (
-            <ImageTab items={images} onRefresh={fetchData} />
+            <ImageTab items={images} setItems={setImages} />
           ) : (
-            <DocumentTab items={documents} onRefresh={fetchData} />
+            <DocumentTab items={documents} setItems={setDocuments} />
           )}
         </div>
       </DialogContent>

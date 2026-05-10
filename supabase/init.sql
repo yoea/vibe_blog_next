@@ -615,7 +615,7 @@ create policy "attachments_owner_delete"
 
 create trigger set_user_attachments_updated_at
   before update on user_attachments
-  for each row execute function update_updated_at();
+  for each row execute function update_updated_at_column();
 
 -- ============================================
 -- Backfill existing images into user_attachments

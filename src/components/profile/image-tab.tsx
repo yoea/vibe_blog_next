@@ -18,7 +18,7 @@ import type { AttachmentItem } from '@/lib/actions/attachment-actions';
 
 interface Props {
   items: AttachmentItem[];
-  onRefresh: () => void;
+  setItems: React.Dispatch<React.SetStateAction<AttachmentItem[]>>;
 }
 
 function formatSize(bytes: number): string {
@@ -27,7 +27,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function ImageTab({ items, onRefresh }: Props) {
+export function ImageTab({ items, setItems }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Preview state
@@ -50,19 +50,33 @@ export function ImageTab({ items, onRefresh }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fd = new FormData();
-    fd.append('file', file);
     setUploading(true);
     toast.loading('上传中...', { id: 'upload' });
+
+    let uploadFile = file;
+    if (file.type.startsWith('image/')) {
+      try {
+        uploadFile = await imageCompression(file, {
+          maxWidthOrHeight: 2048,
+          maxSizeMB: 1,
+          useWebWorker: true,
+        });
+      } catch {
+        // compression failed, use original
+      }
+    }
+
+    const fd = new FormData();
+    fd.append('file', uploadFile);
     const res = await uploadAttachment(fd);
     toast.dismiss('upload');
     setUploading(false);
 
     if (res.error) {
       toast.error(res.error);
-    } else {
+    } else if (res.item) {
       toast.success('上传成功');
-      onRefresh();
+      setItems((prev) => [res.item!, ...prev]);
     }
 
     // Reset input so same file can be selected again
@@ -76,7 +90,7 @@ export function ImageTab({ items, onRefresh }: Props) {
       toast.error(res.error);
     } else {
       toast.success('已删除');
-      onRefresh();
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
     }
   };
 
@@ -110,7 +124,13 @@ export function ImageTab({ items, onRefresh }: Props) {
       toast.error(res.error);
     } else {
       toast.success('裁剪完成');
-      onRefresh();
+      const newUrl = res.url;
+      const newSize = compressed.size;
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === cropItem!.id ? { ...i, url: newUrl!, size: newSize } : i,
+        ),
+      );
     }
 
     setCropItem(null);
@@ -136,7 +156,11 @@ export function ImageTab({ items, onRefresh }: Props) {
       toast.success('已保存');
       setEditingId(null);
       setEditingValue('');
-      onRefresh();
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id ? { ...i, description: editingValue.trim() || null } : i,
+        ),
+      );
     }
   };
 

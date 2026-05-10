@@ -23,7 +23,7 @@ import type { AttachmentItem } from '@/lib/actions/attachment-actions';
 
 interface Props {
   items: AttachmentItem[];
-  onRefresh: () => void;
+  setItems: React.Dispatch<React.SetStateAction<AttachmentItem[]>>;
 }
 
 /** 格式化文件大小 */
@@ -65,7 +65,7 @@ function getFileIcon(mimeType: string) {
 const ACCEPT_TYPES =
   '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip';
 
-export default function DocumentTab({ items, onRefresh }: Props) {
+export default function DocumentTab({ items, setItems }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,9 +86,9 @@ export default function DocumentTab({ items, onRefresh }: Props) {
 
     if (result.error) {
       toast.error(result.error, { id });
-    } else {
+    } else if (result.item) {
       toast.success('上传成功', { id });
-      onRefresh();
+      setItems((prev) => [result.item!, ...prev]);
     }
 
     setUploading(false);
@@ -104,7 +104,7 @@ export default function DocumentTab({ items, onRefresh }: Props) {
       toast.error(result.error);
     } else {
       toast.success('已删除');
-      onRefresh();
+      setItems((prev) => prev.filter((i) => i.id !== id));
     }
     setDeleting(null);
   }
@@ -122,8 +122,13 @@ export default function DocumentTab({ items, onRefresh }: Props) {
       toast.error(result.error);
     } else {
       toast.success('已更新');
+      const value = editValue;
       setEditingId(null);
-      onRefresh();
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === editingId ? { ...i, description: value.trim() || null } : i,
+        ),
+      );
     }
   }
 
@@ -179,94 +184,101 @@ export default function DocumentTab({ items, onRefresh }: Props) {
             <div
               key={item.id}
               data-testid={`document-item-${item.id}`}
-              className="flex items-center gap-3 rounded-lg border p-3"
+              className="rounded-lg border p-3"
             >
-              {/* 文件类型图标 */}
-              <div className="shrink-0">{getFileIcon(item.mimeType)}</div>
+              {/* 第一行：图标 + 文件名 + 大小 + 操作按钮 */}
+              <div className="flex items-center gap-3">
+                {/* 文件类型图标 */}
+                <div className="shrink-0">{getFileIcon(item.mimeType)}</div>
 
-              {/* 文件名（可点击下载） */}
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={item.originalName}
-                className="min-w-0 flex-1 truncate text-sm font-medium hover:underline"
-                data-testid={`document-name-${item.id}`}
-              >
-                {item.originalName}
-              </a>
+                {/* 文件名（可点击下载） */}
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={item.originalName}
+                  className="min-w-0 flex-1 truncate text-sm font-medium hover:underline"
+                  data-testid={`document-name-${item.id}`}
+                >
+                  {item.originalName}
+                </a>
 
-              {/* 文件大小 */}
-              <span className="text-muted-foreground shrink-0 text-xs">
-                {formatSize(item.size)}
-              </span>
+                {/* 文件大小 */}
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {formatSize(item.size)}
+                </span>
 
-              {/* 描述 / 编辑描述 */}
-              {editingId === item.id ? (
-                <div className="flex items-center gap-1" data-testid={`document-desc-edit-${item.id}`}>
-                  <Input
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onKeyDown={handleEditKeyDown}
-                    placeholder="输入描述..."
-                    className="h-7 w-40 text-xs"
-                    autoFocus
-                    data-testid={`document-desc-input-${item.id}`}
-                  />
+                {/* 编辑描述按钮 */}
+                {editingId !== item.id && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
-                    onClick={saveEdit}
-                    aria-label="保存描述"
-                    data-testid={`document-desc-save-${item.id}`}
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={cancelEdit}
-                    aria-label="取消编辑"
-                    data-testid={`document-desc-cancel-${item.id}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <span
-                    className="text-muted-foreground max-w-[160px] truncate text-xs"
-                    data-testid={`document-desc-${item.id}`}
-                  >
-                    {item.description || '无描述'}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => startEdit(item)}
                     aria-label="编辑描述"
                     data-testid={`document-desc-edit-btn-${item.id}`}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                </div>
-              )}
+                )}
 
-              {/* 删除按钮 */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive shrink-0"
-                onClick={() => handleDelete(item.id)}
-                disabled={deleting === item.id}
-                aria-label="删除文档"
-                data-testid={`document-delete-${item.id}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+                {/* 删除按钮 */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive shrink-0"
+                  onClick={() => handleDelete(item.id)}
+                  disabled={deleting === item.id}
+                  aria-label="删除文档"
+                  data-testid={`document-delete-${item.id}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* 第二行：描述 */}
+              <div className="mt-1.5 pl-8 sm:pl-8">
+                {editingId === item.id ? (
+                  <div className="flex items-center gap-1" data-testid={`document-desc-edit-${item.id}`}>
+                    <Input
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onKeyDown={handleEditKeyDown}
+                      placeholder="输入描述..."
+                      className="h-7 text-xs"
+                      autoFocus
+                      data-testid={`document-desc-input-${item.id}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0"
+                      onClick={saveEdit}
+                      aria-label="保存描述"
+                      data-testid={`document-desc-save-${item.id}`}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0"
+                      onClick={cancelEdit}
+                      aria-label="取消编辑"
+                      data-testid={`document-desc-cancel-${item.id}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <span
+                    className="text-muted-foreground text-xs"
+                    data-testid={`document-desc-${item.id}`}
+                  >
+                    {item.description || '添加描述...'}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
