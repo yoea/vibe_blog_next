@@ -2,8 +2,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { ErrorCode } from '@/lib/db/types';
 
-const API_RATE_LIMIT = 60; // 每小时每个 key 最多 60 次请求
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 小时
+const RATE_WINDOW_MS = 60 * 1000; // 1 分钟
+const RATE_LIMIT_USER = 60; // 普通用户：每分钟 60 次
+const RATE_LIMIT_ADMIN = 300; // 管理员：每分钟 300 次
 
 export type AuthResult =
   | { userId: string; keyId: string }
@@ -11,9 +12,7 @@ export type AuthResult =
   | { error: 'rate_limited' }
   | null;
 
-export async function validateApiKey(
-  request: Request,
-): Promise<AuthResult> {
+export async function validateApiKey(request: Request): Promise<AuthResult> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.slice(7);
@@ -28,7 +27,17 @@ export async function validateApiKey(
 
   if (!data) return { error: 'unauthorized' };
 
-  // 限流检查（滑动窗口，每小时 60 次）
+  // 查询是否管理员（缓存在同一查询窗口内）
+  const { data: settings } = await supabase
+    .from('user_settings')
+    .select('is_admin')
+    .eq('user_id', data.owner_id)
+    .maybeSingle();
+
+  const isAdmin = settings?.is_admin ?? false;
+  const limit = isAdmin ? RATE_LIMIT_ADMIN : RATE_LIMIT_USER;
+
+  // 限流检查（滑动窗口，每分钟）
   const now = Date.now();
   const windowStart = data.window_start
     ? new Date(data.window_start).getTime()
@@ -36,16 +45,14 @@ export async function validateApiKey(
   const windowAge = now - windowStart;
   const count = windowAge > RATE_WINDOW_MS ? 0 : (data.request_count ?? 0);
 
-  if (count >= API_RATE_LIMIT) {
+  if (count >= limit) {
     return { error: 'rate_limited' };
   }
 
   // 更新计数和窗口（异步，不阻塞请求）
   const newCount = windowAge > RATE_WINDOW_MS ? 1 : count + 1;
   const newWindowStart =
-    windowAge > RATE_WINDOW_MS
-      ? new Date().toISOString()
-      : data.window_start;
+    windowAge > RATE_WINDOW_MS ? new Date().toISOString() : data.window_start;
 
   supabase
     .from('api_keys')

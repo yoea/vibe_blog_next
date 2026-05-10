@@ -154,7 +154,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 ### Bot RESTful API（`src/app/api/v1/`）
 
-提供基于 API Key 的编程访问接口，每个用户可生成多个独立密钥，`author_id` 由密钥自动确定。每个密钥每小时限 60 次请求。
+提供基于 API Key 的编程访问接口，每个用户可生成多个独立密钥，`author_id` 由密钥自动确定。限流：普通用户 60 次/分钟，管理员 300 次/分钟。
 
 > **AI 署名约定**：通过 RESTful API 或 MCP 创建的文章，系统会自动在内容末尾追加 AI 生成署名注释（`---\n> 本文由 Claude Code 自动生成并发布`）。无需手动添加，`update_post` 修改内容时不会自动追加。
 
