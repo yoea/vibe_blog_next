@@ -174,7 +174,7 @@ export default async function PostPage({ params, searchParams }: PageProps) {
             }
           />
           {post.excerpt && (
-            <p className="text-sm text-muted-foreground max-w-prose leading-relaxed whitespace-pre-line">
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
               {post.excerpt}
             </p>
           )}
