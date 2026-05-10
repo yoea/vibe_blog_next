@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.0...v0.12.1) (2026-05-10)
+
+
+### 文档
+
+* MCP 文档补充下载地址、完整工具表和常见工作流 ([1f4a420](https://git.ewing.top/yoea/vibe_blog_next/commit/1f4a420c9bae32713e428d1eda7d72c92639175a))
+
+
+### Bug 修复
+
+* 文章详情页摘要移除 max-w-prose 宽度限制 ([141b061](https://git.ewing.top/yoea/vibe_blog_next/commit/141b061504607d347880655bb90c88206f838efb))
+* **api:** 通过 API 创建文章时自动创建的标签应分配随机颜色 ([4ec9306](https://git.ewing.top/yoea/vibe_blog_next/commit/4ec93067aa724d3e1d0ecbe5c4c6d4946667750c)), closes [#3B82F6](https://git.ewing.top/yoea/vibe_blog_next/issues/3B82F6)
+* **mcp:** 移除 MCP create_post 重复 AI 署名，优化工具描述 ([e02c33b](https://git.ewing.top/yoea/vibe_blog_next/commit/e02c33bd48150d656f19c2686f2cf061248e505f))
+
 ## [0.12.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.11.5...v0.12.0) (2026-05-10)
 
 
