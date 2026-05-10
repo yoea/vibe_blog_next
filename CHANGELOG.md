@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.2...v0.12.3) (2026-05-10)
+
+
+### 新功能
+
+* TOC 按钮支持拖动，设置页新增文章目录开关 ([bbec73e](https://git.ewing.top/yoea/vibe_blog_next/commit/bbec73e443eca28d654218fb03a2805b0eeefd59))
+
+
+### 其他变更
+
+* Prettier 格式化 CHANGELOG ([00c0a7d](https://git.ewing.top/yoea/vibe_blog_next/commit/00c0a7d268f5173a40ed8b0fcaabb45f4fcebe44))
+
 ### [0.12.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.1...v0.12.2) (2026-05-10)
 
 ### 新功能
