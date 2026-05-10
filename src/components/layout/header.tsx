@@ -255,7 +255,7 @@ export function Header({
 
         {/* Desktop nav */}
         <nav
-          className="hidden sm:flex items-center gap-2"
+          className="hidden md:flex items-center gap-2"
           aria-label="主导航"
           data-testid="desktop-nav"
         >
@@ -285,7 +285,7 @@ export function Header({
         </nav>
 
         {/* Mobile buttons */}
-        <div className="flex items-center gap-1 sm:hidden">
+        <div className="flex items-center gap-1 md:hidden">
           {!isMaintenance && (
             <button
               onClick={() =>
@@ -327,7 +327,7 @@ export function Header({
       {/* Mobile dropdown menu */}
       {menuOpen && !isMaintenance && (
         <div
-          className="sm:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-lg z-50 px-4 py-3 space-y-2"
+          className="md:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-lg z-50 px-4 py-3 space-y-2"
           role="navigation"
           aria-label="移动端导航"
           data-testid="mobile-nav"

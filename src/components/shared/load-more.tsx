@@ -28,20 +28,20 @@ export function LoadMore({
   remaining,
   currentCount = 0,
   totalCount = 0,
-  idleText = '加载更多',
+  idleText = '显示更多',
   loadingText = '加载中...',
-  loadedAllText = '已加载全部',
+  loadedAllText = '已显示全部',
   showLoadedAll = true,
   textOnly = false,
 }: LoadMoreProps) {
   if (hasMore) {
     // 纯文字模式
     if (textOnly) {
-      const label = `正在显示 ${currentCount} 篇文章，共 ${totalCount} 篇，点击加载更多`;
+      const label = `显示${currentCount}条 / 共${totalCount}条，点击显示`;
       return (
         <div className="flex justify-center pt-2">
           {loading ? (
-            <span className="text-sm text-muted-foreground inline-flex items-center gap-1">
+            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
               加载中...
             </span>
@@ -49,7 +49,7 @@ export function LoadMore({
             <button
               type="button"
               onClick={onLoadMore}
-              className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors cursor-pointer"
+              className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
             >
               {label}
             </button>
@@ -61,7 +61,7 @@ export function LoadMore({
     // 默认按钮模式（向后兼容）
     const label =
       remaining && remaining > 0
-        ? `剩余 ${remaining} 条未展示，点击加载更多`
+        ? `剩余 ${remaining} 条未展示，点击显示`
         : idleText;
 
     return (
@@ -83,9 +83,9 @@ export function LoadMore({
     return (
       <div className="flex justify-center pt-2">
         <span className="text-sm text-muted-foreground">
-          {loadedAllText !== '已加载全部'
+          {loadedAllText !== '已显示全部'
             ? loadedAllText
-            : `已加载全部${totalCount}篇文章`}
+            : `已显示全部${totalCount}篇文章`}
         </span>
       </div>
     );
