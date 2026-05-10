@@ -59,7 +59,7 @@ const techStack = [
     label: 'Markdown',
     value: 'react-markdown + remark-gfm + rehype-highlight',
   },
-  { label: 'MCP Server', value: 'scripts/mcp-server.mjs，17 个工具' },
+  { label: 'MCP Server', value: 'scripts/mcp-server.mjs，19 个工具' },
   { label: '图标', value: 'Lucide React' },
   { label: '部署', value: 'PM2 + Nginx 反向代理' },
   { label: '许可证', value: 'AGPL-3.0' },
@@ -182,8 +182,8 @@ export default async function AboutPage() {
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>
-              <span className="font-medium text-foreground">17 个工具</span> —
-              覆盖文章 CRUD、评论、点赞、标签管理、封面图上传、图片上传、归档与恢复
+              <span className="font-medium text-foreground">19 个工具</span> —
+              覆盖文章 CRUD、评论、点赞、标签管理、封面图上传、图片上传、附件管理、归档与恢复
             </li>
             <li>
               <span className="font-medium text-foreground">零配置</span> — 仅需
