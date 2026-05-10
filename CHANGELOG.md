@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.13.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.3...v0.13.0) (2026-05-10)
+
+
+### Bug 修复
+
+* API Key 设置项改为 Card 卡片样式，与其他设置项保持一致 ([b75f50d](https://git.ewing.top/yoea/vibe_blog_next/commit/b75f50d603eab921b4d73ab6d9823425eaeded6c))
+
+
+### 新功能
+
+* 编辑器支持图片上传（工具栏按钮、拖拽、剪贴板粘贴） ([da7faa9](https://git.ewing.top/yoea/vibe_blog_next/commit/da7faa90d23b5d7451c0f9dd7b170d2951f522fc))
+* 封面支持粘贴URL和从已上传图片选择 ([426b032](https://git.ewing.top/yoea/vibe_blog_next/commit/426b0329f47828acc3bf2fe3d2c36dc30f0637dc))
+
+
+### 其他变更
+
+* Prettier 格式化、sitemap 路由排序 ([32cbd83](https://git.ewing.top/yoea/vibe_blog_next/commit/32cbd833b2998376b9ca0348495c7b1e6567a736))
+
 ### [0.12.3](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.12.2...v0.12.3) (2026-05-10)
 
 ### 新功能
