@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -93,31 +94,32 @@ export function ApiKeyManager() {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-medium">本站 API Key</h4>
-          <p className="text-xs text-muted-foreground mt-0.5">
+    <Card>
+      <CardHeader>
+        <CardTitle>本站 API Key</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
             持有此 Key 可用于 AI Agent 通过 RESTful API 访问博客。
           </p>
+          <Button
+            size="sm"
+            onClick={() => setShowCreateDialog(true)}
+            className="shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span className="ml-1">生成密钥</span>
+          </Button>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setShowCreateDialog(true)}
-          className="shrink-0"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span className="ml-1">生成密钥</span>
-        </Button>
-      </div>
 
-      {loading ? (
-        <p className="text-xs text-muted-foreground">加载中...</p>
-      ) : keys.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          暂无密钥，点击「生成密钥」创建。
-        </p>
-      ) : (
+        {loading ? (
+          <p className="text-xs text-muted-foreground">加载中...</p>
+        ) : keys.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            暂无密钥，点击「生成密钥」创建。
+          </p>
+        ) : (
         <div className="space-y-2">
           {keys.map((key) => (
             <div
@@ -258,6 +260,7 @@ export function ApiKeyManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
