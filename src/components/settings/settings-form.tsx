@@ -41,6 +41,7 @@ export function SettingsForm({
     <div className="space-y-6">
       <ThemeSection />
       {isPasswordUser && <AccountSecuritySection user={user} />}
+      <ApiKeyManager />
       <AccountActionsSection user={user} />
       <SupportSection />
       {isAdmin && (
@@ -53,7 +54,6 @@ export function SettingsForm({
           icpNumber={icpNumber}
           icpVisible={icpVisible}
           showDeployNotify={showDeployNotify}
-          apiKeySection={<ApiKeyManager />}
         />
       )}
     </div>

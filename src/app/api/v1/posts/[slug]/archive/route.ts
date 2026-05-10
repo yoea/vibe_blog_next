@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -19,13 +19,10 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
-  if (!(await isAdmin(auth.userId)))
+  if (!(await isAdmin((auth as { userId: string; keyId: string }).userId)))
     return NextResponse.json(
       { error: '仅管理员可归档', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },
@@ -69,7 +66,7 @@ export async function POST(
       created_at: post.created_at,
       updated_at: post.updated_at,
       archived_at: new Date().toISOString(),
-      archived_by: auth.userId,
+      archived_by: (auth as { userId: string; keyId: string }).userId,
       tags: tags.length > 0 ? tags : null,
     });
 
@@ -106,13 +103,10 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
-  if (!(await isAdmin(auth.userId)))
+  if (!(await isAdmin((auth as { userId: string; keyId: string }).userId)))
     return NextResponse.json(
       { error: '仅管理员可操作', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },

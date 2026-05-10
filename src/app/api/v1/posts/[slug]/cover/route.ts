@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -12,11 +12,8 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
   const supabase = await createAdminClient();
@@ -38,11 +35,11 @@ export async function POST(
   const { data: userSettings } = await supabase
     .from('user_settings')
     .select('is_admin')
-    .eq('user_id', auth.userId)
+    .eq('user_id', (auth as { userId: string; keyId: string }).userId)
     .maybeSingle();
   const isAdmin = userSettings?.is_admin ?? false;
 
-  if (post.author_id !== auth.userId && !isAdmin)
+  if (post.author_id !== (auth as { userId: string; keyId: string }).userId && !isAdmin)
     return NextResponse.json(
       { error: '无权限', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },
@@ -84,7 +81,7 @@ export async function POST(
           ? 'webp'
           : 'jpg';
     const timestamp = Date.now();
-    const fileName = `${auth.userId}/cover_${post.id}_${timestamp}.${ext}`;
+    const fileName = `${(auth as { userId: string; keyId: string }).userId}/cover_${post.id}_${timestamp}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from('covers')
@@ -137,11 +134,8 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
   const supabase = await createAdminClient();
@@ -161,11 +155,11 @@ export async function DELETE(
   const { data: userSettings } = await supabase
     .from('user_settings')
     .select('is_admin')
-    .eq('user_id', auth.userId)
+    .eq('user_id', (auth as { userId: string; keyId: string }).userId)
     .maybeSingle();
   const isAdmin = userSettings?.is_admin ?? false;
 
-  if (post.author_id !== auth.userId && !isAdmin)
+  if (post.author_id !== (auth as { userId: string; keyId: string }).userId && !isAdmin)
     return NextResponse.json(
       { error: '无权限', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },

@@ -120,9 +120,6 @@ export async function listApiKeys(): Promise<
     }[];
   }
 > {
-  if (!(await isSuperAdmin()))
-    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -157,9 +154,6 @@ export async function listApiKeys(): Promise<
 export async function generateApiKey(
   name?: string,
 ): Promise<ActionResult & { apiKey?: string; id?: string }> {
-  if (!(await isSuperAdmin()))
-    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -190,9 +184,6 @@ export async function generateApiKey(
 
 // 删除指定 API Key
 export async function deleteApiKey(id: string): Promise<ActionResult> {
-  if (!(await isSuperAdmin()))
-    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
-
   const supabase = await createClient();
   const { error } = await supabase.from('api_keys').delete().eq('id', id);
 

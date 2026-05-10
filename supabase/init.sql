@@ -573,7 +573,9 @@ create table if not exists public.api_keys (
   name text not null default '默认密钥',
   key_value text not null unique,
   created_at timestamptz not null default now(),
-  last_used_at timestamptz
+  last_used_at timestamptz,
+  request_count integer not null default 0,
+  window_start timestamptz
 );
 
 alter table public.api_keys enable row level security;
@@ -587,6 +589,19 @@ end $$;
 
 create index if not exists idx_api_keys_owner on api_keys(owner_id);
 create index if not exists idx_api_keys_value on api_keys(key_value);
+
+-- Add rate limit columns if upgrading from a previous version
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_name = 'api_keys' and column_name = 'request_count') then
+    alter table api_keys add column request_count integer not null default 0;
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_name = 'api_keys' and column_name = 'window_start') then
+    alter table api_keys add column window_start timestamptz;
+  end if;
+end $$;
 
 -- ============================================
 -- Notifications（消息通知）

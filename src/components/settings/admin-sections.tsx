@@ -24,7 +24,6 @@ interface Props {
   icpNumber: string;
   icpVisible: boolean;
   showDeployNotify: boolean;
-  apiKeySection: React.ReactNode;
 }
 
 export function AdminSections({
@@ -36,7 +35,6 @@ export function AdminSections({
   icpNumber,
   icpVisible,
   showDeployNotify: initialShowDeployNotify,
-  apiKeySection,
 }: Props) {
   const router = useRouter();
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
@@ -137,11 +135,6 @@ export function AdminSections({
           initialAiModel={aiModel}
           initialAiModels={aiModels}
         />
-
-        <Separator />
-
-        {/* 本站 API Key */}
-        {apiKeySection}
 
         <Separator />
 

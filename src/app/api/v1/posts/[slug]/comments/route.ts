@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -9,12 +9,8 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
 
@@ -59,7 +55,7 @@ export async function POST(
       .insert({
         post_id: post.id,
         content: content.trim(),
-        author_id: auth.userId,
+        author_id: (auth as { userId: string; keyId: string }).userId,
         parent_id: parentId ?? null,
         guest_name: author?.trim() || null,
         ip: 'api',

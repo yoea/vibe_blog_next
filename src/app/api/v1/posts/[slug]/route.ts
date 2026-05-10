@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPostBySlug } from '@/lib/db/queries';
 import { ErrorCode } from '@/lib/db/types';
@@ -10,12 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
   const { data: post, error } = await getPostBySlug(slug);
@@ -36,12 +32,8 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
 
@@ -103,12 +95,8 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { slug } = await params;
   const supabase = await createAdminClient();

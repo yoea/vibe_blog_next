@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -26,11 +26,8 @@ function randomTagColor(): string {
 // GET /api/v1/tags — 列出所有标签
 export async function GET(request: NextRequest) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const supabase = await createAdminClient();
   const { data: tags, error } = await supabase
@@ -50,11 +47,8 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/tags — 创建标签
 export async function POST(request: NextRequest) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   try {
     const body = await request.json();
@@ -92,7 +86,7 @@ export async function POST(request: NextRequest) {
       name: trimmed,
       slug,
       color: color || randomTagColor(),
-      created_by: auth.userId,
+      created_by: (auth as { userId: string; keyId: string }).userId,
     };
 
     const { data: newTag, error } = await supabase

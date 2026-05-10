@@ -94,7 +94,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 | DELETE | `/api/v1/tags/{id}` | 删除标签 |
 | GET | `/api/v1/whoami` | 获取当前 API key 拥有者的用户信息 |
 
-所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。每个管理员可生成多个独立密钥。
+所有 API 端点需要 `Authorization: Bearer <api_key>` 请求头。每个用户可生成多个独立密钥。每个密钥每小时限 60 次请求。
 
 ## AI 署名约定
 

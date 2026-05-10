@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -8,12 +8,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await validateApiKey(request))) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const _auth = await validateApiKey(request);
+  const authError = authErrorResponse(_auth);
+  if (authError) return authError;
 
   const { id } = await params;
   const supabase = await createAdminClient();

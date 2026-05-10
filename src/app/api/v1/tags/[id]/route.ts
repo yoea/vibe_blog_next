@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ErrorCode } from '@/lib/db/types';
 
@@ -19,11 +19,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await validateApiKey(request);
-  if (!auth)
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { id } = await params;
   const supabase = await createAdminClient();
@@ -42,8 +39,8 @@ export async function DELETE(
     );
 
   // 检查权限：标签创建者或管理员
-  const admin = await isAdmin(auth.userId);
-  if (tag.created_by !== auth.userId && !admin)
+  const admin = await isAdmin((auth as { userId: string; keyId: string }).userId);
+  if (tag.created_by !== (auth as { userId: string; keyId: string }).userId && !admin)
     return NextResponse.json(
       { error: '只能删除自己创建的标签', error_code: ErrorCode.FORBIDDEN },
       { status: 403 },

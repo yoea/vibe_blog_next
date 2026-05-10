@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey } from '@/lib/api/auth';
+import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPublishedPosts } from '@/lib/db/queries';
 import { ErrorCode } from '@/lib/db/types';
@@ -27,12 +27,8 @@ function randomTagColor(): string {
 // GET /api/v1/posts — 列出文章（分页）
 export async function GET(request: NextRequest) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   const { searchParams } = request.nextUrl;
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -48,12 +44,8 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/posts — 创建文章
 export async function POST(request: NextRequest) {
   const auth = await validateApiKey(request);
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Unauthorized', error_code: ErrorCode.UNAUTHORIZED },
-      { status: 401 },
-    );
-  }
+  const authError = authErrorResponse(auth);
+  if (authError) return authError;
 
   try {
     const body = await request.json();
@@ -75,7 +67,7 @@ export async function POST(request: NextRequest) {
       .from('posts')
       .insert({
         id,
-        author_id: auth.userId,
+        author_id: (auth as { userId: string; keyId: string }).userId,
         title: title.trim(),
         slug,
         content:

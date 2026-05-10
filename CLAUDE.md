@@ -154,7 +154,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 ### Bot RESTful API（`src/app/api/v1/`）
 
-提供基于 API Key 的编程访问接口，每个管理员可生成多个独立密钥，`author_id` 由密钥自动确定。
+提供基于 API Key 的编程访问接口，每个用户可生成多个独立密钥，`author_id` 由密钥自动确定。每个密钥每小时限 60 次请求。
 
 > **AI 署名约定**：通过 RESTful API 或 MCP 创建的文章，系统会自动在内容末尾追加 AI 生成署名注释（`---\n> 本文由 Claude Code 自动生成并发布`）。无需手动添加，`update_post` 修改内容时不会自动追加。
 
@@ -172,7 +172,7 @@ if (result.error_code === 'UNAUTHORIZED') {
 
 **认证方式**：`Authorization: Bearer <api_key>`
 
-**管理**：管理员在设置页 → "本站API KEY" → 点击"生成密钥"，可为每个密钥命名方便区分用途。
+**管理**：所有登录用户在设置页 → "本站API KEY" → 点击"生成密钥"，可为每个密钥命名方便区分用途。
 
 **完整 API 文档**：`/api/v1/openapi.json`（OpenAPI 3.0 规范，AI Agent 可直接解析）
 
