@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { List } from 'lucide-react';
 
 interface DomHeading {
@@ -9,12 +9,24 @@ interface DomHeading {
   level: number;
 }
 
-export function TableOfContents() {
+const STORAGE_KEY = 'toc_button_top';
+
+export function TableOfContents({ enabled = true }: { enabled?: boolean }) {
   const [headings, setHeadings] = useState<DomHeading[]>([]);
   const [activeId, setActiveId] = useState<string>('');
   const [open, setOpen] = useState(false);
+  const [top, setTop] = useState(() => {
+    if (typeof window === 'undefined') return 96;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? Number(saved) : 96;
+  });
   const panelRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const dragState = useRef<{
+    startY: number;
+    startTop: number;
+    moved: boolean;
+  } | null>(null);
 
   // Extract headings from DOM (IDs come from rehype-slug, guaranteed match)
   useEffect(() => {
@@ -86,7 +98,35 @@ export function TableOfContents() {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  if (headings.length === 0) return null;
+  // Drag handling
+  const onPointerDown = (e: React.PointerEvent) => {
+    // Only primary button
+    if (e.button !== 0) return;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragState.current = { startY: e.clientY, startTop: top, moved: false };
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragState.current) return;
+    const dy = e.clientY - dragState.current.startY;
+    if (Math.abs(dy) > 3) dragState.current.moved = true;
+    const newTop = Math.max(
+      0,
+      Math.min(window.innerHeight - 32, dragState.current.startTop + dy),
+    );
+    setTop(newTop);
+  };
+
+  const onPointerUp = () => {
+    if (!dragState.current) return;
+    const wasDrag = dragState.current.moved;
+    dragState.current = null;
+    localStorage.setItem(STORAGE_KEY, String(top));
+    // If not dragged, toggle panel
+    if (!wasDrag) setOpen((v) => !v);
+  };
+
+  if (!enabled || headings.length === 0) return null;
 
   const indentClass: Record<number, string> = {
     2: 'pl-2',
@@ -97,18 +137,20 @@ export function TableOfContents() {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top, behavior: 'smooth' });
+    const topPos = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: topPos, behavior: 'smooth' });
     setActiveId(id);
     history.replaceState(null, '', `#${id}`);
   };
 
   return (
-    <div ref={panelRef} className="fixed left-3 top-24 z-40">
-      {/* Toggle button */}
+    <div ref={panelRef} className="fixed left-3 z-40" style={{ top }}>
+      {/* Toggle button (draggable) */}
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-center w-8 h-8 rounded-md border bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shadow-sm"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        className="flex items-center justify-center w-8 h-8 rounded-md border bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shadow-sm cursor-grab active:cursor-grabbing touch-none select-none"
         aria-label={open ? '关闭目录' : '打开目录'}
         data-testid="toc-toggle"
       >

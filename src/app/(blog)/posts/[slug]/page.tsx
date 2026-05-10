@@ -102,9 +102,16 @@ export default async function PostPage({ params, searchParams }: PageProps) {
   const currentUserId = currentUser?.id ?? null;
   const isAdmin = await isSuperAdmin(currentUser);
 
+  const { data: tocConfig } = await supabase
+    .from('site_config')
+    .select('value')
+    .eq('key', 'show_toc')
+    .maybeSingle();
+  const showToc = tocConfig?.value !== 'false';
+
   return (
     <>
-      <TableOfContents />
+      <TableOfContents enabled={showToc} />
       <div className="space-y-6">
         <Breadcrumb items={breadcrumbItems} />
 

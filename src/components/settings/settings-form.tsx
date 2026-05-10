@@ -19,6 +19,7 @@ interface Props {
   icpNumber?: string;
   icpVisible?: boolean;
   showDeployNotify?: boolean;
+  showToc?: boolean;
 }
 
 export function SettingsForm({
@@ -32,6 +33,7 @@ export function SettingsForm({
   icpNumber = '',
   icpVisible = false,
   showDeployNotify = false,
+  showToc = true,
 }: Props) {
   const isPasswordUser =
     user.app_metadata?.provider === 'email' ||
@@ -54,6 +56,7 @@ export function SettingsForm({
           icpNumber={icpNumber}
           icpVisible={icpVisible}
           showDeployNotify={showDeployNotify}
+          showToc={showToc}
         />
       )}
     </div>

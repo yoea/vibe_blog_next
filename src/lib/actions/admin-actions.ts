@@ -223,6 +223,37 @@ export async function toggleDeployNotify(): Promise<ActionResult> {
   return {};
 }
 
+export async function toggleTocDisplay(): Promise<ActionResult> {
+  if (!(await isSuperAdmin()))
+    return { error: '无权限', error_code: ErrorCode.FORBIDDEN };
+
+  const supabase = await createClient();
+
+  const { data: config } = await supabase
+    .from('site_config')
+    .select('value')
+    .eq('key', 'show_toc')
+    .maybeSingle();
+
+  const newValue = config?.value === 'true' ? 'false' : 'true';
+
+  const { error } = await supabase.from('site_config').upsert(
+    {
+      key: 'show_toc',
+      value: newValue,
+      description: '是否在文章详情页显示目录导航',
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'key' },
+  );
+
+  if (error)
+    return { error: error.message, error_code: ErrorCode.SERVER_ERROR };
+
+  revalidatePath('/settings');
+  return {};
+}
+
 export async function saveAIModels(models: string[]): Promise<ActionResult> {
   if (!(await isSuperAdmin()))
     return { error: '无权限', error_code: ErrorCode.FORBIDDEN };

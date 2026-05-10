@@ -11,6 +11,7 @@ import { Wrench, Archive } from 'lucide-react';
 import {
   toggleMaintenanceMode,
   toggleDeployNotify,
+  toggleTocDisplay,
 } from '@/lib/actions/admin-actions';
 import { AIConfigSection } from './ai-config-section';
 import { IcpSection } from './icp-section';
@@ -24,6 +25,7 @@ interface Props {
   icpNumber: string;
   icpVisible: boolean;
   showDeployNotify: boolean;
+  showToc: boolean;
 }
 
 export function AdminSections({
@@ -35,6 +37,7 @@ export function AdminSections({
   icpNumber,
   icpVisible,
   showDeployNotify: initialShowDeployNotify,
+  showToc: initialShowToc,
 }: Props) {
   const router = useRouter();
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
@@ -42,6 +45,8 @@ export function AdminSections({
     initialShowDeployNotify,
   );
   const [deployNotifyLoading, setDeployNotifyLoading] = useState(false);
+  const [showToc, setShowToc] = useState(initialShowToc);
+  const [tocLoading, setTocLoading] = useState(false);
 
   const handleMaintenanceToggle = async () => {
     setMaintenanceLoading(true);
@@ -122,6 +127,45 @@ export function AdminSections({
             />
             <span className="text-xs text-muted-foreground">
               {showDeployNotify ? '已开启' : '已关闭'}
+            </span>
+          </label>
+        </div>
+
+        <Separator />
+
+        {/* 文章目录 TOC */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h4 className="text-sm font-medium">文章目录（TOC）</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {showToc
+                ? '已开启，文章详情页左侧显示可拖动的悬浮目录按钮'
+                : '关闭后文章详情页不再显示目录导航'}
+            </p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer shrink-0">
+            <input
+              type="checkbox"
+              checked={showToc}
+              onChange={async (e) => {
+                const checked = e.target.checked;
+                setShowToc(checked);
+                setTocLoading(true);
+                const { error } = await toggleTocDisplay();
+                setTocLoading(false);
+                if (error) {
+                  setShowToc(!checked);
+                  toast.error(error);
+                } else {
+                  toast.success(checked ? '文章目录已开启' : '文章目录已关闭');
+                  router.refresh();
+                }
+              }}
+              disabled={tocLoading}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <span className="text-xs text-muted-foreground">
+              {showToc ? '已开启' : '已关闭'}
             </span>
           </label>
         </div>
