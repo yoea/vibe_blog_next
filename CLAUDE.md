@@ -273,6 +273,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 2. **读取每个赋值点** — 理解上下文和调用时序
 3. **解释根本原因** — 说明原始值为何缺失/错误，而非修复表象
 4. **然后修复** — 基于根因给出方案
+5. **验证修复** — 构建通过 + 手动测试确认根因已解决（不仅仅是表象消失）
 
 避免：不清楚根因就加回退值、可选链、空值合并等"防御性修补"。
 
@@ -287,6 +288,31 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 ## 文档维护
 
 - 每当代码变更影响到项目设置、依赖项、构建步骤或开发人员入职流程时，请主动更新 README.md。不要等待被要求才去更新。
+- README.md 更新是每个 feature commit 的一部分，不是后续任务。如果改了架构、功能或部署步骤，README 必须同步修改。
+- 同时检查 `public/llms.txt`、`public/api/v1/openapi.json`、`CLAUDE.md` 是否需要同步更新。
+
+## 编码规范
+
+- 使用 Prettier 格式化，配置见 `.prettierrc`。**禁止**对整个项目运行 `npm run format`，仅格式化直接修改的文件。
+- `npm run format:check` 仅在 CI 或用户明确要求时使用。
+- 跨项目（博客 vs 其他项目）切换时，确认当前工作目录再操作，避免误改无关文件。
+
+## 发版质量清单
+
+提交代码前，执行以下检查：
+
+1. `npx tsc --noEmit` — 类型检查通过
+2. `npm run build` — 构建成功
+3. `git diff --stat` — 仅包含预期修改的文件
+4. README.md / CLAUDE.md / llms.txt — 功能或部署变更已同步更新
+5. 无未使用的 import 或变量
+
+## 远程设备部署
+
+- ARM 设备（x96max 等）：先 `scp` 到 `/tmp`，再 `ssh` 用 `sudo mv` 移到目标目录
+- 部署前确认目标目录存在且有写入权限
+- 不要尝试直接写入受保护目录
+- 重启相关服务验证部署结果
 
 ## 编辑偏好
 
