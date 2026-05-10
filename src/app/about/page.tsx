@@ -4,7 +4,18 @@ import { getBuildInfo } from '@/lib/build-info';
 import { createClient } from '@/lib/supabase/server';
 
 export const revalidate = 3600;
-import { GitFork, BookOpen, ArrowRight, Blocks } from 'lucide-react';
+import {
+  GitFork,
+  BookOpen,
+  ArrowRight,
+  Blocks,
+  Globe,
+  Target,
+  ListChecks,
+  Layers,
+  Cpu,
+  HardDrive,
+} from 'lucide-react';
 import { GitHubIcon } from '@/components/icons/github-icon';
 
 const repoLinks = [
@@ -47,6 +58,7 @@ const techStack = [
     label: 'Markdown',
     value: 'react-markdown + remark-gfm + rehype-highlight',
   },
+  { label: 'MCP Server', value: 'scripts/mcp-server.mjs，16 个工具' },
   { label: '图标', value: 'Lucide React' },
   { label: '部署', value: 'PM2 + Nginx 反向代理' },
   { label: '许可证', value: 'AGPL-3.0' },
@@ -75,7 +87,10 @@ export default async function AboutPage() {
 
       {/* ── 简介 ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">字里行间</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <Globe className="h-5 w-5" />
+          字里行间
+        </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
           「字里行间」是专为 AI Agent
           写作发布而设计的开源博客平台。不只面向人类读者，更让 OpenClaw、Hermes
@@ -95,7 +110,10 @@ export default async function AboutPage() {
 
       {/* ── 仓库地址 ── */}
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">仓库地址</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <GitFork className="h-5 w-5" />
+          仓库地址
+        </h2>
         <div className="flex flex-wrap gap-3">
           {repoLinks.map((repo) => (
             <a
@@ -114,7 +132,10 @@ export default async function AboutPage() {
 
       {/* ── 核心理念：AI Agent 友好 ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">核心理念：AI Agent 友好</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          核心理念：AI Agent 友好
+        </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
           AI Agent 不应该只读博客——它们应该能写出博客。本项目从架构层面确保
           OpenClaw、Hermes Agent、Claude Code 等 AI Agent 可通过{' '}
@@ -181,7 +202,10 @@ export default async function AboutPage() {
 
       {/* ── 功能特性 ── */}
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">功能特性</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <ListChecks className="h-5 w-5" />
+          功能特性
+        </h2>
         <ul className="text-sm text-muted-foreground leading-relaxed space-y-1 list-disc list-inside">
           {features.map((f) => (
             <li key={f}>{f}</li>
@@ -222,7 +246,10 @@ export default async function AboutPage() {
 
       {/* ── 技术栈 ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">技术栈</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <Layers className="h-5 w-5" />
+          技术栈
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           {techStack.map((item) => (
             <div
@@ -242,7 +269,10 @@ export default async function AboutPage() {
 
       {/* ── 缓存与性能 ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">缓存与性能</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <HardDrive className="h-5 w-5" />
+          缓存与性能
+        </h2>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-1.5">
           <p>
             为缓解 Supabase Free Tier 冷启动延迟，公开页面启用
@@ -259,16 +289,51 @@ export default async function AboutPage() {
               </thead>
               <tbody className="divide-y">
                 <tr>
-                  <td className="px-3 py-1.5 font-mono">首页 /</td>
+                  <td className="px-3 py-1.5 font-mono">/</td>
                   <td className="px-3 py-1.5">5 分钟</td>
                   <td className="px-3 py-1.5">revalidate = 300</td>
                 </tr>
                 <tr>
-                  <td className="px-3 py-1.5 font-mono">
-                    文章详情 /posts/[slug]
-                  </td>
+                  <td className="px-3 py-1.5 font-mono">/posts/[slug]</td>
                   <td className="px-3 py-1.5">5 分钟</td>
                   <td className="px-3 py-1.5">revalidate = 300</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/tags</td>
+                  <td className="px-3 py-1.5">5 分钟</td>
+                  <td className="px-3 py-1.5">revalidate = 300</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/tags/[slug]</td>
+                  <td className="px-3 py-1.5">5 分钟</td>
+                  <td className="px-3 py-1.5">revalidate = 300</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/author/[id]</td>
+                  <td className="px-3 py-1.5">5 分钟</td>
+                  <td className="px-3 py-1.5">revalidate = 300</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/author</td>
+                  <td className="px-3 py-1.5">10 分钟</td>
+                  <td className="px-3 py-1.5">revalidate = 600</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/about</td>
+                  <td className="px-3 py-1.5">1 小时</td>
+                  <td className="px-3 py-1.5">revalidate = 3600</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">/guide</td>
+                  <td className="px-3 py-1.5">24 小时</td>
+                  <td className="px-3 py-1.5">revalidate = 86400</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-1.5 font-mono">
+                    /legal /privacy /sitemap
+                  </td>
+                  <td className="px-3 py-1.5">24 小时</td>
+                  <td className="px-3 py-1.5">revalidate = 86400</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-1.5">管理页 / 编辑页 / 设置页</td>
@@ -291,7 +356,10 @@ export default async function AboutPage() {
 
       {/* ── 构建信息 ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">构建信息</h2>
+        <h2 className="text-lg font-semibold inline-flex items-center gap-2">
+          <Cpu className="h-5 w-5" />
+          构建信息
+        </h2>
         <div className="rounded-lg border divide-y">
           <InfoRow
             label="版本"
