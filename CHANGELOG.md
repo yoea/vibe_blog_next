@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.14.0...v0.14.1) (2026-05-10)
+
+
+### 新功能
+
+* 附件管理功能 — 统一管理图片和文档 ([3cf9836](https://git.ewing.top/yoea/vibe_blog_next/commit/3cf98364e9bd7f2ad31c60ff2e482c507e2107e7))
+* 合并附件管理功能分支 ([244972c](https://git.ewing.top/yoea/vibe_blog_next/commit/244972ca56b0ebdaa953915b2131f19c36c5c9a6))
+
+
+### Bug 修复
+
+* 附件管理 — 图片压缩上传 + 文档布局优化 + 局部刷新 ([436fd00](https://git.ewing.top/yoea/vibe_blog_next/commit/436fd0094605ef5500ff1812abea194077c24ce7))
+
 ## [0.14.0](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.13.0...v0.14.0) (2026-05-10)
 
 
