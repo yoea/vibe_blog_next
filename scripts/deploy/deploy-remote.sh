@@ -112,7 +112,7 @@ if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
   pm2 delete "$PM2_NAME" 2>/dev/null || true
   echo "删除并重建旧的 $PM2_NAME 服务"
 fi
-pm2 start scripts/server/ecosystem.config.js --only "$PM2_NAME"
+pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only "$PM2_NAME"
 pm2 save
 echo "✓ $PM2_NAME 服务重建成功，新版本已启动"
 
@@ -121,7 +121,7 @@ if pm2 describe webhook >/dev/null 2>&1; then
   pm2 delete webhook 2>/dev/null || true
   echo "删除并重建旧的 webhook 服务"
 fi
-pm2 start scripts/server/ecosystem.config.js --only webhook
+pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only webhook
 pm2 save
 echo "✓ webhook 服务已重建"
 
@@ -164,7 +164,7 @@ if [ "$HEALTH_OK" = false ]; then
   if [ -d "$PROJECT_DIR/.next/standalone.old" ]; then
     rm -rf "$PROJECT_DIR/.next/standalone"
     mv "$PROJECT_DIR/.next/standalone.old" "$PROJECT_DIR/.next/standalone"
-    pm2 start scripts/server/ecosystem.config.js --only "$PM2_NAME"
+    pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only "$PM2_NAME"
     pm2 save
 
     # 回滚后二次健康检查

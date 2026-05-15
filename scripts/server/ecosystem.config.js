@@ -17,11 +17,14 @@ function getPort() {
   return 8083;
 }
 
+const PROJECT_DIR = path.resolve(__dirname, '..', '..');
+
 module.exports = {
   apps: [
     {
       name: 'vibe_blog_next',
-      script: '.next/standalone/server.js',
+      script: path.join(PROJECT_DIR, '.next/standalone/server.js'),
+      cwd: PROJECT_DIR,
       max_memory_restart: '512M',
       env: {
         PORT: getPort(),
@@ -29,7 +32,8 @@ module.exports = {
     },
     {
       name: 'webhook',
-      script: 'scripts/server/webhook-server.js',
+      script: path.join(PROJECT_DIR, 'scripts/server/webhook-server.js'),
+      cwd: PROJECT_DIR,
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       env: {
         WEBHOOK_PORT: 8084,
