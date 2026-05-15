@@ -23,7 +23,7 @@ const SSH_HOST = process.env.SSH_HOST || 'ewing.top';
 const SERVER_DIR = process.env.SERVER_DIR || '/home/ewing/craft/vibe_blog_next';
 // 公网健康检查 URL（可选），不设置则跳过公网检查，仅通过 SSH 执行 localhost 检查
 const HEALTH_URL =
-  process.env.HEALTH_URL || 'http://101.132.172.82:8083/api/healthz';
+  process.env.HEALTH_URL || 'https://blog.ewing.top/api/healthz';
 const ARTIFACT_NAME = 'deploy-artifact.tar.gz';
 
 const skipBuild = process.argv.includes('--skip-build');
