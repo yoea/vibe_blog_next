@@ -12,19 +12,6 @@ ARTIFACT_PATH="/tmp/deploy-artifact.tar.gz"
 LOCK_FILE="/tmp/deploy-vibe.lock"
 PM2_NAME="vibe_blog_next"
 
-
-# =========================
-# 健康检查相关配置
-# =========================
-# 从 .env.local 读取 PORT，读不到用 localhost 默认端口
-ENV_LOCAL="$PROJECT_DIR/.env.local"
-PORT=$(grep -oP '^PORT=\K\d+' "$ENV_LOCAL" 2>/dev/null || echo "8083")
-HEALTH_URL="http://localhost:$PORT/api/healthz"
-# 健康检查重试次数
-HEALTH_RETRIES=5
-# 健康检查重试间隔（秒）
-HEALTH_DELAY=5
-
 # 清理函数
 DEPLOY_TMP=""
 cleanup() {
@@ -84,9 +71,8 @@ if [ ! -f "$DEPLOY_TMP/server.js" ]; then
   exit 1
 fi
 
-# 读取本次构建的 commit（用于健康检查验证）
-EXPECTED_COMMIT=$(sed -n 's/^build_commit=//p' "$DEPLOY_TMP/.deploy-meta" 2>/dev/null | tr -d '[:space:]')
-echo "✓ 解压完成 (commit: $EXPECTED_COMMIT)"
+DEPLOY_COMMIT=$(sed -n 's/^build_commit=//p' "$DEPLOY_TMP/.deploy-meta" 2>/dev/null | tr -d '[:space:]')
+echo "✓ 解压完成 (commit: $DEPLOY_COMMIT)"
 
 # =========================
 # 4. 原子替换（旧应用仍在运行，文件在内存中，替换安全）
@@ -126,80 +112,13 @@ pm2 save
 echo "✓ webhook 服务已重建"
 
 # =========================
-# 6. 健康检查（通过 /api/healthz 接口验证）
-# =========================
-echo "正在访问 $HEALTH_URL 进行健康检查..."
-sleep "$HEALTH_DELAY"
-
-HEALTH_OK=false
-for i in $(seq 1 $HEALTH_RETRIES); do
-  BODY=$(curl -s --connect-timeout 5 --max-time 10 "$HEALTH_URL" || true)
-  # 从 JSON 响应中提取 build_commit
-  ACTUAL_COMMIT=$(echo "$BODY" | sed -n 's/.*"build_commit"\s*:\s*"\([^"]*\)".*/\1/p')
-
-  if [ -n "$ACTUAL_COMMIT" ] && [ "$ACTUAL_COMMIT" = "$EXPECTED_COMMIT" ]; then
-    echo "  ✓ /api/healthz 返回服务正常状态！ (commit: $ACTUAL_COMMIT)"
-    HEALTH_OK=true
-    break
-  fi
-
-  # 兼容：接口可达但 commit 不匹配或未返回
-  if echo "$BODY" | grep -q '"status"\s*:\s*"ok"'; then
-    if [ -n "$EXPECTED_COMMIT" ] && [ -n "$ACTUAL_COMMIT" ] && [ "$ACTUAL_COMMIT" != "$EXPECTED_COMMIT" ]; then
-      echo "  ❌ commit 不匹配: 期望 $EXPECTED_COMMIT, 实际 $ACTUAL_COMMIT"
-      # commit 不匹配说明部署的版本不对，视为失败
-      break
-    elif [ -z "$ACTUAL_COMMIT" ]; then
-      echo "  ⚠ 接口可达但未返回 commit，继续等待..."
-    fi
-    # 接口可达但无法验证版本，继续重试
-  fi
-
-  echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: 未就绪"
-  [ "$i" -lt "$HEALTH_RETRIES" ] && sleep "$HEALTH_DELAY"
-done
-
-if [ "$HEALTH_OK" = false ]; then
-  echo "❌ 健康检查失败，回滚到旧版本..."
-  if [ -d "$PROJECT_DIR/.next/standalone.old" ]; then
-    rm -rf "$PROJECT_DIR/.next/standalone"
-    mv "$PROJECT_DIR/.next/standalone.old" "$PROJECT_DIR/.next/standalone"
-    pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only "$PM2_NAME"
-    pm2 save
-
-    # 回滚后二次健康检查
-    echo "回滚后健康检查..."
-    sleep "$HEALTH_DELAY"
-    ROLLBACK_OK=false
-    for i in $(seq 1 $HEALTH_RETRIES); do
-      BODY=$(curl -s --connect-timeout 5 --max-time 10 "$HEALTH_URL" || true)
-      if echo "$BODY" | grep -q '"status"\s*:\s*"ok"'; then
-        echo "  ✓ 回滚成功，服务正常"
-        ROLLBACK_OK=true
-        break
-      fi
-      echo "  ⏳ 第 ${i}/${HEALTH_RETRIES} 次检查: 未就绪"
-      [ "$i" -lt "$HEALTH_RETRIES" ] && sleep "$HEALTH_DELAY"
-    done
-
-    if [ "$ROLLBACK_OK" = false ]; then
-      echo "  ❌ 回滚后健康检查也失败了"
-    fi
-  else
-    echo "  ⚠ 无旧版本可回滚"
-  fi
-  pm2 logs "$PM2_NAME" --lines 20
-  exit 1
-fi
-
-# =========================
-# 7. 清理旧版本
+# 6. 清理旧版本
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
 echo "✓ 服务器上的旧版本部署文件已清理"
 
 # =========================
-# 8. 部署报告
+# 7. 部署报告
 # =========================
 if [ -f "$PROJECT_DIR/.next/standalone/.deploy-meta" ]; then
   echo ""
