@@ -167,13 +167,26 @@ if (!skipBuild) {
   // 清理旧构建
   if (existsSync('.next')) rmSync('.next', { recursive: true, force: true });
 
-  run('npx next build 2>&1 | sed "/^Route (app)/,/^$/d"', {
-    env: {
-      ...process.env,
-      NODE_ENV: 'production',
-      NODE_OPTIONS: '--max-old-space-size=768',
-    },
-  });
+    console.log('  $ npx next build');
+  try {
+    const buildOutput = execSync('npx next build', {
+      encoding: 'utf-8',
+      stdio: ['inherit', 'pipe', 'inherit'],
+      env: {
+        ...process.env,
+        NODE_ENV: 'production',
+        NODE_OPTIONS: '--max-old-space-size=768',
+      },
+    });
+    // 过滤掉 Route 路由表（以制表符 ┌├└│ƒ 开头的行和 "Route (app)" 标题行）
+    const filtered = buildOutput
+      .split('\n')
+      .filter((line) => !/^(Route \(app\)|ƒ Proxy|ƒ  \(Dynamic\)|[\s]*[┌├└│ƒ])/.test(line))
+      .join('\n');
+    if (filtered.trim()) console.log(filtered);
+  } catch (e) {
+    process.exit(e.status || 1);
+  }
 
   // 组装 standalone
   const standaloneDir = '.next/standalone';
