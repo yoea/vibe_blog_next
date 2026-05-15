@@ -167,7 +167,7 @@ if (!skipBuild) {
   // 清理旧构建
   if (existsSync('.next')) rmSync('.next', { recursive: true, force: true });
 
-  run('npx next build', {
+  run('npx next build 2>&1 | sed "/^Route (app)/,/^$/d"', {
     env: {
       ...process.env,
       NODE_ENV: 'production',
