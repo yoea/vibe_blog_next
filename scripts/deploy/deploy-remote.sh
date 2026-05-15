@@ -1,7 +1,13 @@
 #!/bin/bash
 # 服务端部署脚本（由 deploy-local.mjs 通过 ssh 触发）
-# 接收上传的构建产物 → 校验 → 替换 → 启动 → 健康检查
+# 接收上传的构建产物 → 校验 → 替换 → 启动
 set -euo pipefail
+
+# ANSI 颜色
+C_RESET='\033[0m'; C_GREEN='\033[32m'; C_RED='\033[31m'; C_YELLOW='\033[33m'; C_CYAN='\033[36m'
+ok()   { echo -e "${C_GREEN}$*${C_RESET}"; }
+err()  { echo -e "${C_RED}$*${C_RESET}"; }
+warn() { echo -e "${C_YELLOW}$*${C_RESET}"; }
 
 # =========================
 # 配置
@@ -28,7 +34,7 @@ if ! flock -w 60 200; then
   echo "❌ 无法获取部署锁，可能有其他部署正在进行"
   exit 1
 fi
-echo "✓ 获取部署锁成功"
+ok "✓ 获取部署锁成功"
 
 trap cleanup EXIT
 
@@ -57,7 +63,7 @@ if ! echo "$TAR_LISTING" | grep -q "server.js"; then
   echo "$TAR_LISTING" | head -10 | sed 's/^/    /'
   exit 1
 fi
-echo "✓ 构建产物校验通过"
+ok "✓ 构建产物校验通过"
 
 # =========================
 # 3. 解压到临时目录
@@ -72,7 +78,7 @@ if [ ! -f "$DEPLOY_TMP/server.js" ]; then
 fi
 
 DEPLOY_COMMIT=$(sed -n 's/^build_commit=//p' "$DEPLOY_TMP/.deploy-meta" 2>/dev/null | tr -d '[:space:]')
-echo "✓ 解压完成 (commit: $DEPLOY_COMMIT)"
+ok "✓ 解压完成 (commit: $DEPLOY_COMMIT)"
 
 # =========================
 # 4. 原子替换（旧应用仍在运行，文件在内存中，替换安全）
@@ -83,7 +89,7 @@ if [ -d "$PROJECT_DIR/.next/standalone" ]; then
 fi
 mkdir -p "$PROJECT_DIR/.next"
 mv "$DEPLOY_TMP" "$PROJECT_DIR/.next/standalone"
-echo "✓ 文件替换完成"
+ok "✓ 文件替换完成"
 
 # =========================
 # 5. 重启应用
@@ -100,7 +106,7 @@ if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
 fi
 pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only "$PM2_NAME"
 pm2 save
-echo "✓ $PM2_NAME 服务重建成功，新版本已启动"
+ok "✓ $PM2_NAME 服务重建成功，新版本已启动"
 
 # 重建 webhook 服务（确保脚本变更加载）
 if pm2 describe webhook >/dev/null 2>&1; then
@@ -109,13 +115,13 @@ if pm2 describe webhook >/dev/null 2>&1; then
 fi
 pm2 start "$PROJECT_DIR/scripts/server/ecosystem.config.js" --only webhook
 pm2 save
-echo "✓ webhook 服务已重建"
+ok "✓ webhook 服务已重建"
 
 # =========================
 # 6. 清理旧版本
 # =========================
 rm -rf "$PROJECT_DIR/.next/standalone.old"
-echo "✓ 服务器上的旧版本部署文件已清理"
+ok "✓ 服务器上的旧版本部署文件已清理"
 
 # =========================
 # 7. 部署报告
@@ -128,4 +134,4 @@ if [ -f "$PROJECT_DIR/.next/standalone/.deploy-meta" ]; then
   echo "----------------"
 fi
 
-echo "=== 服务器端部署完成 $(date '+%Y-%m-%d %H:%M:%S') ==="
+echo -e "${C_CYAN}=== 服务器端部署完成 $(date '+%Y-%m-%d %H:%M:%S') ===${C_RESET}"

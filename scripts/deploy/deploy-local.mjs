@@ -16,6 +16,14 @@ import {
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// ANSI 颜色（Windows Terminal / Win 11+ 原生支持）
+const C = { reset: '\x1b[0m', bold: '\x1b[1m', green: '\x1b[32m', red: '\x1b[31m', yellow: '\x1b[33m', cyan: '\x1b[36m', gray: '\x1b[90m' };
+const ok = (s) => `${C.green}${s}${C.reset}`;
+const err = (s) => `${C.red}${s}${C.reset}`;
+const warn = (s) => `${C.yellow}${s}${C.reset}`;
+const info = (s) => `${C.cyan}${s}${C.reset}`;
+const dim = (s) => `${C.gray}${s}${C.reset}`;
+
 // =========================
 // 配置（可通过环境变量覆盖默认值）
 // =========================
@@ -100,7 +108,7 @@ function bashSilent(script) {
   return bashExec(script, { encoding: 'utf-8' }).trim().replaceAll('\r', '');
 }
 
-console.log('=== 本地部署 ===');
+console.log(info('=== 本地部署 ==='));
 console.log(`目标: ${sshTarget}:${SERVER_DIR}`);
 
 // =========================
@@ -114,7 +122,7 @@ if (!existsSync('package.json')) {
 console.log('测试 SSH 连接...');
 try {
   runSilent(`ssh ${sshOpts} ${sshTarget} "echo ok"`);
-  console.log('  ✓ SSH 连接正常');
+  console.log(ok('  ✓ SSH 连接正常'));
 } catch {
   console.error('❌ SSH 连接失败');
   process.exit(1);
@@ -123,7 +131,7 @@ try {
 if (!skipBuild) {
   try {
     const status = runSilent('git status --porcelain');
-    if (status) console.log('⚠️  工作区有未提交的更改');
+    if (status) console.log(warn('⚠️  工作区有未提交的更改'));
   } catch {
     /* git not available, skip */
   }
@@ -208,7 +216,7 @@ if (!skipBuild) {
   ].join('\n');
   writeFileSync(join(standaloneDir, '.deploy-meta'), meta);
 
-  console.log('  ✓ 构建完成');
+  console.log(ok('  ✓ 构建完成'));
 
   if (!existsSync('.next/standalone/server.js')) {
     console.error('❌ next build 完成但 .next/standalone/server.js 不存在');
@@ -296,7 +304,7 @@ try {
   process.exit(1);
 }
 
-console.log(`  ✓ 打包完成: ${ARTIFACT_NAME} (${sizeMB} MB)`);
+console.log(ok(`  ✓ 打包完成: ${ARTIFACT_NAME} (${sizeMB} MB)`));
 
 // =========================
 // 4. 上传
@@ -345,7 +353,7 @@ try {
     } catch {}
     process.exit(1);
   }
-  console.log('  ✓ 上传完成');
+  console.log(ok('  ✓ 上传完成'));
 } catch (e) {
   console.error('❌ 上传失败');
   try {
@@ -379,7 +387,7 @@ if (HEALTH_URL) {
       `curl -s --connect-timeout 10 --max-time 15 "${HEALTH_URL}"`,
     );
     if (publicCheck.includes('"status":"ok"')) {
-      console.log('  ✓ 公网可达');
+      console.log(ok('  ✓ 公网可达'));
     } else {
       console.log(`  ⚠ 公网检查响应异常: ${publicCheck.slice(0, 120)}`);
     }
@@ -394,7 +402,7 @@ try {
     `ssh ${sshOpts} ${sshTarget} "curl -s --connect-timeout 5 --max-time 10 http://localhost:8083/api/healthz"`,
   );
   if (remoteCheck.includes('"status":"ok"')) {
-    console.log('  ✓ 服务端 localhost 健康检查通过');
+    console.log(ok('  ✓ 服务端 localhost 健康检查通过'));
   } else {
     console.log(`  ❌ 服务端检查异常: ${remoteCheck.slice(0, 120)}`);
   }
@@ -406,5 +414,5 @@ const elapsed = Math.floor((Date.now() - startTime) / 1000);
 const min = Math.floor(elapsed / 60);
 const sec = elapsed % 60;
 
-console.log('=== 完全部署完成 ===');
-console.log(`耗时: ${min}分${sec}秒`);
+console.log(info('=== 完全部署完成 ==='));
+console.log(dim(`耗时: ${min}分${sec}秒`));
