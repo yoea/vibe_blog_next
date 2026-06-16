@@ -5,9 +5,8 @@ set -euo pipefail
 
 # ANSI 颜色
 C_RESET='\033[0m'; C_GREEN='\033[32m'; C_RED='\033[31m'; C_YELLOW='\033[33m'; C_CYAN='\033[36m'
-ok()   { echo -e "${C_GREEN}$*${C_RESET}"; }
-err()  { echo -e "${C_RED}$*${C_RESET}"; }
-warn() { echo -e "${C_YELLOW}$*${C_RESET}"; }
+ok()  { echo -e "${C_GREEN}$*${C_RESET}"; }
+err() { echo -e "${C_RED}$*${C_RESET}"; }
 
 # =========================
 # 配置
@@ -31,7 +30,7 @@ cleanup() {
 # =========================
 exec 200>"$LOCK_FILE"
 if ! flock -w 60 200; then
-  echo "❌ 无法获取部署锁，可能有其他部署正在进行"
+  err "❌ 无法获取部署锁，可能有其他部署正在进行"
   exit 1
 fi
 ok "✓ 获取部署锁成功"
@@ -42,23 +41,23 @@ trap cleanup EXIT
 # 2. 校验产物
 # =========================
 if [ ! -f "$ARTIFACT_PATH" ]; then
-  echo "❌ 构建产物不存在: $ARTIFACT_PATH"
+  err "❌ 构建产物不存在: $ARTIFACT_PATH"
   exit 1
 fi
 
 FILE_SIZE=$(stat -c%s "$ARTIFACT_PATH" 2>/dev/null || stat -f%z "$ARTIFACT_PATH" 2>/dev/null || echo "0")
 if [ "$FILE_SIZE" -lt 1048576 ]; then
-  echo "❌ 构建产物过小 (${FILE_SIZE} bytes)，可能上传不完整"
+  err "❌ 构建产物过小 (${FILE_SIZE} bytes)，可能上传不完整"
   exit 1
 fi
 
 TAR_LISTING=$(tar tzf "$ARTIFACT_PATH" 2>/dev/null) || {
-  echo "❌ 构建产物损坏，无法解压"
+  err "❌ 构建产物损坏，无法解压"
   exit 1
 }
 if ! echo "$TAR_LISTING" | grep -q "server.js"; then
   ENTRY_COUNT=$(echo "$TAR_LISTING" | wc -l)
-  echo "❌ 构建产物缺少 server.js (共 ${ENTRY_COUNT} 个条目)"
+  err "❌ 构建产物缺少 server.js (共 ${ENTRY_COUNT} 个条目)"
   echo "  前 10 个条目:"
   echo "$TAR_LISTING" | head -10 | sed 's/^/    /'
   exit 1
@@ -72,7 +71,7 @@ DEPLOY_TMP=$(mktemp -d /tmp/deploy-vibe-XXXXXX)
 tar xzf "$ARTIFACT_PATH" -C "$DEPLOY_TMP"
 
 if [ ! -f "$DEPLOY_TMP/server.js" ]; then
-  echo "❌ 解压后缺少 server.js"
+  err "❌ 解压后缺少 server.js"
   rm -rf "$DEPLOY_TMP"
   exit 1
 fi

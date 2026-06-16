@@ -19,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 // ANSI 颜色（Windows Terminal / Win 11+ 原生支持）
 const C = { reset: '\x1b[0m', bold: '\x1b[1m', green: '\x1b[32m', red: '\x1b[31m', yellow: '\x1b[33m', cyan: '\x1b[36m', gray: '\x1b[90m' };
 const ok = (s) => `${C.green}${s}${C.reset}`;
-const err = (s) => `${C.red}${s}${C.reset}`;
 const warn = (s) => `${C.yellow}${s}${C.reset}`;
 const info = (s) => `${C.cyan}${s}${C.reset}`;
 const dim = (s) => `${C.gray}${s}${C.reset}`;
@@ -175,7 +174,7 @@ if (!skipBuild) {
   // 清理旧构建
   if (existsSync('.next')) rmSync('.next', { recursive: true, force: true });
 
-    console.log('  $ npx next build');
+  console.log('  $ npx next build');
   try {
     const buildOutput = execSync('npx next build', {
       encoding: 'utf-8',
@@ -187,10 +186,10 @@ if (!skipBuild) {
       },
     });
     // 过滤掉 Route 路由表（以制表符 ┌├└│ƒ 开头的行和 "Route (app)" 标题行）
-    const filtered = buildOutput
-      .split('\n')
-      .filter((line) => !/^(Route \(app\)|ƒ Proxy|ƒ  \(Dynamic\)|[\s]*[┌├└│ƒ])/.test(line))
-      .join('\n');
+    const filtered = buildOutput.replace(
+      /^(Route \(app\)|ƒ Proxy|ƒ  \(Dynamic\)|\s*[┌├└│ƒ]).*\n?/gm,
+      '',
+    );
     if (filtered.trim()) console.log(filtered);
   } catch (e) {
     process.exit(e.status || 1);
