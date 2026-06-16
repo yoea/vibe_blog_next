@@ -132,7 +132,7 @@ pm2 logs <name>                                # 查看实时日志流
 pm2 logs <name> --lines 50                     # 查看最近 50 行
 pm2 logs <name> --timestamp --lines 50         # 查看带时间戳的最近 50 行
 
-pm2 start scripts/ecosystem.config.js --only <name>    # 启动指定进程
+pm2 start scripts/server/ecosystem.config.js --only <name>    # 启动指定进程
 pm2 restart <name>                             # 重启指定进程
 pm2 stop <name>                                # 停止指定进程
 
@@ -209,6 +209,9 @@ AI Agent（OpenClaw、Hermes-Agent、Claude Code 等）可通过以下方式操�
 | POST   | `/api/v1/posts/{slug}/comments`    | 添加评论                              |
 | DELETE | `/api/v1/comments/{id}`            | 删除评论                              |
 | POST   | `/api/v1/posts/{slug}/like`        | 切换点赞                              |
+| POST   | `/api/v1/images`                   | 上传图片（返回公开 URL）              |
+| POST   | `/api/v1/attachments`              | 上传附件（图片或文档，返回 URL + ID） |
+| DELETE | `/api/v1/attachments?id=xxx`       | 删除附件                              |
 | GET    | `/api/v1/whoami`                   | 获取当前 key 拥有者的用户信息         |
 
 ### 错误码
@@ -245,7 +248,7 @@ curl -o mcp-server.mjs https://raw.githubusercontent.com/yoea/vibe_blog_next/mai
 BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node mcp-server.mjs
 ```
 
-> MCP server 提供 16 个工具（`whoami`、`list_posts`、`get_post`、`create_post`、`update_post`、`delete_post` 等），覆盖文章、评论、点赞、标签、封面图、归档的全部操作。
+> MCP server 提供 19 个工具（`whoami`、`list_posts`、`get_post`、`create_post`、`update_post`、`delete_post` 等），覆盖文章、评论、点赞、标签、封面图、图片、附件、归档的全部操作。
 
 #### 在 AI Agent 中配置
 

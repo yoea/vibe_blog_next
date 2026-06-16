@@ -230,8 +230,8 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 - **自动部署**: 本地构建 + 上传方式（`npm run deploy:local`），详见 `docs/deploy-tips.md`
 - **deploy-local.mjs 流程**: 本地 `next build` → 组装 standalone → tar 打包（--exclude 开发文件）→ scp 上传 → ssh 触发 `deploy-remote.sh`（成功后保留 tar 包供下次覆盖）
   - Windows 兼容: 临时脚本使用进程 ID 避免并行冲突，tarball 验证处理换行符
-- **deploy-remote.sh 流程**: flock 加锁 → 校验产物 → 原子替换文件 → pm2 delete + start（重建主应用 + webhook）→ 健康检查（严格验证 commit hash）→ 清理
-  - 健康检查失败时自动回滚，回滚后二次验证服务状态
+- **deploy-remote.sh 流程**: flock 加锁 → 校验产物 → 原子替换文件 → pm2 delete + start（重建主应用 + webhook）→ pm2 save → 清理
+  - 健康检查由 deploy-local.mjs 执行：公网 HTTPS 检查 + SSH 复查 localhost
   - 每次部署同时重建 webhook 服务，确保脚本变更生效
 - **代码同步**: webhook-server.js 监听分支推送，自动 `git pull` 保持服务端代码同步（不触发构建）
 - **PM2 双进程** (`ecosystem.config.js`):
@@ -241,7 +241,7 @@ BLOG_API_URL=https://your-blog.com BLOG_API_KEY=ew-xxxx node scripts/mcp-server.
 
 ### 数据库 (supabase/init.sql)
 
-**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages, site_config, api_keys, notifications, post_tags
+**表**: posts, post_likes, post_comments, comment_likes, user_settings, post_drafts, site_views, site_likes, guestbook_messages, site_config, api_keys, notifications, post_tags, user_attachments
 
 **触发器**: 自动更新 `updated_at`; 注册时自动创建 `user_settings` 行
 
