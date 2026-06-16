@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.2](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.14.1...v0.14.2) (2026-06-16)
+
+
+### Bug 修复
+
+* 部署构建输出中过滤掉 Route 路由表，减少无关噪音 ([3123c41](https://git.ewing.top/yoea/vibe_blog_next/commit/3123c417fd1b53fe00bafbd1fda71083b776f8cf))
+* 部署脚本公网健康检查改用域名 blog.ewing.top 替代 IP ([62ac019](https://git.ewing.top/yoea/vibe_blog_next/commit/62ac019d9334444726be92f7fdc8a520e50d17b5))
+* 用 Node.js 原生过滤替代 sed，Windows 兼容 ([7a5faf9](https://git.ewing.top/yoea/vibe_blog_next/commit/7a5faf98d416572366aac06825de495a212026c3))
+* PM2 ecosystem.config.js 改用绝对路径，避免 resurrect 时找不到脚本 ([bf63261](https://git.ewing.top/yoea/vibe_blog_next/commit/bf63261ee272010fa855edf6df3d5d318f251935))
+
+
+### 新功能
+
+* 部署脚本添加 ANSI 彩色日志输出（Windows/Linux 兼容） ([e336de6](https://git.ewing.top/yoea/vibe_blog_next/commit/e336de6a3c9a47964636adf058c5b2c1a2745bd5))
+
+
+### 文档
+
+* 同步文档 — 部署流程描述、API 端点、MCP 工具数 ([9562afc](https://git.ewing.top/yoea/vibe_blog_next/commit/9562afc90531be28ea7309ed8c3d1f2f43efe847))
+
+
+### 重构
+
+* /simplify 清理部署脚本 ([b7d16c3](https://git.ewing.top/yoea/vibe_blog_next/commit/b7d16c34e0002cd6c80b496ef223633483cdffc1))
+* 代码质量重构 — 消除重复、拆分大文件、修复 schema 漂移 ([5f0ed7c](https://git.ewing.top/yoea/vibe_blog_next/commit/5f0ed7cca59a83eb1c8c780bb3ff25af466bf721))
+* 移除部署脚本中内网健康检查和回滚逻辑，仅保留公网检查 + SSH 复查 ([407059c](https://git.ewing.top/yoea/vibe_blog_next/commit/407059c1f531e38391e8c945f41f3295125b1f50))
+* P2 优化 — 依赖清理 + 文件位置整理 + Supabase 客户端统一 ([57a6055](https://git.ewing.top/yoea/vibe_blog_next/commit/57a6055cad91832c3dba155b326a7674abea0ec7))
+
 ### [0.14.1](https://git.ewing.top/yoea/vibe_blog_next/compare/v0.14.0...v0.14.1) (2026-05-10)
 
 
