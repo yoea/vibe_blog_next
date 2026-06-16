@@ -12,7 +12,7 @@ import {
   toggleMaintenanceMode,
   toggleDeployNotify,
   toggleTocDisplay,
-} from '@/lib/actions/admin-actions';
+} from '@/lib/actions/site-config-actions';
 import { AIConfigSection } from './ai-config-section';
 import { IcpSection } from './icp-section';
 

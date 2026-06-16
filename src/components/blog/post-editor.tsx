@@ -17,7 +17,7 @@ import { useAutoSave, type AutoSaveStatus } from '@/lib/hooks/use-auto-save';
 import { CoverImageUploader } from '@/components/blog/cover-image-uploader';
 import { toast } from 'sonner';
 import type { PostWithAuthor } from '@/lib/db/types';
-import { uploadContentImage } from '@/lib/actions/image-actions';
+import { uploadContentImage } from '@/lib/actions/attachment-actions';
 import imageCompression from 'browser-image-compression';
 import { ImagePlus } from 'lucide-react';
 

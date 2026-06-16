@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createTag, deleteTag } from '@/lib/actions/post-actions';
+import { createTag, deleteTag } from '@/lib/actions/tag-actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

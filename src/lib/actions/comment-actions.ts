@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCommentsForPost } from '@/lib/db/queries';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/utils/get-client-ip';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
 import { ErrorCode } from '@/lib/db/types';
@@ -71,11 +71,7 @@ export async function createComment(
         error_code: ErrorCode.VALIDATION,
       };
 
-    const h = await headers();
-    const ip =
-      h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      h.get('x-real-ip') ??
-      null;
+    const ip = await getClientIp();
     if (!ip || ip === 'unknown')
       return { error: '无法获取 IP 地址', error_code: ErrorCode.SERVER_ERROR };
 
@@ -313,11 +309,7 @@ export async function toggleCommentLike(
   }
 
   // Guest: track by IP
-  const ip =
-    clientIp ??
-    (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    (await headers()).get('x-real-ip') ??
-    null;
+  const ip = clientIp ?? (await getClientIp());
   if (!ip || ip === 'unknown')
     return { error: '无法获取IP', error_code: ErrorCode.SERVER_ERROR };
 

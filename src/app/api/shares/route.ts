@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { getClientIpFromHeaders } from '@/lib/utils/get-client-ip';
 
 function getSupabase(request: NextRequest) {
   return createServerClient(
@@ -38,9 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'missing postId' }, { status: 400 });
     }
 
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      'unknown';
+    const ip = getClientIpFromHeaders(request.headers) ?? 'unknown';
     const supabase = getSupabase(request);
     await supabase.from('post_shares').insert({ post_id: postId, ip });
   } catch {

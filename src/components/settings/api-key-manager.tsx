@@ -18,7 +18,7 @@ import {
   generateApiKey,
   deleteApiKey,
   listApiKeys,
-} from '@/lib/actions/admin-actions';
+} from '@/lib/actions/api-key-actions';
 import { copyToClipboard } from '@/lib/utils/clipboard';
 import { Plus, Trash2, Copy, Loader2 } from 'lucide-react';
 

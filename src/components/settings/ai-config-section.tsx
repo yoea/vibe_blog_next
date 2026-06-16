@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
-import { updateAIConfig, saveAIModels } from '@/lib/actions/admin-actions';
+import { updateAIConfig, saveAIModels } from '@/lib/actions/site-config-actions';
 import { maskApiKey } from './mask-utils';
 
 interface Props {

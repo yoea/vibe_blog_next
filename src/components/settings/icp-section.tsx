@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { updateICPConfig } from '@/lib/actions/admin-actions';
+import { updateICPConfig } from '@/lib/actions/site-config-actions';
 
 interface Props {
   initialIcpNumber: string;

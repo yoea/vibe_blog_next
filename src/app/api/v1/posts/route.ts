@@ -3,26 +3,7 @@ import { validateApiKey, authErrorResponse } from '@/lib/api/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPublishedPosts } from '@/lib/db/queries';
 import { ErrorCode } from '@/lib/db/types';
-
-function randomTagColor(): string {
-  const palette = [
-    '#3B82F6',
-    '#22C55E',
-    '#A855F7',
-    '#EC4899',
-    '#F97316',
-    '#14B8A6',
-    '#EF4444',
-    '#6366F1',
-    '#EAB308',
-    '#06B6D4',
-    '#84CC16',
-    '#F43F5E',
-    '#8B5CF6',
-    '#0EA5E9',
-  ];
-  return palette[Math.floor(Math.random() * palette.length)];
-}
+import { randomTagColor } from '@/lib/utils/colors';
 
 // GET /api/v1/posts — 列出文章（分页）
 export async function GET(request: NextRequest) {

@@ -2,20 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/utils/get-client-ip';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
 import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
-
-async function getClientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    h.get('x-real-ip') ??
-    'unknown'
-  );
-}
 
 export async function toggleLike(
   postId: string,
@@ -85,7 +76,7 @@ export async function toggleLike(
   } else {
     // Unauthenticated: track by IP
     const ip = clientIp ?? (await getClientIp());
-    if (ip === 'unknown')
+    if (!ip)
       return { error: '无法获取IP', error_code: ErrorCode.SERVER_ERROR };
 
     const { allowed } = await checkIpRateLimit(ip, 'post_likes', 10, 60);

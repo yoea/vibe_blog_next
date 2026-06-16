@@ -8,7 +8,7 @@ import {
   uploadCoverImage,
   removeCoverImage,
 } from '@/lib/actions/cover-actions';
-import { fetchImageFromUrl, listUserImages } from '@/lib/actions/image-actions';
+import { fetchImageFromUrl, listUserImages } from '@/lib/actions/attachment-actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { toggleMaintenanceMode } from '@/lib/actions/admin-actions';
+import { toggleMaintenanceMode } from '@/lib/actions/site-config-actions';
 import { Button } from '@/components/ui/button';
 
 export function MaintenanceClient({

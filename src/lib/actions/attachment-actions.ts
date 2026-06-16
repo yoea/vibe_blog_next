@@ -1,5 +1,6 @@
 'use server';
 
+import { lookup } from 'node:dns/promises';
 import { createClient } from '@/lib/supabase/server';
 import { ErrorCode } from '@/lib/db/types';
 import type { ActionResult } from '@/lib/db/types';
@@ -311,4 +312,132 @@ export async function replaceImage(
     .getPublicUrl(storagePath);
 
   return { url: urlData.publicUrl };
+}
+
+// ---------------------------------------------------------------------------
+// Compatibility wrappers (migrated from image-actions.ts)
+// ---------------------------------------------------------------------------
+
+/**
+ * 上传编辑器内图片 — 包装 uploadAttachment，保持原有返回格式 { imageUrl }。
+ * FormData key: `image`（区别于附件的 `file`）
+ */
+export async function uploadContentImage(
+  formData: FormData,
+): Promise<ActionResult & { imageUrl?: string }> {
+  // Re-map 'image' -> 'file' so uploadAttachment can read it
+  const file = formData.get('image') as File | null;
+  if (!file)
+    return { error: '未选择文件', error_code: ErrorCode.VALIDATION };
+
+  const mapped = new FormData();
+  mapped.append('file', file);
+
+  const result = await uploadAttachment(mapped);
+  if (result.error) return result;
+
+  return { imageUrl: result.item?.url };
+}
+
+/**
+ * 列出当前用户的所有图片 — 包装 listUserAttachments('images')。
+ * 返回格式与原 image-actions.ts 一致：{ images: { url, name, createdAt }[] }
+ */
+export async function listUserImages(): Promise<
+  ActionResult & { images?: { url: string; name: string; createdAt: string }[] }
+> {
+  const result = await listUserAttachments('images');
+  if (result.error) return result;
+
+  const images = (result.items ?? []).map((item) => ({
+    url: item.url,
+    name: item.originalName,
+    createdAt: item.createdAt,
+  }));
+
+  return { images };
+}
+
+// ---------------------------------------------------------------------------
+// fetchImageFromUrl (migrated from image-actions.ts)
+// ---------------------------------------------------------------------------
+
+const PRIVATE_IP_RE =
+  /^(0\.|10\.|127\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|::1$|fc|fd|fe80)/;
+
+async function isPrivateHost(hostname: string): Promise<boolean> {
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.internal')
+  )
+    return true;
+  try {
+    const { address } = await lookup(hostname);
+    return PRIVATE_IP_RE.test(address);
+  } catch {
+    return true; // DNS failure -> treat as unsafe
+  }
+}
+
+export async function fetchImageFromUrl(
+  url: string,
+): Promise<ActionResult & { dataUrl?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: '未登录', error_code: ErrorCode.UNAUTHORIZED };
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return { error: '无效的 URL', error_code: ErrorCode.VALIDATION };
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol))
+    return {
+      error: '仅支持 http/https 协议',
+      error_code: ErrorCode.VALIDATION,
+    };
+
+  if (await isPrivateHost(parsed.hostname))
+    return {
+      error: '不允许访问内网地址',
+      error_code: ErrorCode.VALIDATION,
+    };
+
+  try {
+    const res = await fetch(parsed.href, {
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'VibeBlog/1.0' },
+    });
+    if (!res.ok)
+      return {
+        error: `获取图片失败: ${res.status}`,
+        error_code: ErrorCode.SERVER_ERROR,
+      };
+
+    const contentType = res.headers.get('content-type') ?? '';
+    if (!contentType.startsWith('image/'))
+      return {
+        error: 'URL 不是图片资源',
+        error_code: ErrorCode.VALIDATION,
+      };
+
+    const bytes = await res.arrayBuffer();
+    if (bytes.byteLength > 10 * 1024 * 1024)
+      return {
+        error: '图片过大（限 10MB）',
+        error_code: ErrorCode.VALIDATION,
+      };
+
+    const base64 = Buffer.from(bytes).toString('base64');
+    return { dataUrl: `data:${contentType};base64,${base64}` };
+  } catch {
+    return {
+      error: '获取图片超时或失败',
+      error_code: ErrorCode.SERVER_ERROR,
+    };
+  }
 }

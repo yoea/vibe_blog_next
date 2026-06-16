@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/utils/get-client-ip';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -24,11 +24,7 @@ export async function GET(request: Request) {
       .maybeSingle();
     isLiked = !!data;
   } else {
-    const h = await headers();
-    const ip =
-      h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      h.get('x-real-ip') ??
-      null;
+    const ip = await getClientIp();
     if (ip && ip !== 'unknown') {
       const { data } = await supabase
         .from('post_likes')

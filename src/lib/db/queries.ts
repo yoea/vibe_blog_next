@@ -10,7 +10,7 @@ import type {
   ArchivedPostWithAuthor,
 } from '@/lib/db/types';
 import { ErrorCode } from '@/lib/db/types';
-import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/utils/get-client-ip';
 
 // ── Helper: attach tags to an array of posts ──
 async function attachTagsToPosts(posts: any[]) {
@@ -188,11 +188,7 @@ export async function getPostBySlug(slug: string) {
   // For unauthenticated users, check IP-based like
   let ipLike = false;
   if (!user) {
-    const h = await headers();
-    const ip =
-      h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      h.get('x-real-ip') ??
-      null;
+    const ip = await getClientIp();
     if (ip && ip !== 'unknown') {
       const { data: ipData } = await supabase
         .from('post_likes')
@@ -333,11 +329,7 @@ export async function getCommentsForPost(
         }
         // For anonymous users, check by IP
         if (!user) {
-          const h = await headers();
-          const ip =
-            h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-            h.get('x-real-ip') ??
-            null;
+          const ip = await getClientIp();
           if (ip && ip !== 'unknown') {
             for (const l of likes) {
               if (l.ip === ip) {

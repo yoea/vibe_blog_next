@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getGuestbookMessages } from '@/lib/db/queries';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
+import { getClientIp } from '@/lib/utils/get-client-ip';
 import { checkIpRateLimit, checkUserRateLimit } from '@/lib/utils/rate-limit';
 import { insertNotification } from '@/lib/actions/notification-actions';
 import { ErrorCode } from '@/lib/db/types';
@@ -59,11 +59,7 @@ export async function createGuestbookMessage(
         error_code: ErrorCode.VALIDATION,
       };
 
-    const h = await headers();
-    const ip =
-      h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      h.get('x-real-ip') ??
-      null;
+    const ip = await getClientIp();
     if (!ip || ip === 'unknown')
       return { error: '无法获取 IP 地址', error_code: ErrorCode.SERVER_ERROR };
 

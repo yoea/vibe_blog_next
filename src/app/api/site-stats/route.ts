@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { getClientIpFromHeaders } from '@/lib/utils/get-client-ip';
 
 const MAX_LIKES_PER_IP_PER_HOUR = 10;
 
@@ -21,9 +22,7 @@ function getSupabase(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      'unknown';
+    const ip = getClientIpFromHeaders(request.headers) ?? 'unknown';
     const supabase = getSupabase(request);
 
     if (body.type === 'view') {

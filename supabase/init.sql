@@ -177,7 +177,9 @@ create index if not exists idx_guestbook_author on guestbook_messages(author_id)
 create index if not exists idx_guestbook_parent on guestbook_messages(parent_id);
 create index if not exists idx_notifications_post on notifications(post_id);
 create index if not exists idx_notifications_actor on notifications(actor_id);
+create index if not exists idx_notifications_comment on notifications(comment_id);
 create index if not exists idx_notifications_guestbook_author on notifications(guestbook_author_id);
+create index if not exists idx_notifications_guestbook_message on notifications(guestbook_message_id);
 create index if not exists idx_archive_archived_by on articles_archive(archived_by);
 create index if not exists idx_site_config_updated_by on site_config(updated_by);
 
@@ -757,7 +759,10 @@ create table if not exists notifications (
   post_id uuid references posts(id) on delete cascade,
   post_slug text,
   post_title text,
+  comment_id uuid references post_comments(id) on delete cascade,
   guestbook_author_id uuid references auth.users(id) on delete cascade,
+  guestbook_message_id uuid references guestbook_messages(id) on delete cascade,
+  guestbook_message_content text,
   is_read boolean not null default false,
   is_dismissed boolean not null default false,
   created_at timestamptz default now()
