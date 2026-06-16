@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAIConfig, testAIConnection } from '@/lib/ai-config';
+import { getAIConfig, testAIConnection } from '@/lib/utils/ai-config';
 
 export async function POST() {
   try {

@@ -1,29 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@/lib/supabase/server';
 import { getClientIpFromHeaders } from '@/lib/utils/get-client-ip';
 
 const MAX_LIKES_PER_IP_PER_HOUR = 10;
-
-function getSupabase(request: NextRequest) {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll() {},
-      },
-    },
-  );
-}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const ip = getClientIpFromHeaders(request.headers) ?? 'unknown';
-    const supabase = getSupabase(request);
+    const supabase = await createClient();
 
     if (body.type === 'view') {
       await supabase.from('site_views').insert({ ip });

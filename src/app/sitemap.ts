@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 import { routes } from './sitemap/sitemap-data';
 
 export const dynamic = 'force-dynamic';

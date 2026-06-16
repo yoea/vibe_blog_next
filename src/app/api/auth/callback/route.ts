@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

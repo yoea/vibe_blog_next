@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getAIConfig, createOpenAIClient } from '@/lib/ai-config';
+import { getAIConfig, createOpenAIClient } from '@/lib/utils/ai-config';
 import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: Request) {

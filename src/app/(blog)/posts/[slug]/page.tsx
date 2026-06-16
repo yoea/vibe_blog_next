@@ -18,7 +18,7 @@ import { buildRefBreadcrumb } from '@/lib/constants';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { createClient } from '@/lib/supabase/server';
 import { isSuperAdmin } from '@/lib/utils/admin';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 import type { Metadata } from 'next';
 
 interface PageProps {

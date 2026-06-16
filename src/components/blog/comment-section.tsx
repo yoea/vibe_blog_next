@@ -8,7 +8,7 @@ import {
   toggleCommentLike,
 } from '@/lib/actions/comment-actions';
 import { toast } from 'sonner';
-import { useThreadedList } from './use-threaded-list';
+import { useThreadedList } from '@/lib/hooks/use-threaded-list';
 import { ThreadedItemRenderer } from './threaded-item';
 import { CommentForm } from './comment-form';
 import { Heart } from 'lucide-react';

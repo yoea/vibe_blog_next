@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getSuperAdminUserIds } from '@/lib/utils/admin';
-import { getSiteUrl } from '@/lib/site-url';
+import { getSiteUrl } from '@/lib/utils/site-url';
 
 export interface SiteMeta {
   siteTitle: string;

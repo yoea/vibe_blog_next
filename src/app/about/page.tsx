@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getBuildInfo } from '@/lib/build-info';
+import { getBuildInfo } from '@/lib/utils/build-info';
 import { createClient } from '@/lib/supabase/server';
 
 export const revalidate = 3600;

@@ -3,7 +3,7 @@
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DonateButton } from '@/components/donate-button';
+import { DonateButton } from '@/components/shared/donate-button';
 
 export function SupportSection() {
   return (

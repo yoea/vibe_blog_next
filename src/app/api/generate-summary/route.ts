@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAIConfig, createOpenAIClient } from '@/lib/ai-config';
+import { getAIConfig, createOpenAIClient } from '@/lib/utils/ai-config';
 
 const SYSTEM_PROMPT = `你是一名专业的文章摘要生成助手。
 

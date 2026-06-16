@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { DonateButton } from '@/components/donate-button';
+import { DonateButton } from '@/components/shared/donate-button';
 import { routes } from './sitemap-data';
 import {
   Home,

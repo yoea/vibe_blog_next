@@ -14,7 +14,7 @@ import {
   deleteGuestbookMessage,
   getMoreGuestbookMessages,
 } from '@/lib/actions/guestbook-actions';
-import { useThreadedList } from './use-threaded-list';
+import { useThreadedList } from '@/lib/hooks/use-threaded-list';
 import { ThreadedItemRenderer } from './threaded-item';
 import { CommentForm } from './comment-form';
 import type { GuestbookMessageWithAuthor } from '@/lib/db/types';
