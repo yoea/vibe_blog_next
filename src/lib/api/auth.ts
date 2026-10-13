@@ -71,8 +71,10 @@ export async function validateApiKey(request: Request): Promise<AuthResult> {
 
 /** 将 validateApiKey 的非成功结果转为 HTTP 响应，成功返回 null */
 export function authErrorResponse(auth: AuthResult) {
-  if (!auth || 'userId' in auth) return null;
-  if (auth.error === 'rate_limited') {
+  // 仅认证成功时放行。auth 为 null 表示请求未携带 Authorization 头，
+  // 与凭证无效同等对待，必须返回 401 —— 否则调用方取 userId 会抛 TypeError
+  if (auth && 'userId' in auth) return null;
+  if (auth?.error === 'rate_limited') {
     return NextResponse.json(
       { error: '请求过于频繁，请稍后再试', error_code: ErrorCode.RATE_LIMITED },
       { status: 429 },
