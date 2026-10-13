@@ -36,6 +36,7 @@ export async function PUT(
   if (authError) return authError;
 
   const { slug } = await params;
+  const userId = (auth as { userId: string; keyId: string }).userId;
 
   try {
     const body = await request.json();
@@ -43,7 +44,7 @@ export async function PUT(
 
     const { data: existing, error: fetchError } = await supabase
       .from('posts')
-      .select('id')
+      .select('id, author_id')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -51,6 +52,14 @@ export async function PUT(
       return NextResponse.json(
         { error: '文章不存在', error_code: ErrorCode.NOT_FOUND },
         { status: 404 },
+      );
+    }
+
+    // Service Role 绕过 RLS，此处必须复刻 own_posts_update 策略：仅作者本人可改
+    if (existing.author_id !== userId) {
+      return NextResponse.json(
+        { error: '无权修改他人文章', error_code: ErrorCode.FORBIDDEN },
+        { status: 403 },
       );
     }
 
@@ -99,11 +108,12 @@ export async function DELETE(
   if (authError) return authError;
 
   const { slug } = await params;
+  const userId = (auth as { userId: string; keyId: string }).userId;
   const supabase = await createAdminClient();
 
   const { data: post, error: fetchError } = await supabase
     .from('posts')
-    .select('id')
+    .select('id, author_id')
     .eq('slug', slug)
     .maybeSingle();
 
@@ -111,6 +121,14 @@ export async function DELETE(
     return NextResponse.json(
       { error: '文章不存在', error_code: ErrorCode.NOT_FOUND },
       { status: 404 },
+    );
+  }
+
+  // Service Role 绕过 RLS，此处必须复刻 own_posts_delete 策略：仅作者本人可删
+  if (post.author_id !== userId) {
+    return NextResponse.json(
+      { error: '无权删除他人文章', error_code: ErrorCode.FORBIDDEN },
+      { status: 403 },
     );
   }
 
